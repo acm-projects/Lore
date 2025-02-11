@@ -77,7 +77,7 @@
 
 
 <details>
-<summary>Tutorials ⏯️</summary>
+**<summary>Tutorials ⏯️</summary>**
 
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
 - [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht
