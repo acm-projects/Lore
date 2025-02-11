@@ -9,28 +9,29 @@
  Lore is an interactive and collaborative storytelling game for anyone who enjoys creating imaginative stories with friends. Players can create groups, start stories, and vote on plot points to compete against players. When stuck, players can use the AI driven suggestions to craft their next plot point. Whether you're bored at a family gathering or finding an activity to do with your close friends, Lore fosters creativity and community, making it easy for users to connect and craft memorable stories together. So gather your friends, unleash your creativity, and start crafting your own lore today!
 </p>
 
-## MVP (Minimum Viable Product)
+## MVP ✔️
 
 
 * User account with user authentication
 * Story and group creation
-* Ability to start a new story and invite others to collaborate/lobby to join the game with friends or others online.
-* Fun and unique prompt suggestions
-* Chapter Voting System:
-* Mechanism for users to propose multiple options for the next chapter.
-* Voting system for collaborators to choose their preferred plot twist, character decision, or story direction.
+  * Ability to start a new story and invite others to collaborate/lobby to join the game with friends or others online.
+* Prompt suggestions
+* Chapter Voting System
+  * Mechanism for users to propose multiple options for the next chapter.
+  * Voting system for collaborators to choose their preferred plot twist, character decision, or story direction.
 * Story Portal & Profile
-* Ongoing stories, completion status, people added to the story, and short description.
+  * Ongoing stories, completion status, people added to the story, and short description.
 * Story Display & Visualization:
-* Display the current story and previous chapters in a readable format & show popular vote of progressions
+  * Display the current story and previous chapters in a readable format & show progression
+  * Visualization of Story line
 
   
 
 
 
-## Stretch Goals
+## Stretch Goals 💡
 
-* Annotation/ live chat features
+* Annotation / live chat features during the game
 * Community feed of popular stories
 * Pin stories to profile
 * Export and Downloading stories to be shared
@@ -38,14 +39,14 @@
 
 
 
-## Milestones
+## Milestones ⏲️
 
 <details closed>
   <summary>  <strong> Week 1: Setup ⚓ </strong> </summary>
   <br>
 
 - General:
-  - Assign roles for front-end and back-end development.
+  - Assign roles for front-end and back-end development
   - Discuss overall project scope, tech stack/options (React Native for frontend, AWS for backend)
   - Schedule meetings for weekly meetings
   - Start Low fidelity with everyone to get a vision of the app
@@ -72,20 +73,8 @@
 
 
 
-## Tech Stack
-* Wireframing: Figma
-* IDE: VSC
-* Frontend: [React Native](https://reactnative.dev/) with [MapBox Gl](https://docs.mapbox.com/help/glossary/maps-sdk-for-react-native/)
-  * React Native is a cross compatible framework that paired with expo allows you to bring your apps to life while in development phases
-  * Material UI or Bootstrap / CSS Tailwind
-  * MapBox is a community-maintained React Native library that provides reusable JavaScript components for integrating Mapbox maps into iOS and Android apps.
-* Backend: [AWS Lambda](https://www.serverless.com/aws-lambda), [DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html) & [S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) Or [Firebase/Firestore](https://firebase.google.com/docs/firestore), [Express & Node](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Introduction), [Spotify API](https://developer.spotify.com/documentation/web-api), [MapBox API](https://docs.mapbox.com/api/overview/)
-  * AWS Lambda is a compute service that runs your code in response to events and automatically manages the compute resources
-  * DynamoDB and S3 continue with the fully AWS approach however, Firebase/Firestore work great as needed
-  * By using Express and Node.js, you can effectively manage the backend of your mobile app, providing a robust API that interacts with your frontend mobile application
-* User Authentication: [Auth0](https://auth0.com/docs)
-
-
+## Tech Stack & Resources 💻
+#### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js / Express.js, Vue.js, 
 
 ## Software to Install
   - [Visual Studio Code](https://code.visualstudio.com/)
