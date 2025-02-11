@@ -82,7 +82,7 @@
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
 - [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
 - [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
-- [Web Notifications API for React](https://www.youtube.com/watch?v=mFRPpINFMz0)
+- 
 - [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
 - [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
 - [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
@@ -93,7 +93,7 @@
 <details>
 **<summary>Environment Setup ⚙️</summary>**
  
- - Frontend
+ - Frontend Set Up
    - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
    - [Firebase Auth in Vue](https://www.freecodecamp.org/news/how-to-add-authentication-to-a-vue-app-using-firebase/)
@@ -102,11 +102,11 @@
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
   
   
- - Backend
+ - Backend Set Up
    - [Node + Express](https://daily.dev/blog/setup-nodejs-express-project-a-beginners-guide)
    - [Socket.IO](https://socket.io/docs/v4/server-installation/)
    - [Firebase](https://firebase.google.com/docs/web/setup)
-   - [OpenAI](https://www.npmjs.com/package/openai)
+   - [OpenAI](https://platform.openai.com/docs/quickstart)
    - [Git](https://git-scm.com/downloads)
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
