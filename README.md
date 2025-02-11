@@ -80,7 +80,7 @@
 **<summary>Tutorials ⏯️</summary>**
 
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
-- [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht
+- [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
 - [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
 - [Web Notifications API for React](https://www.youtube.com/watch?v=mFRPpINFMz0)
 - [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
