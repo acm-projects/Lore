@@ -106,7 +106,7 @@
 </details>
 
 <details>
-  <summary><strong>Weeks 6-8: During and After Spring Break 🍀</strong></summary>
+  <summary><strong>Weeks 6-8: During and After Spring Break 🍀⚠️</strong></summary>
   <br>
 
   - **Frontend:**
@@ -121,7 +121,7 @@
 </details>
 
 <details>
-  <summary><strong>Weeks 9-10: Finalization & Presentation 🎤</strong></summary>
+  <summary><strong>Weeks 9-10: </strong></summary>
   <br>
 
   - **General:**
