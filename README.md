@@ -91,7 +91,8 @@
 </details>
 
 <details>
-## Environment Setup 🧰
+
+**<summary>Environment Setup 🧰</summary>**
  - Frontend
    - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
@@ -112,13 +113,17 @@
 
 </details>
 
-## General Resources 🕵️ 
-  - [Success in ACM Projects](https://docs.google.com/document/d/18Zi3DrKG5e6g5Bojr8iqxIu6VIGl86YBSFlsnJnlM88/edit#heading=h.ky82xv3vtbpi)
+<details>
+
+**<summary>General Resources 🕵️ </summary>**
+ - [Success in ACM Projects](https://docs.google.com/document/d/18Zi3DrKG5e6g5Bojr8iqxIu6VIGl86YBSFlsnJnlM88/edit#heading=h.ky82xv3vtbpi)
   - [API Crash Course w/ timestamps](https://www.youtube.com/watch?v=GZvSYJDk-us)
   - [GitHub Cheat Sheet #1](https://education.github.com/git-cheat-sheet-education.pdf)
   - [GitHub Cheat Sheet #2](https://drive.google.com/file/d/1OddwoSvNJ3dQuEBw3RERieMXmOicif9_/view)
-  
 
+</details>
+ 
+ 
 
 ## Git Commands
 
