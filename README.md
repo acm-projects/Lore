@@ -28,7 +28,7 @@
 ## Milestones ⏲️
 
 <details>
-  <summary><strong>Week 1: Setup ⚓</strong></summary>
+  <summary><strong>Week 1: </strong></summary>
   <br>
 
   - **General:**
