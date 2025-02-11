@@ -92,6 +92,7 @@
 
 <details>
 **<summary>Environment Setup ⚙️</summary>**
+ 
  - Frontend
    - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
