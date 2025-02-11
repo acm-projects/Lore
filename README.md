@@ -73,16 +73,45 @@
 
 
 ## Tech Stack & Resources 💻
-#### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js / Express.js, Vue.js, 
+#### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js, Express.js, Vue.js
 
-## Software to Install
-  - [Visual Studio Code](https://code.visualstudio.com/)
-  - [React Native](https://reactnative.dev/docs/environment-setup)
-  - [DynamoDB](https://aws.amazon.com/dynamodb/) / [Firebase](https://firebase.google.com/docs/web/setup)
-  - [CSS Tailwind](https://tailwindcss.com/docs/guides/nextjs)
-  - [Node](https://nodejs.org/en/)
-  - [Express](https://expressjs.com/)
-  - [Git](https://git-scm.com/downloads)
+<details>
+
+<details>
+**<summary>Tutorials</summary>**
+
+* [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
+* [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
+* [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
+* [Web Notifications API for React](https://www.youtube.com/watch?v=mFRPpINFMz0)
+* [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
+* [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
+* [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
+* [Hugging Face Stable Diffusion](https://www.youtube.com/watch?v=kOBxiZpzYe0)
+
+</details>
+
+<details>
+**<summary>Documentation</summary>**
+
+## Environment Setup 🧰
+ - Frontend
+   - [Vue](https://vuejs.org/guide/quick-start)
+   - [Socket.IO](https://socket.io/docs/v4/client-installation/)
+   - [Firebase Auth in Vue](https://www.freecodecamp.org/news/how-to-add-authentication-to-a-vue-app-using-firebase/)
+   - [Git](https://git-scm.com/downloads)
+   - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
+   - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
+  
+  
+ - Backend
+   - [Node + Express](https://daily.dev/blog/setup-nodejs-express-project-a-beginners-guide)
+   - [Socket.IO](https://socket.io/docs/v4/server-installation/)
+   - [Firebase](https://firebase.google.com/docs/web/setup)
+   - [OpenAI](https://www.npmjs.com/package/openai)
+   - [Git](https://git-scm.com/downloads)
+   - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
+   - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
 
 ## Tutorials and Resources  
   **General**
@@ -91,20 +120,7 @@
   - [GitHub Cheat Sheet #1](https://education.github.com/git-cheat-sheet-education.pdf)
   - [GitHub Cheat Sheet #2](https://drive.google.com/file/d/1OddwoSvNJ3dQuEBw3RERieMXmOicif9_/view)
   
-  **Front-end**
-  - [Introduction to Wireframing in Figma](https://www.youtube.com/watch?v=6t_dYhXyYjI)
-  - [React Native Crash Course](https://www.youtube.com/watch?v=w7ejDZ8SWv8)
-  - [27 Best UI/UX Practices](https://729solutions.com/ux-ui-best-practices/)
-  - [MapBox Tutorial](https://www.youtube.com/watch?v=JJatzkPcmoI)
-  - [Building Maps in React Native](https://medium.com/@mshuecodev/building-maps-in-react-native-with-mapbox-a-step-by-step-tutorial-6491f2190db9)
-  
-  **Back-end**
-  - [Node.js Crash Course](https://www.youtube.com/watch?v=zb3Qk8SG5Ms&list=PL4cUxeGkcC9jsz4LDYc6kv3ymONOKxwBU)
-  - [Express & Node Intro](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
-  - [DynamoDB & React Native](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/build-a-serverless-react-native-mobile-app-by-using-aws-amplify.html)
-  - [AWS Lambda & React Native](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/build-a-serverless-react-native-mobile-app-by-using-aws-amplify.html)
-  - [AWS S3 & React Native](https://jaka-tertinek.medium.com/upload-files-from-react-native-app-to-aws-s3-3d3cb85e9d4)
-  - [Firebase / React Native Authentication Tutorial](https://www.youtube.com/watch?v=ONAVmsGW6-M)
+
 
 ## Git Commands
 
