@@ -75,7 +75,6 @@
 ## Tech Stack & Resources 💻
 #### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js, Express.js, Vue.js
 
-<details>
 
 <details>
 **<summary>Tutorials</summary>**
@@ -92,8 +91,6 @@
 </details>
 
 <details>
-**<summary>Documentation</summary>**
-
 ## Environment Setup 🧰
  - Frontend
    - [Vue](https://vuejs.org/guide/quick-start)
@@ -113,8 +110,9 @@
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
 
-## Tutorials and Resources  
-  **General**
+</details>
+
+## General Resources 🕵️ 
   - [Success in ACM Projects](https://docs.google.com/document/d/18Zi3DrKG5e6g5Bojr8iqxIu6VIGl86YBSFlsnJnlM88/edit#heading=h.ky82xv3vtbpi)
   - [API Crash Course w/ timestamps](https://www.youtube.com/watch?v=GZvSYJDk-us)
   - [GitHub Cheat Sheet #1](https://education.github.com/git-cheat-sheet-education.pdf)
