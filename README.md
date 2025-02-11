@@ -25,6 +25,111 @@
   * Visualization of Story line
 
   
+## Milestones ⏲️
+
+<details>
+  <summary><strong>Week 1: Setup ⚓</strong></summary>
+  <br>
+
+  - **General:**
+    - Assign roles and get to know each other!
+    - Discuss overall project scope, tech stack options (consider AWS or React Native).
+    - Schedule recurring weekly meetings.
+    - Start low-fidelity wireframes with the entire team to visualize the app.
+
+  - **Frontend:**
+    - Start working on Figma and be ready to show progress at dev night.
+    - Explore tech stack and set up the project.
+
+  - **Backend:**
+    - Explore tech stack and set up the backend environment.
+</details>
+
+<details>
+  <summary><strong>Week 2:</strong></summary>
+  <br>
+
+  - **General:**
+    - Begin working on basic tasks.
+    - Continue getting familiar with the tech stack.
+    - Finalize features and database schema.
+
+  - **Frontend:**
+    - Wrap up Figma designs.
+
+  - **Backend:**
+    - Finalize the database schema.
+    - Set up database access.
+</details>
+
+<details>
+  <summary><strong>Week 3:</strong></summary>
+  <br>
+
+  - **Frontend:**
+    - Start implementing authentication pages.
+    - Set up Socket.io on the client side.
+    - Establish routes between basic pages.
+
+  - **Backend:**
+    - Set up the Express server and integrate authentication.
+    - Implement Socket.io on the backend.
+</details>
+
+<details>
+  <summary><strong>Week 4:</strong></summary>
+  <br>
+
+  - **Frontend:**
+    - Continue working on key pages: Profile and Story Creation.
+    - Assign one team member to focus on testing multiplayer capabilities.
+
+  - **Backend:**
+    - Implement CRUD operations for users and stories.
+    - Assign one team member to focus on testing multiplayer capabilities.
+</details>
+
+<details>
+  <summary><strong>Week 5:</strong></summary>
+  <br>
+
+  - **General:**
+    - Integrate the multiplayer feature to evaluate feasibility.
+
+  - **Frontend:**
+    - Continue progress on Profile and Story Creation pages.
+    - Develop UI for creating and managing stories with multiple users.
+
+  - **Backend:**
+    - Implement API endpoints for real-time story updates.
+    - Begin development on AI-driven story suggestions.
+</details>
+
+<details>
+  <summary><strong>Weeks 6-8: During and After Spring Break 🍀</strong></summary>
+  <br>
+
+  - **Frontend:**
+    - Develop UI to display AI-generated story suggestions.
+    - Implement voting on story options and display results.
+    - Work on AI-generated visuals for the storyline.
+
+  - **Backend:**
+    - Continue developing API endpoints for story suggestions using OpenAI and Hugging Face APIs.
+    - Implement endpoints for voting on story directions and calculating scores.
+    - Generate AI visuals for the storyline.
+</details>
+
+<details>
+  <summary><strong>Weeks 9-10: Finalization & Presentation 🎤</strong></summary>
+  <br>
+
+  - **General:**
+    - **Bug Fixes & Polish:** Address any bugs, refine UI/UX, and ensure app stability.
+    - **Final Testing:** Conduct thorough testing of all features, focusing on user experience and core functionality.
+    - **Presentation:** Prepare slides, script, and rehearse the demo.
+    - Most importantly, **have fun**! 🎉
+</details>
 
 
 
@@ -38,111 +143,7 @@
 
 
 
-## Milestones ⏲️
 
-<details closed>
-  <summary>  <strong> Week 1: Setup ⚓ </strong> </summary>
-  <br>
-- General:
-  - Assign roles and get to know each other!
-  - Discuss overall project scope, tech stack/options (if interested in AWS or using React Native instead)
-  - Schedule meetings for weekly meetings
-  - Start Low fidelity with everyone to get a vision of the app
-- Frontend:
-  - Start working on Figma and be ready to show progress dev night
-  - Explore tech stack and set up
-- Backend:
-  - Explore tech stack and set up
-</details>
-
-<details closed>
-  <summary>  <strong> Week 1: </strong> </summary>
-  <br>
-- General:
-  - Assign roles and get to know each other!
-  - Discuss overall project scope, tech stack/options (if interested in AWS or using React Native instead)
-  - Schedule meetings for weekly meetings
-  - Start Low fidelity with everyone to get a vision of the app
-- Frontend:
-  - Start working on Figma
-  - Explore tech stack and set up
-- Backend:
-  - Explore tech stack and set up
-</details>
-
-<details closed>
-  <summary>  <strong> Week 2:</strong> </summary>
-  <br>
-- General:
-  - Get started on basic tasks
-  - Continue getting familiar with tech stack
-  - Finalize features & DB schema
-- Frontend:
-  - Wrap up Figma
-- Backend:
-  - Wrap up schema
-  - Set up DB access
-</details>
-
-<details closed>
-  <summary>  <strong> Week 3:</strong> </summary>
-  <br>
-- Frontend:
-  - Start implementing auth pages and Socket.io set up on client side
-  - Set up routes between basic pages
-- Backend:
-  - Set up Express server and integrate auth
-  - Set up Socket.io in backend
-</details>
-
-<details closed>
-  <summary>  <strong> Week 4:</strong> </summary>
-  <br>
-- Frontend:
-  - Continue making progress on pages: profile + story creation
-  - One person should focus on testing multiplayer capabilities 
-- Backend:
-  - CRUD operations for users + stories
-  - One person should focus on testing multiplayer capabilities
-</details>
-
-<details closed>
-  <summary>  <strong> Week 5:</strong> </summary>
-  <br>
- - General:
-  - Integrate multiplayer feature to see if it is doable
-- Frontend:
-  - Continue making progress on pages profile + story creation
-  - Develop UI for displaying and creative stories with multiple users
-- Backend:
-  - Implement API endpoints for creating and fetching real time story updates.
-  - Start on AI suggestions for story line
-</details>
-
-<details closed>
-  <summary>  <strong> Week 6-8: During and After Spring Break 🍀</strong> </summary>
-  <br>
-- Frontend:
-  - Develop UI to display AI-generated story suggestions, voting on story options,  and display results
-  - AI Visuals for story
-- Backend:
-  - Continue implementing endpoints to fetch story suggestions from OpenAI and Hugging Face APIs 
-  - Implement API endpoints for voting on story directions and calculating scores.
-  - AI Visuals for story
-
-</details>
-
-
-
-<details closed>
-  <summary>  <strong> Week 9/10: </strong> </summary>
-  <br>
-- General:
-  - Bug Fixes & Polish: Address any bugs, finalize UI/UX, and ensure the app is stable and ready for presentation.
-  - Final Testing: Conduct thorough testing of all features, focusing on user journeys and the core algorithm.
-  - Presentation: Prepare slides, script, and rehearse the demo. Ensure everyone is confident with their part of the presentation. Have funnnnn :D
-
-</details>
 
 
 
