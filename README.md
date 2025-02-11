@@ -79,20 +79,19 @@
 <details>
 **<summary>Tutorials ⏯️</summary>**
 
-* [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
-* [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
-* [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
-* [Web Notifications API for React](https://www.youtube.com/watch?v=mFRPpINFMz0)
-* [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
-* [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
-* [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
-* [Hugging Face Stable Diffusion](https://www.youtube.com/watch?v=kOBxiZpzYe0)
+- [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
+- [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht
+- [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
+- [Web Notifications API for React](https://www.youtube.com/watch?v=mFRPpINFMz0)
+- [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
+- [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
+- [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
+- [Hugging Face Stable Diffusion](https://www.youtube.com/watch?v=kOBxiZpzYe0)
 
 </details>
 
 <details>
-
-**<summary>Environment Setup 🧰</summary>**
+**<summary>Environment Setup ⚙️</summary>**
  - Frontend
    - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
@@ -114,7 +113,6 @@
 </details>
 
 <details>
-
 **<summary>General Resources 🕵️ </summary>**
  - [Success in ACM Projects](https://docs.google.com/document/d/18Zi3DrKG5e6g5Bojr8iqxIu6VIGl86YBSFlsnJnlM88/edit#heading=h.ky82xv3vtbpi)
   - [API Crash Course w/ timestamps](https://www.youtube.com/watch?v=GZvSYJDk-us)
