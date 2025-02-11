@@ -43,30 +43,105 @@
 <details closed>
   <summary>  <strong> Week 1: Setup ⚓ </strong> </summary>
   <br>
-
 - General:
-  - Assign roles for front-end and back-end development
-  - Discuss overall project scope, tech stack/options (React Native for frontend, AWS for backend)
+  - Assign roles and get to know each other!
+  - Discuss overall project scope, tech stack/options (if interested in AWS or using React Native instead)
   - Schedule meetings for weekly meetings
   - Start Low fidelity with everyone to get a vision of the app
 - Frontend:
-  - Start working on figma and be ready to show progress dev night
-  - Learn React Native/Flutter and decide which you wanna work with
+  - Start working on Figma and be ready to show progress dev night
+  - Explore tech stack and set up
 - Backend:
-  - Research AWS and begin setting up your environment (AWS EC2, S3).
-  - Start exploring database frameworks (e.g., MongoDB, DynamoDB).
-  - Explore Spotify API
-
+  - Explore tech stack and set up
 </details>
 
 <details closed>
-  <summary>  <strong> Week 9/10: Final Touches & Presentation Prep 💪📢 </strong> </summary>
+  <summary>  <strong> Week 1: </strong> </summary>
+  <br>
+- General:
+  - Assign roles and get to know each other!
+  - Discuss overall project scope, tech stack/options (if interested in AWS or using React Native instead)
+  - Schedule meetings for weekly meetings
+  - Start Low fidelity with everyone to get a vision of the app
+- Frontend:
+  - Start working on Figma
+  - Explore tech stack and set up
+- Backend:
+  - Explore tech stack and set up
+</details>
+
+<details closed>
+  <summary>  <strong> Week 2:</strong> </summary>
+  <br>
+- General:
+  - Get started on basic tasks
+  - Continue getting familiar with tech stack
+  - Finalize features & DB schema
+- Frontend:
+  - Wrap up Figma
+- Backend:
+  - Wrap up schema
+  - Set up DB access
+</details>
+
+<details closed>
+  <summary>  <strong> Week 3:</strong> </summary>
+  <br>
+- Frontend:
+  - Start implementing auth pages and Socket.io set up on client side
+  - Set up routes between basic pages
+- Backend:
+  - Set up Express server and integrate auth
+  - Set up Socket.io in backend
+</details>
+
+<details closed>
+  <summary>  <strong> Week 4:</strong> </summary>
+  <br>
+- Frontend:
+  - Continue making progress on pages: profile + story creation
+  - One person should focus on testing multiplayer capabilities 
+- Backend:
+  - CRUD operations for users + stories
+  - One person should focus on testing multiplayer capabilities
+</details>
+
+<details closed>
+  <summary>  <strong> Week 5:</strong> </summary>
+  <br>
+ - General:
+  - Integrate multiplayer feature to see if it is doable
+- Frontend:
+  - Continue making progress on pages profile + story creation
+  - Develop UI for displaying and creative stories with multiple users
+- Backend:
+  - Implement API endpoints for creating and fetching real time story updates.
+  - Start on AI suggestions for story line
+</details>
+
+<details closed>
+  <summary>  <strong> Week 6-8: During and After Spring Break 🍀</strong> </summary>
+  <br>
+- Frontend:
+  - Develop UI to display AI-generated story suggestions, voting on story options,  and display results
+  - AI Visuals for story
+- Backend:
+  - Continue implementing endpoints to fetch story suggestions from OpenAI and Hugging Face APIs 
+  - Implement API endpoints for voting on story directions and calculating scores.
+  - AI Visuals for story
+
+</details>
+
+
+
+<details closed>
+  <summary>  <strong> Week 9/10: </strong> </summary>
   <br>
 
 - General:
   - Bug Fixes & Polish: Address any bugs, finalize UI/UX, and ensure the app is stable and ready for presentation.
   - Final Testing: Conduct thorough testing of all features, focusing on user journeys and the core algorithm.
-  - Presentation: Prepare slides, script, and rehearse the demo. Ensure everyone is confident with their part of the presentation.
+  - Presentation: Prepare slides, script, and rehearse the demo. Ensure everyone is confident with their part of the presentation. Have funnnnn :D
 
 </details>
 
@@ -82,7 +157,6 @@
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
 - [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
 - [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
-- 
 - [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
 - [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
 - [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
