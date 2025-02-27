@@ -2,6 +2,7 @@ import { View, Text } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
+import { router } from 'expo-router';
 
 const Stories = () => {
   return (
@@ -15,7 +16,15 @@ const Stories = () => {
             textVariant="secondary"
             className="flex-1"
           />
-          <Button title="Join Story" bgVariant="primary" textVariant="primary" className="flex-1" />
+          <Button
+            title="Join Story"
+            bgVariant="primary"
+            textVariant="primary"
+            className="flex-1"
+            onPress={() => {
+              router.push('/(game)/join-game');
+            }}
+          />
         </View>
       </View>
     </SafeAreaView>
