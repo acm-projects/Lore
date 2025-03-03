@@ -17,7 +17,7 @@ const JoinGame = () => {
           </Text>
           <OtpInput
             numberOfDigits={6}
-            onTextChange={(text) => console.log(text)}
+            onTextChange={(text: any) => console.log(text)}
             theme={{ pinCodeTextStyle: { color: '#FFFFFF' } }}
           />
           <Button title="Join Game" bgVariant="primary" className="mt-6" />
