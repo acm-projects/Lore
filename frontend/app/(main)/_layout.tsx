@@ -4,7 +4,12 @@ import { House, UserRound, BookOpen } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'blue', headerShown: false }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#06D6A1',
+        headerShown: false,
+        tabBarStyle: { backgroundColor: '#1E1F22', borderColor: '#1E1F22', borderTopWidth: 5 },
+      }}>
       <Tabs.Screen
         name="stories"
         options={{
