@@ -14,6 +14,8 @@ module.exports = {
         backgroundSecondary: '#1E1F22',
         background: '#313338',
         backgroundText: '#FFFFFF',
+        backgroundAccent: '#1E1F22',
+        backgroundAccentText: '#FFFFFF',
       },
     },
   },
