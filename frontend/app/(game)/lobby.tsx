@@ -1,12 +1,16 @@
 import { View, Text, ScrollView } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import Button from '~/components/Button';
 import ProfileDisplay from '~/components/ProfileDisplay';
 
 const Lobby = () => {
   const { lobbyCode } = useLocalSearchParams();
+
+  const startGame = () => {
+    router.replace('/(game)/(play)/write');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -26,7 +30,13 @@ const Lobby = () => {
           textVariant="secondary"
           className="flex-1"
         />
-        <Button title="Start Game" bgVariant="primary" textVariant="primary" className="flex-1" />
+        <Button
+          title="Start Game"
+          bgVariant="primary"
+          textVariant="primary"
+          className="flex-1"
+          onPress={startGame}
+        />
       </View>
     </SafeAreaView>
   );
