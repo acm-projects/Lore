@@ -8,61 +8,63 @@ import { View,
          TouchableWithoutFeedback, 
          Keyboard, 
          ScrollView,
-         StyleSheet,
-         TouchableOpacity, } from 'react-native';
+         TouchableOpacity,} from 'react-native';
 
 const SignUp = () => {
     const styles = require('../globalStyles');
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView automaticallyAdjustKeyboardInsets={true} className="bg-background">
-                <SafeAreaView style={styles.screen}>
-                    <Image 
-                        source={require("assets/Logo 1.png")}
-                        style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
-                    </Image>
+            <View className="flex-1 bg-background">
+                <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Loginbg.png")}/> 
+                <ScrollView automaticallyAdjustKeyboardInsets={true} className="">
+                    <SafeAreaView className="justify-center items-center">
+                        <Image 
+                            source={require("assets/Logo 1.png")}
+                            style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
+                        </Image>
 
-                    <View style={styles.container}>
-                        <View className="items-center m-4">
-                            <Text style={styles.titleText}>
-                                Welcome to Lore!
-                            </Text>
-                            <Text style={[styles.secondaryText, {fontSize: 12}]}>
-                                Start your storytelling journey here.
-                            </Text>
-                        </View>
+                        <View style={styles.box}>
+                            <View className="items-center m-4">
+                                <Text className="font-jetbrainsmono-regular color-white">
+                                    Welcome to Lore!
+                                </Text>
+                                <Text style={[styles.secondaryText, {fontSize: 12}]}>
+                                    Start your storytelling journey here.
+                                </Text>
+                            </View>
 
-                        <View className="mb-4">
-                            <Text style={styles.secondaryText}>Name</Text>
-                            <TextInput style={styles.textInput}/>
-                        </View>
+                            <View className="mb-4">
+                                <Text style={styles.secondaryText}>Name</Text>
+                                <TextInput style={styles.textInput}/>
+                            </View>
 
-                        <View className="mb-4">
-                            <Text style={styles.secondaryText}>Email</Text>
-                            <TextInput style={styles.textInput}/>
-                        </View>
+                            <View className="mb-4">
+                                <Text style={styles.secondaryText}>Email</Text>
+                                <TextInput style={styles.textInput}/>
+                            </View>
 
-                        <View className="mb-4">
-                            <Text style={styles.secondaryText}>Password</Text>
-                            <TextInput style={styles.textInput}/>
-                        </View>
+                            <View className="mb-4">
+                                <Text style={styles.secondaryText}>Password</Text>
+                                <TextInput style={styles.textInput}/>
+                            </View>
 
-                        <View className="mb-4">
-                            <Text style={styles.secondaryText}> Confirm Password</Text>
-                            <TextInput style={styles.textInput}/>
-                        </View>
+                            <View className="mb-4">
+                                <Text style={styles.secondaryText}> Confirm Password</Text>
+                                <TextInput style={styles.textInput}/>
+                            </View>
 
-                        <View className="m-4">
-                            <TouchableOpacity style={styles.button} onPress={() => {router.push("/"); }}>
-                              <Text style={styles.buttonText}> Sign Up </Text>
-                            </TouchableOpacity>
-                            <Text style={[styles.linkText, {fontSize: 12}]} onPress={() => {router.push("/"); }}> 
-                                Already have an account? 
-                            </Text>
+                            <View className="m-4">
+                                <TouchableOpacity style={styles.button} onPress={() => {router.push("/"); }}>
+                                <Text style={styles.buttonText}> Sign Up </Text>
+                                </TouchableOpacity>
+                                <Text style={[styles.linkText, {fontSize: 12}]} onPress={() => {router.push("/"); }}> 
+                                    Already have an account? 
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-                </SafeAreaView>
-            </ScrollView>
+                    </SafeAreaView>
+                </ScrollView>
+            </View>
         </TouchableWithoutFeedback>
     )
 }

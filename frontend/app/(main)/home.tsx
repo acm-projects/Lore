@@ -1,13 +1,32 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import {View, 
+        Image, 
+        Text, 
+        ScrollView, 
+        TouchableWithoutFeedback, 
+        Keyboard } from 'react-native';
 import React from 'react';
+import {useIsFocused} from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { House, UserRound } from 'lucide-react-native';
+import Button from '~/components/Button';
+import { router } from 'expo-router';
 
 const Home = () => {
-  return (
-    <SafeAreaView>
+  const styles = require('../globalStyles') 
 
-    </SafeAreaView>
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}> 
+      <View className="flex-1 bg-background">
+        <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Homebg.png")} /> 
+          <ScrollView className="">
+            <SafeAreaView>
+              <Button title='Story' bgVariant='primary' onPress={() => {router.push('/(game)/story-view');}}>
+
+          </Button>
+        </SafeAreaView>
+        </ScrollView>
+      </View>
+         
+    </TouchableWithoutFeedback>
   );
 };
 

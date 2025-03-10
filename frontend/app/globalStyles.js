@@ -1,14 +1,24 @@
 'use strict';
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 module.exports = StyleSheet.create({
+
     screen: {
         flex:1,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#313338"
     },
-    container: {
+    bgImage: {
+        width: windowWidth,
+        height: windowHeight,
+        flex:1,
+        resizeMode: 'cover'
+    },
+    box: {
         width: "85%",
         paddingBottom: 0,
         borderRadius: 20,

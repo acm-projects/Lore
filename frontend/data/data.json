@@ -1,0 +1,37 @@
+     [
+         {
+            "id": 1,
+            "image": "assets/avatar1.png",
+            "text": "The party finds gold!"
+        },
+        
+        {
+            "id": 2,
+            "image": "assets/avatar2.png",
+            "text": "Kevin dies to a heart attack."
+        },
+
+        {
+            "id": 3,
+            "image": "assets/avatar1.png",
+            "text": "The party is forced to fight a giant sentient boulder."
+        },
+
+        {
+            "id": 4,
+            "image": "assets/avatar1.png",
+            "text": "Mellard can now speak with the dead!"
+        },
+
+        {
+            "id": 5,
+            "image": "assets/avatar1.png",
+            "text": "The party enters an abandoned dungeon."
+        },
+
+        {
+            "id": 6,
+            "image": "assets/avatar1.png",
+            "text": "The party cooks food from the slain monsters."
+        }
+    ]
