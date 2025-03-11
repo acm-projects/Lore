@@ -1,12 +1,12 @@
-import { View, Text, ScrollView } from 'react-native';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
-import Button from '~/components/Button';
-import ProfileDisplay from '~/components/ProfileDisplay';
+import { View, Text, ScrollView } from "react-native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
+import Button from "~/components/Button";
+import ProfileDisplay from "~/components/ProfileDisplay";
 
 const Lobby = () => {
-  const { lobbyCode } = useLocalSearchParams();
+  const { lobbyCode } = useLocalSearchParams(); // Get the lobby code
 
   return (
     <SafeAreaView className="flex-1 bg-background">

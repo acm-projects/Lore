@@ -1,10 +1,21 @@
-import { View, Text } from 'react-native';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Button from '~/components/Button';
-import { router } from 'expo-router';
+import { View, Text, Alert } from "react-native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Button from "~/components/Button";
+import { router } from "expo-router";
+import { socket } from "./socket"; // Import WebSocket connection
 
 const Stories = () => {
+  const createGameRoom = () => {
+    socket.emit("create_room", (response) => {
+      if (response.success) {
+        router.push(`/(game)/lobby?lobbyCode=${response.roomCode}`);
+      } else {
+        Alert.alert("Error", "Failed to create room. Try again.");
+      }
+    });
+  };
+
   return (
     <SafeAreaView className="bg-background flex-1">
       <View className="mx-3 flex flex-1 justify-between">
@@ -15,6 +26,7 @@ const Stories = () => {
             bgVariant="secondary"
             textVariant="secondary"
             className="flex-1"
+            onPress={createGameRoom} // Calls the function when button is pressed
           />
           <Button
             title="Join Story"
@@ -22,7 +34,7 @@ const Stories = () => {
             textVariant="primary"
             className="flex-1"
             onPress={() => {
-              router.push('/(game)/join-game');
+              router.push("/(game)/join-game");
             }}
           />
         </View>

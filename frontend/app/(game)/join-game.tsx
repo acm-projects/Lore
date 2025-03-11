@@ -1,20 +1,30 @@
-import { View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { OtpInput } from 'react-native-otp-entry';
 import Button from '~/components/Button';
 import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { socket } from '../(main)/socket'; // Import WebSocket connection
 
 const JoinGame = () => {
   const [code, setCode] = useState('');
 
   const joinGameWithCode = () => {
-    router.replace({
-      pathname: '/(game)/lobby',
-      params: {
-        lobbyCode: code,
-      },
+    if (code.length !== 6) {
+      Alert.alert("Invalid Code", "Please enter a 6-digit game code.");
+      return;
+    }
+
+    socket.emit("join_room", { room: code }, (response: { success: boolean; message?: string }) => {
+      if (response.success) {
+        router.replace({
+          pathname: '/(game)/lobby',
+          params: { lobbyCode: code },
+        });
+      } else {
+        Alert.alert("Error", response.message || "Failed to join the game.");
+      }
     });
   };
 
@@ -30,7 +40,7 @@ const JoinGame = () => {
         <ArrowLeft style={{ position: 'absolute', top: 50, left: 20 }} onPress={goBack} />
         <View className="mx-5">
           <Text className="mb-6 text-center text-4xl font-bold text-backgroundText">
-            Enter join code
+            Enter Join Code
           </Text>
           <OtpInput
             numberOfDigits={6}
