@@ -2,36 +2,42 @@
          {
             "id": 1,
             "image": "assets/avatar1.png",
-            "text": "The party finds gold!"
+            "text": "The party finds gold!",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         },
         
         {
             "id": 2,
             "image": "assets/avatar2.png",
-            "text": "Kevin dies to a heart attack."
+            "text": "Kevin dies to a heart attack.",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         },
 
         {
             "id": 3,
             "image": "assets/avatar1.png",
-            "text": "The party is forced to fight a giant sentient boulder."
+            "text": "The party is forced to fight a giant sentient boulder.",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         },
 
         {
             "id": 4,
             "image": "assets/avatar1.png",
-            "text": "Mellard can now speak with the dead!"
+            "text": "Mellard can now speak with the dead!",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         },
 
         {
             "id": 5,
             "image": "assets/avatar1.png",
-            "text": "The party enters an abandoned dungeon."
+            "text": "The party enters an abandoned dungeon.",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         },
 
         {
             "id": 6,
             "image": "assets/avatar1.png",
-            "text": "The party cooks food from the slain monsters."
+            "text": "The party cooks food from the slain monsters.",
+            "aiPrompt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin massa augue, ultricies a cursus id, hendrerit id nibh. Duis sit amet tortor sit amet mauris gravida semper vitae a elit. Vestibulum sagittis risus non nulla tincidunt porttitor. Aliquam vel erat dolor. Nulla aliquam tortor vel luctus condimentum. Donec vel diam sem. Praesent maximus turpis sit amet nibh finibus ornare. Quisque nulla erat, placerat non elit vitae, fringilla mattis leo. Sed in pharetra sem. Maecenas ante diam, ullamcorper in elementum at, feugiat gravida ipsum. In molestie condimentum massa, in luctus eros blandit a. Vivamus dignissim lacus turpis, at auctor tortor sagittis eget. Integer a ultrices libero. Vivamus sed lorem quis eros maximus posuere sed eget dolor."
         }
     ]

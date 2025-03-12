@@ -4,9 +4,9 @@ import {View,
         ScrollView, 
         SafeAreaView, 
         Image,
-        StatusBar } from 'react-native';
+        Animated } from 'react-native';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import PlotPoint from '~/components/PlotPoint';
 import components from "~/data/data.json";
 import Button from '~/components/Button';
@@ -28,6 +28,7 @@ const StoryView = () => {
                 count={component.id}
                 image={component.image}
                 text={component.text} 
+                story={component.aiPrompt}
                 />))}
             </View>
         </SafeAreaView>

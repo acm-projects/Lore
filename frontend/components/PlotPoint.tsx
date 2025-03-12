@@ -5,13 +5,13 @@ import { View,
          ScrollView,
          SafeAreaView,
          Image,
-         ImageBackground
+         TouchableOpacity
        } from 'react-native'
-import { Scroll } from 'lucide-react-native';
-
+import Collapsible from 'react-native-collapsible';
        
-  function PlotPoint(props: {count: any, image: string, text: string }) {
-    
+  function PlotPoint(props: {count: any, image: string, text: string, story: string}) 
+  {
+    let [isCollapsed, setCollapsed] = useState(true);
     let [isArrayAtEnd, setEnd] = useState(false);
 
     const fetchData = async () => {
@@ -22,6 +22,10 @@ import { Scroll } from 'lucide-react-native';
       }
     }
 
+    const toggleCollapsed = () => {
+      setCollapsed(!isCollapsed);
+    }
+
     useEffect(() => {
       fetchData()
     }, [])
@@ -29,14 +33,20 @@ import { Scroll } from 'lucide-react-native';
     return (
       <ScrollView className="flex-1 flex-col-reverse">
         <SafeAreaView>
-          <View className="items-center justify-center">
+          <View className="items-center justify-center w-full">
+
             {!isArrayAtEnd && <View className="bg-primaryAccent w-[25px] h-[40px]" />}
 
-            <View className="w-10/12 h-1/12 p-4 bg-backgroundSecondary flex flex-row rounded-lg">
+            <TouchableOpacity className="w-10/12 h-1/12 p-4 bg-backgroundSecondary flex flex-row rounded-t-lg" onPress={() => {toggleCollapsed()}}>
               <Image source={require("assets/avatar2.png")} className="w-[50px] h-[50px]"/>
               <Text className="color-white ml-2" style={{flex: 1, flexWrap: 'wrap'}}>{props.text}</Text> 
-            </View>
-            
+            </TouchableOpacity>
+
+            <Collapsible collapsed={isCollapsed}>
+              <View className="bg-background w-[312px] h-auto rounded-b-lg">
+                <Text className="color-white p-2" style={{flexWrap: 'wrap'}}> {props.story} </Text>
+              </View>
+            </Collapsible>
 
           </View>
         </SafeAreaView>

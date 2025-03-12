@@ -34,7 +34,7 @@ const SignUp = () => {
                             </View>
 
                             <View className="mb-4">
-                                <Text style={styles.secondaryText}>Name</Text>
+                                <Text style={styles.secondaryText}>Username</Text>
                                 <TextInput style={styles.textInput}/>
                             </View>
 

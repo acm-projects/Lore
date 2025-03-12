@@ -11,9 +11,9 @@ const Profile = () => {
       <Text>Profile</Text>
 
       <View className="flex w-full h-1/3">
-            <TouchableOpacity style={styles.button} onPress={() => {router.push("/"); }}>
-              <Text style={styles.buttonText}> Log Out </Text>
-            </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => {router.push("/"); }}>
+          <Text style={styles.buttonText}> Log Out </Text>
+        </TouchableOpacity>
       </View>
 
     </SafeAreaView>
