@@ -7,10 +7,10 @@ import GameBar from '~/components/GameBar';
 import { router } from 'expo-router';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(10);
 
   const onSubmit = () => {
-    if (timeRemaining === 0) {
+    if (timeRemaining === 1) {
       router.replace('/(game)/(play)/voting');
     } else {
       router.replace({
@@ -32,8 +32,8 @@ const Write = () => {
     <SafeAreaView className="flex-1 bg-background">
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={10}
+        initialRemainingTime={10}
         onUpdate={onUpdate}
       />
       <ScrollView

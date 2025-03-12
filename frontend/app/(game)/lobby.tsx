@@ -1,12 +1,20 @@
 import { View, Text, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import Button from '~/components/Button';
 import ProfileDisplay from '~/components/ProfileDisplay';
+import { useLobby } from '~/context/LobbyContext';
 
 const Lobby = () => {
   const { lobbyCode } = useLocalSearchParams();
+  const { setLobbyCode } = useLobby();
+
+  useEffect(() => {
+    if (lobbyCode) {
+      setLobbyCode(lobbyCode as string);
+    }
+  }, [lobbyCode]);
 
   const startGame = () => {
     router.replace('/(game)/(play)/write');
