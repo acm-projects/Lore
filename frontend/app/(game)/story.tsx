@@ -6,19 +6,19 @@ import { useLocalSearchParams, router } from "expo-router";
 import { socket } from "../(main)/socket";
 
 const Story = () => {
-  const { lobbyCode, prompt, story, finalRound, creator } = useLocalSearchParams();
+  const { lobbyCode, prompt, story, finalRound } = useLocalSearchParams();
   const [currentStory, setCurrentStory] = useState(story || "");
   const [winningPrompt, setWinningPrompt] = useState(prompt || "");
-  const [isCreator, setIsCreator] = useState(false);
+  const [continueCount, setContinueCount] = useState(0);
+  const [totalPlayers, setTotalPlayers] = useState(1);
+  const [hasPressedContinue, setHasPressedContinue] = useState(false);
 
   useEffect(() => {
-    // Set creator status
-    setIsCreator(socket.id === creator);
 
-    // Listen for updated story event
-    socket.on("story_ready", ({ story, prompt }) => {
-      setCurrentStory(story);
-      setWinningPrompt(prompt);
+    // Listen for updated continue count
+    socket.on("update_continue_count", ({ count, total }) => {
+      setContinueCount(count);
+      setTotalPlayers(total);
     });
 
     // Listen for global navigation to prompt.tsx
@@ -29,19 +29,22 @@ const Story = () => {
       });
     });
 
+    // Request current player count when entering
+    socket.emit("request_continue_count", lobbyCode);
+
     return () => {
       socket.off("story_ready");
+      socket.off("update_continue_count");
       socket.off("go_to_prompt");
     };
   }, [lobbyCode, finalRound]);
 
-  const handleNext = () => {
-    if (finalRound === "true") {
-      router.replace("/(main)/stories");
-    } else {
-      socket.emit("next_to_prompt", lobbyCode);
+  const handleContinue = () => {
+    if (!hasPressedContinue) {
+      setHasPressedContinue(true);
+      socket.emit("continue_pressed", lobbyCode);
     }
-  };
+  };  
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -60,11 +63,17 @@ const Story = () => {
           style={{ height: "70%", color: "black" }} // Makes text black & bigger textbox
         />
       </View>
-      {isCreator && (
-        <View className="mx-2 mb-2">
-          <Button title="Next" bgVariant="primary" textVariant="primary" onPress={handleNext} />
-        </View>
-      )}
+
+      <View className="mx-2 mb-2">
+        <Button 
+          title={`Continue ${continueCount}/${totalPlayers}`} 
+          bgVariant={hasPressedContinue ? "secondary" : "primary"} 
+          onPress={handleContinue} 
+          disabled={hasPressedContinue} 
+          className="text-black" //
+        />
+      </View>
+
     </SafeAreaView>
   );
 };

@@ -42,7 +42,9 @@ io.on("connection", (socket) => {
       winner: null,
       story: "",
       winningPrompts: [], // Store past winning prompts
-      round: 1 // Start from round 1
+      round: 1, // Start from round 1
+      continueCount: 0, // How many players pressed "Continue"
+      continuePressedBy: new Set(), // Tracks unique players who pressed "Continue"
     };
     console.log(`Room created: ${room}`);
 
@@ -169,22 +171,53 @@ io.on("connection", (socket) => {
     }
   });  
   
-  // Handle "Next" button click (only creator can trigger)
-  socket.on("next_to_prompt", (room) => {
-    if (!rooms[room] || socket.id !== rooms[room].creator) return;
-  
-    console.log(`🔄 Resetting for next round in room: ${room}`);
-  
-    // ✅ Reset prompts and votes
-    rooms[room].prompts = {};
-    rooms[room].votes = {};
-    rooms[room].totalVotes = 0;
-  
-    // Notify all players to move to prompt.tsx
-    io.to(room).emit("go_to_prompt");
+  // Track number of players who pressed "Continue"
+// Track number of players who pressed "Continue"
+socket.on("continue_pressed", (room) => {
+  if (!rooms[room]) return;
+
+  // Prevent duplicate presses
+  if (rooms[room].continuePressedBy.has(socket.id)) {
+    console.log(`⚠️ Player ${socket.id} already pressed Continue in room ${room}.`);
+    return;
+  }
+
+  // Mark this player as having pressed Continue
+  rooms[room].continuePressedBy.add(socket.id);
+  rooms[room].continueCount++;
+
+  const totalPlayers = rooms[room].users.length;
+  console.log(`📢 Continue Pressed in Room ${room}: ${rooms[room].continueCount}/${totalPlayers}`);
+
+  // Update all clients with current count
+  io.to(room).emit("update_continue_count", {
+    count: rooms[room].continueCount,
+    total: totalPlayers,
   });
-  
-  
+
+  // If all players pressed continue, reset and move to the next round
+  if (rooms[room].continueCount >= totalPlayers) {
+    console.log(`✅ All players in room ${room} pressed continue. Moving to next round.`);
+
+    // Reset for next round
+    rooms[room].continueCount = 0;
+    rooms[room].continuePressedBy.clear(); // Clear the set
+    rooms[room].prompts = {}; // Reset prompts
+    rooms[room].votes = {}; // Reset votes
+    rooms[room].totalVotes = 0;
+
+    io.to(room).emit("go_to_prompt");
+  }
+});
+
+// Send current continue count when a player enters the story screen
+socket.on("request_continue_count", (room) => {
+  if (!rooms[room]) return;
+  io.to(socket.id).emit("update_continue_count", { 
+    count: rooms[room].continueCount || 0, 
+    total: rooms[room].users.length 
+  });
+});
   
   socket.on("disconnect", () => {
     console.log(`User Disconnected: ${socket.id}`);
