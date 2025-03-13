@@ -23,7 +23,7 @@ const Write = () => {
     } else {
       router.replace({
         pathname: '/(game)/(play)/players-waiting',
-        params: { timeRemaining: timeRemaining },
+        params: { timeRemaining: timeRemaining, phase: 'prompts' },
       });
     }
   };

@@ -17,9 +17,9 @@ const AIGen = () => {
     "The villain reveals their master plan and the hero's true identity. He then steps back in fear waiting for death by a thousand cuts. This is not the end though, the villian continues to berate the hero. This nonstop flurry of insults baffles the hero.";
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="max-h-full flex-1 bg-background">
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
-      <View className="mt-4 flex h-full items-center justify-around px-6">
+      <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
         {/* Plot Point Winner*/}
         <View className="flex w-full flex-row rounded-lg border-2 border-primary bg-backgroundAccent p-4">
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
@@ -33,11 +33,11 @@ const AIGen = () => {
         </View>
 
         {/* AI Text */}
-        <ScrollView className="rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
+        <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
           <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{story}</Text>
         </ScrollView>
 
-        <View className="itmes-center mt-4 flex-1 flex-row justify-center">
+        <View className="itmes-center mt-4 flex-[0.2] flex-row justify-center">
           {/*<View className="flex-1">
             <Image
               source={require('../../../assets/lore-guy.png')}

@@ -8,7 +8,8 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [selectedId, setSelectedId] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
   const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
 
@@ -46,12 +47,19 @@ const Voting = () => {
   }, [lobbyCode]);
 
   useEffect(() => {
-    if (!prompts[selectedId]) return;
+    if (selectedId === -1) return;
     console.log(`🗳 Submitting vote for: "${prompts[selectedId]}"`);
     socket.emit('submit_vote', { room: lobbyCode, votedPrompt: prompts[selectedId].prompt });
 
-    router.replace('/(game)/(play)/ai-gen');
+    router.replace({
+      pathname: '/(game)/(play)/players-waiting',
+      params: { timeRemaining: timeRemaining, phase: 'story' },
+    });
   }, [selectedId]);
+
+  const onUpdate = (remainingTime: number) => {
+    setTimeRemaining(remainingTime);
+  };
 
   const onTimerEnd = () => {
     router.replace('/(game)/(play)/ai-gen');
@@ -59,7 +67,13 @@ const Voting = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <GameBar onComplete={onTimerEnd} duration={10} initialRemainingTime={10} isAbsolute={false} />
+      <GameBar
+        onComplete={onTimerEnd}
+        duration={10}
+        initialRemainingTime={10}
+        isAbsolute={false}
+        onUpdate={onUpdate}
+      />
       <Text className="mt-6 text-center text-5xl font-bold text-backgroundText">Vote Now</Text>
       <Text className="mt-3 text-center text-3xl font-bold text-backgroundAccentText">
         Choose a Player’s Plot Point
