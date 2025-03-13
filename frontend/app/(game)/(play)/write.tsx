@@ -5,11 +5,19 @@ import InputField from '~/components/InputField';
 import Button from '~/components/Button';
 import GameBar from '~/components/GameBar';
 import { router } from 'expo-router';
+import { socket } from '~/socket';
+import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
   const [timeRemaining, setTimeRemaining] = useState(10);
+  const [prompt, setPrompt] = useState('');
+  const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
+    if (prompt.trim() === '') return;
+
+    socket.emit('submit_prompt', { room: lobbyCode, prompt });
+
     if (timeRemaining === 1) {
       router.replace('/(game)/(play)/voting');
     } else {
@@ -47,7 +55,12 @@ const Write = () => {
             Create a plot point (Keep it short!)
           </Text>
           <View className="w-full">
-            <InputField multiline={true} numberOfLines={4} />
+            <InputField
+              multiline={true}
+              numberOfLines={4}
+              value={prompt}
+              onChangeText={setPrompt}
+            />
             <Button
               title="Submit"
               bgVariant="primary"

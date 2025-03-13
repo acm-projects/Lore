@@ -3,8 +3,13 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
+import { useLobby } from '~/context/LobbyContext';
+import { useLocalSearchParams } from 'expo-router';
 
 const AIGen = () => {
+  const { lobbyCode } = useLobby();
+  const { prompt, story } = useLocalSearchParams();
+
   const winnerAvatar = require('../../../assets/avatar1.png');
   const winnerPlotPoint = 'The hero discovers a hidden treasure map';
 
@@ -22,14 +27,14 @@ const AIGen = () => {
           </View>
           <View className="flex-1 px-3">
             <Text className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
-              {winnerPlotPoint}
+              {prompt}
             </Text>
           </View>
         </View>
 
         {/* AI Text */}
         <ScrollView className="rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
-          <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{AIText}</Text>
+          <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{story}</Text>
         </ScrollView>
 
         <View className="itmes-center mt-4 flex-1 flex-row justify-center">

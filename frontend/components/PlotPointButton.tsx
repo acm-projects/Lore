@@ -60,6 +60,8 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
   onPress,
   style,
 }) => {
+  const avatarImage = require('~/assets/avatar1.png');
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -69,7 +71,7 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
       <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
         <Image
           //source={typeof avatar === 'string' ? { uri: avatar } : avatar}
-          source={require('../../../assets/avatar1.png')}
+          source={avatarImage}
           className="h-full w-full"
           resizeMode="cover"
         />

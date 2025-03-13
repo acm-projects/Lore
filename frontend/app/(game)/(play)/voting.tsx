@@ -1,12 +1,16 @@
 import { View, Text, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import PlotPointButton from '~/components/PlotPointButton';
 import { router } from 'expo-router';
+import { useLobby } from '~/context/LobbyContext';
+import { socket } from '~/socket';
 
 const Voting = () => {
   const [selectedId, setSelectedId] = useState(0);
+  const { lobbyCode } = useLobby();
+  const [prompts, setPrompts] = useState<{ id: number; plotPoint: string; votes: number }[]>([]);
 
   const plotPoints = [
     {
@@ -22,6 +26,37 @@ const Voting = () => {
       votes: 5,
     },
   ];
+
+  useEffect(() => {
+    console.log('📡 Requesting prompts for voting...');
+    socket.emit('request_prompts', { room: lobbyCode });
+
+    socket.on('receive_prompts', (receivedPrompts) => {
+      if (!Array.isArray(receivedPrompts)) {
+        console.error('❌ Invalid prompts received:', receivedPrompts);
+        return;
+      }
+      console.log('✅ Prompts received:', receivedPrompts);
+      setPrompts(
+        receivedPrompts.map((prompt, index) => ({
+          id: index,
+          plotPoint: prompt,
+          votes: 1,
+        }))
+      );
+    });
+
+    return () => {
+      socket.off('receive_prompts');
+    };
+  }, [lobbyCode]);
+
+  useEffect(() => {
+    console.log(`🗳 Submitting vote for: "${prompts[selectedId]}"`);
+    socket.emit('submit_vote', { room: lobbyCode, votedPrompt: prompts[selectedId].plotPoint });
+
+    router.replace('/(game)/(play)/ai-gen');
+  }, [selectedId]);
 
   const onTimerEnd = () => {
     router.replace('/(game)/(play)/ai-gen');

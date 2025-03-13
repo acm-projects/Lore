@@ -4,7 +4,10 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 type LobbyContextType = {
   lobbyCode: string;
   plotPoints: string[];
-  players: string[];
+  players: { id: string }[];
+  creatorId: string | null;
+  setCreator: (id: string) => void;
+  setPlayers: React.Dispatch<React.SetStateAction<{ id: string }[]>>;
   addPlayer: (player: string) => void;
   removePlayer: (player: string) => void;
   clearPlayers: () => void;
@@ -27,16 +30,22 @@ type LobbyProviderProps = {
 export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [lobbyCode, setLobbyCode] = useState<string>('');
   const [plotPoints, setPlotPoints] = useState<string[]>([]);
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<{ id: string }[]>([]);
+  const [creatorId, setCreatorId] = useState<string | null>(null);
+
+  // Helper function to set the creator ID
+  const setCreator = (id: string) => {
+    setCreatorId(id);
+  };
 
   // Helper function to add a player
   const addPlayer = (player: string) => {
-    setPlayers((prevPlayers) => [...prevPlayers, player]);
+    setPlayers((prevPlayers) => [...prevPlayers, { id: player }]);
   };
 
   // Helper function to remove a player
   const removePlayer = (player: string) => {
-    setPlayers((prevPlayers) => prevPlayers.filter((p) => p !== player));
+    setPlayers((prevPlayers) => prevPlayers.filter((p) => p.id !== player));
   };
 
   // Helper function to clear all players
@@ -65,6 +74,9 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
     players,
     setLobbyCode,
     setPlotPoints,
+    creatorId,
+    setPlayers,
+    setCreator,
     addPlotPoint,
     removePlotPoint,
     clearPlotPoints,
