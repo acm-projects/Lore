@@ -10,9 +10,9 @@ import { socket } from '~/socket';
 const Voting = () => {
   const [selectedId, setSelectedId] = useState(0);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ id: number; plotPoint: string; votes: number }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
 
-  const plotPoints = [
+  /*const plotPoints = [
     {
       id: 1,
       //avatar: require('../../../assets/avatar1.png'),
@@ -25,7 +25,7 @@ const Voting = () => {
       plotPoint: 'The villain reveals their master plan',
       votes: 5,
     },
-  ];
+  ];*/
 
   useEffect(() => {
     console.log('📡 Requesting prompts for voting...');
@@ -37,13 +37,7 @@ const Voting = () => {
         return;
       }
       console.log('✅ Prompts received:', receivedPrompts);
-      setPrompts(
-        receivedPrompts.map((prompt, index) => ({
-          id: index,
-          plotPoint: prompt,
-          votes: 1,
-        }))
-      );
+      setPrompts(receivedPrompts);
     });
 
     return () => {
@@ -52,8 +46,9 @@ const Voting = () => {
   }, [lobbyCode]);
 
   useEffect(() => {
+    if (!prompts[selectedId]) return;
     console.log(`🗳 Submitting vote for: "${prompts[selectedId]}"`);
-    socket.emit('submit_vote', { room: lobbyCode, votedPrompt: prompts[selectedId].plotPoint });
+    socket.emit('submit_vote', { room: lobbyCode, votedPrompt: prompts[selectedId].prompt });
 
     router.replace('/(game)/(play)/ai-gen');
   }, [selectedId]);
@@ -71,14 +66,14 @@ const Voting = () => {
       </Text>
       <ScrollView className="flex-1 px-5 py-10" contentContainerStyle={{ flexGrow: 1, gap: 10 }}>
         <View className="gap-3 p-4">
-          {plotPoints.map((item) => (
+          {prompts.map((item, index) => (
             <PlotPointButton
-              key={item.id}
+              key={index}
               //avatar={item.avatar}
-              plotPoint={item.plotPoint}
-              votes={item.votes}
-              isSelected={selectedId === item.id}
-              onPress={() => setSelectedId(item.id)}
+              plotPoint={item.prompt}
+              votes={1}
+              isSelected={selectedId === index}
+              onPress={() => setSelectedId(index)}
             />
           ))}
         </View>
