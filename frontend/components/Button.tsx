@@ -68,13 +68,14 @@ const Button = ({
       className={`flex flex-row items-center justify-center rounded-full ${getBgVariantStyle(bgVariant)} ${className}`}
       disabled={disabled}>
       {IconLeft && <IconLeft />}
-      {isLoading ? (
-        <ActivityIndicator color="white" className="my-3" />
-      ) : (
-        <Text className={`my-3 text-lg font-bold ${getTextVariantStyle(textVariant)}`}>
-          {title}
-        </Text>
-      )}
+      {title &&
+        (isLoading ? (
+          <ActivityIndicator color="white" className="my-3" />
+        ) : (
+          <Text className={`my-3 text-lg font-bold ${getTextVariantStyle(textVariant)}`}>
+            {title}
+          </Text>
+        ))}
       {IconRight && <IconRight />}
     </TouchableOpacity>
   );
