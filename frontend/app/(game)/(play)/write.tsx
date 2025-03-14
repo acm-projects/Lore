@@ -9,7 +9,7 @@ import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [timeRemaining, setTimeRemaining] = useState(60);
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
 
