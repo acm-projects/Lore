@@ -8,7 +8,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: '#06D6A1',
         headerShown: false,
-        tabBarStyle: { backgroundColor: '#1E1F22', borderColor: '#1E1F22', borderTopWidth: 5 },
+        tabBarStyle: { backgroundColor: '#1E1F22', borderColor: '#1E1F22', borderTopWidth: 5},
       }}>
       <Tabs.Screen
         name="stories"
@@ -18,7 +18,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <House size={28} color={color} />,
