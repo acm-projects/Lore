@@ -16,10 +16,11 @@ const PlayLayout = () => {
         <Stack.Screen name="players-waiting" />
         <Stack.Screen name="voting" />
         <Stack.Screen name="ai-gen" />
+        <Stack.Screen name="end-screen" />
       </Stack>
       <Modal isVisible={isVisible} animationIn="slideInLeft" animationOut="slideOutLeft">
-        <View className="bg-backgroundSecondary flex h-[100px] w-full flex-row items-center justify-between pt-4">
-          <View className="bg-primaryAccent h-[40px] w-[50px] items-center justify-center rounded-r-lg">
+        <View className="flex h-[100px] w-full flex-row items-center justify-between bg-backgroundSecondary pt-4">
+          <View className="h-[40px] w-[50px] items-center justify-center rounded-r-lg bg-primaryAccent">
             <Undo2
               color="white"
               onPress={() => {
