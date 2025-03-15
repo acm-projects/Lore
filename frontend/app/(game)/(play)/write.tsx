@@ -9,7 +9,7 @@ import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(60);
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
 
@@ -40,8 +40,8 @@ const Write = () => {
     <SafeAreaView className="flex-1 bg-background">
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={60}
+        initialRemainingTime={60}
         onUpdate={onUpdate}
       />
       <ScrollView

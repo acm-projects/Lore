@@ -35,7 +35,11 @@ const PlayersWaiting = () => {
 
         router.replace({
           pathname: '/(game)/(play)/ai-gen',
-          params: { prompt, story },
+          params: { 
+            prompt, 
+            story, 
+            finalRound: finalRound ? "true" : "false"  // ✅ Convert boolean to string for safe passing
+          },
         });
       });
     }
