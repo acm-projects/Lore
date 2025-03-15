@@ -201,6 +201,15 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
 
     // Notify all players to move to prompt.tsx
     io.to(room).emit("go_to_prompt");
+  }
+});
+
+// Send current continue count when a player enters the story screen
+socket.on("request_continue_count", (room) => {
+  if (!rooms[room]) return;
+  io.to(socket.id).emit("update_continue_count", { 
+    count: rooms[room].continueCount || 0, 
+    total: rooms[room].users.length 
   });
 
   // Handle "Continue" button press
