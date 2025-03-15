@@ -4,6 +4,12 @@
     "slug": "lore",
     "version": "1.0.0",
 
+    "fonts": [
+      {
+        "asset": "./assets/fonts/JetBrainsMono-Regular.ttf",
+        "name": "Regular"
+      } ],
+
     "scheme": "lore",
     "web": {
       "bundler": "metro",
