@@ -25,7 +25,7 @@ const SignUp = () => {
 
                         <View style={styles.box}>
                             <View className="items-center m-4">
-                                <Text className="font-jetbrainsmono-regular color-white">
+                                <Text className="color-white" style={{fontSize: 18}}>
                                     Welcome to Lore!
                                 </Text>
                                 <Text style={[styles.secondaryText, {fontSize: 12}]}>
@@ -68,5 +68,4 @@ const SignUp = () => {
         </TouchableWithoutFeedback>
     )
 }
-
 export default SignUp;

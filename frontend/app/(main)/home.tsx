@@ -2,6 +2,7 @@ import {View,
         Image, 
         Text, 
         ScrollView, 
+        StatusBar,
         TouchableWithoutFeedback, 
         Keyboard } from 'react-native';
 import React from 'react';
@@ -17,14 +18,20 @@ const Home = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}> 
       <View className="flex-1 bg-background">
-        <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Homebg.png")} /> 
-          <ScrollView className="">
-            <SafeAreaView>
-              <Button title='Story' bgVariant='primary' onPress={() => {router.push('/(game)/story-view')}} />
-        </SafeAreaView>
+        <StatusBar />
+        <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute', opacity: .5}} source={require("assets/Homebg.png")} /> 
+        <View className="w-full h-[150px] pt-4 bg-backgroundSecondary justify-between items-center">
+          <Image 
+              source={require("assets/Logo 1.png")}
+              style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
+          </Image>
+        </View>
+        <ScrollView>
+          <SafeAreaView>
+            <Button title='Story' bgVariant='primary' onPress={() => {router.push('/(game)/story-view')}} />
+         </SafeAreaView>
         </ScrollView>
-      </View>
-         
+      </View>   
     </TouchableWithoutFeedback>
   );
 };
