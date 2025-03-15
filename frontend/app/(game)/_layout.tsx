@@ -1,11 +1,14 @@
 import { Stack } from 'expo-router';
+import { LobbyProvider } from '~/context/LobbyContext';
 
 const GameLayout = () => {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="join-game" />
-      <Stack.Screen name="lobby" />
-    </Stack>
+    <LobbyProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="join-game" />
+        <Stack.Screen name="lobby" />
+      </Stack>
+    </LobbyProvider>
   );
 };
 
