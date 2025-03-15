@@ -10,13 +10,16 @@ import { socket } from '~/socket';
 
 const AIGen = () => {
   const { lobbyCode } = useLobby();
-  const { prompt, story, finalRound } = useLocalSearchParams();
+  const { prompt, story, round } = useLocalSearchParams();
   const router = useRouter(); // ✅ Initialize router
 
   const [continueCount, setContinueCount] = useState(0);
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [hasPressedContinue, setHasPressedContinue] = useState(false);
   const winnerAvatar = require('../../../assets/avatar1.png');
+
+  // ✅ Convert round to a number
+  const roundNumber = round ? parseInt(round as string, 10) : 1;
 
   useEffect(() => {
     // Listen for updated continue count
@@ -28,8 +31,8 @@ const AIGen = () => {
     // Listen for global navigation to write.tsx
     socket.on('go_to_prompt', () => {
       console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
-      if (finalRound) {
-        router.dismissTo('/(main)/stories');
+      if (roundNumber >= 5) {
+        router.replace('/(main)/stories'); // ✅ Corrected navigation
       } else {
         router.replace('/(game)/(play)/write');
       }
@@ -42,7 +45,7 @@ const AIGen = () => {
       socket.off('update_continue_count');
       socket.off('go_to_prompt');
     };
-  }, [lobbyCode, finalRound]);
+  }, [lobbyCode]); // ✅ Removed `finalRound` from dependencies
 
   const handleContinue = () => {
     if (!hasPressedContinue) {

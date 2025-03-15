@@ -2,21 +2,21 @@ import { View, Text, ScrollView } from 'react-native';
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
-import Profile from '~/app/(main)/profile';
 import ProfileDisplay from '~/components/ProfileDisplay';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';  // ✅ Correct import
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const PlayersWaiting = () => {
+  const router = useRouter();  // ✅ Use router properly
   const params = useLocalSearchParams();
   const phase = params.phase;
   const { lobbyCode, addPlotPoint } = useLobby();
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
+  const round = params.round ? parseInt(params.round as string) : 1;  // ✅ Extract round safely
 
   const onTimerEnd = () => {
-    //For now redirect to voting
-    router.replace('/(game)/(play)/voting');
+    router.replace('/(game)/(play)/voting');  // ✅ Fixed router usage
   };
 
   useEffect(() => {
@@ -28,8 +28,8 @@ const PlayersWaiting = () => {
         router.replace('/(game)/(play)/voting');
       });
     } else if (phase === 'story') {
-      socket.on('story_ready', ({ prompt, story, finalRound }) => {
-        console.log("✅ Received 'story_ready' event. Moving to story screen.");
+      socket.on('story_ready', ({ prompt, story, round }) => {  // ✅ Extract round from event
+        console.log(`✅ Received 'story_ready' event. Moving to story screen (Round: ${round}).`);
 
         addPlotPoint({ winningPlotPoint: prompt, story });
 
@@ -38,13 +38,12 @@ const PlayersWaiting = () => {
           params: { 
             prompt, 
             story, 
-            finalRound: finalRound ? "true" : "false"  // ✅ Convert boolean to string for safe passing
+            round: round.toString(),  // ✅ Ensure round is passed as a string
           },
         });
       });
     }
 
-    // Cleanup event listeners when unmounting or re-rendering
     return () => {
       console.log('🧹 Cleaning up event listeners');
       socket.off('prompts_ready');

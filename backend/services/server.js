@@ -209,7 +209,7 @@ io.on("connection", (socket) => {
       io.to(room).emit("story_ready", {
         prompt: winningPrompt,
         story: rooms[room].story,
-        finalRound: rooms[room].round >= 5,
+        round: rooms[room].round,
         creatorId: rooms[room].creator,
         playerWins: rooms[room].playerWins, // ✅ Send player wins to frontend
       });
