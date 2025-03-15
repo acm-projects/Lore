@@ -31,7 +31,7 @@ const PlayersWaiting = () => {
       socket.on('story_ready', ({ prompt, story, finalRound }) => {
         console.log("✅ Received 'story_ready' event. Moving to story screen.");
 
-        addPlotPoint(story);
+        addPlotPoint({ winningPlotPoint: prompt, story });
 
         router.replace({
           pathname: '/(game)/(play)/ai-gen',

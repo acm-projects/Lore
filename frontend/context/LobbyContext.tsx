@@ -1,9 +1,14 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+type PlotPoint = {
+  winningPlotPoint: string;
+  story: string;
+};
+
 // Define the shape of our context state
 type LobbyContextType = {
   lobbyCode: string;
-  plotPoints: string[];
+  plotPoints: PlotPoint[];
   players: { id: string }[];
   creatorId: string | null;
   setCreator: (id: string) => void;
@@ -12,8 +17,8 @@ type LobbyContextType = {
   removePlayer: (player: string) => void;
   clearPlayers: () => void;
   setLobbyCode: (code: string) => void;
-  setPlotPoints: (points: string[]) => void;
-  addPlotPoint: (point: string) => void;
+  setPlotPoints: (points: PlotPoint[]) => void;
+  addPlotPoint: (plotPoint: PlotPoint) => void;
   removePlotPoint: (index: number) => void;
   clearPlotPoints: () => void;
 };
@@ -29,7 +34,7 @@ type LobbyProviderProps = {
 // Provider component
 export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [lobbyCode, setLobbyCode] = useState<string>('');
-  const [plotPoints, setPlotPoints] = useState<string[]>([]);
+  const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
   const [players, setPlayers] = useState<{ id: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
 
@@ -53,8 +58,8 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
     setPlayers([]);
   };
   // Helper function to add a single plot point
-  const addPlotPoint = (point: string) => {
-    setPlotPoints((prevPoints) => [...prevPoints, point]);
+  const addPlotPoint = (plotPoint: PlotPoint) => {
+    setPlotPoints((prevPoints) => [...prevPoints, plotPoint]);
   };
 
   // Helper function to remove a plot point
