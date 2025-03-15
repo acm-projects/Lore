@@ -72,7 +72,7 @@ const AIGen = () => {
 
         {/* AI Generated Story */}
         <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
-          <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{story}</Text>
+          <Text className="text-center text-2xl font-bold text-backgroundText">{story}</Text>
         </ScrollView>
 
         <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
