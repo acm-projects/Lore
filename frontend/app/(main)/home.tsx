@@ -7,15 +7,24 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
 import { router } from 'expo-router';
 import { FaceIcon } from '@radix-ui/react-icons';
+import { Asset } from 'expo-asset';
 
 const Home = () => {
   const styles = require('../globalStyles');
+
+  useEffect(() => {
+    async function loadGifs() {
+      await Asset.loadAsync(require('assets/bg2.gif'));
+    }
+
+    loadGifs();
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
