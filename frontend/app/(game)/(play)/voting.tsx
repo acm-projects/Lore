@@ -69,8 +69,8 @@ const Voting = () => {
     <SafeAreaView className="flex-1 bg-background">
       <GameBar
         onComplete={onTimerEnd}
-        duration={10}
-        initialRemainingTime={10}
+        duration={60}
+        initialRemainingTime={60}
         isAbsolute={false}
         onUpdate={onUpdate}
       />
