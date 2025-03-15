@@ -67,31 +67,25 @@ io.on("connection", (socket) => {
 
   // Join an existing room
   socket.on("join_room", ({ room }, callback) => {
-    if (!rooms[room]) {
-      console.log(`Attempted to join invalid room: ${room}`);
-      if (typeof callback === "function") {
-        callback({ success: false, message: "Invalid room code" });
-      }
-      return;
-    }
-
-    // Ensure the user is not already in the room
-    const isAlreadyInRoom = rooms[room].users.some(
-      (user) => user.id === socket.id
-    );
-    if (isAlreadyInRoom) {
-      console.log(`⚠️ User ${socket.id} is already in room ${room}.`);
-      return;
-    }
+    if (!rooms[room]) return;
 
     socket.join(room);
-    rooms[room].users.push({ id: socket.id });
+    const isAlreadyInRoom = rooms[room].users.some(user => user.id === socket.id);
+    
+    if (!isAlreadyInRoom) {
+      rooms[room].users.push({ id: socket.id, currentScreen: "lobby" }); // ✅ Default screen is lobby
+    }
 
-    console.log(`User ${socket.id} joined room ${room}`);
+    io.to(room).emit("update_users", rooms[room].users);
+  });
 
-    // Send back creatorId to client
-    if (typeof callback === "function") {
-      callback({ success: true, creatorId: rooms[room].creator });
+  // ✅ NEW: Update player screen status when they switch screens
+  socket.on("update_screen", ({ room, screen }) => {
+    if (!rooms[room]) return;
+
+    const player = rooms[room].users.find(user => user.id === socket.id);
+    if (player) {
+      player.currentScreen = screen;
     }
 
     io.to(room).emit("update_users", rooms[room].users);
