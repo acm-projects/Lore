@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
+import { Animated, Dimensions } from 'react-native';
 
 type PlotPoint = {
   winningPlotPoint: string;
@@ -9,6 +10,8 @@ type PlotPoint = {
 type LobbyContextType = {
   lobbyCode: string;
   plotPoints: PlotPoint[];
+  isVisible: boolean;
+  toggleVisible: () => void;
   players: { id: string }[];
   creatorId: string | null;
   setCreator: (id: string) => void;
@@ -37,6 +40,18 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
   const [players, setPlayers] = useState<{ id: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+
+  const animationValue = useRef(new Animated.Value(0)).current;
+  let [isVisible, setVisible] = useState(false);
+
+  const toggleVisible = () => {
+    setVisible(!isVisible);
+    Animated.timing(animationValue, {
+      toValue: isVisible ? 0 : Dimensions.get('window').width,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
 
   // Helper function to set the creator ID
   const setCreator = (id: string) => {
@@ -76,6 +91,8 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const value = {
     lobbyCode,
     plotPoints,
+    isVisible,
+    toggleVisible,
     players,
     setLobbyCode,
     setPlotPoints,

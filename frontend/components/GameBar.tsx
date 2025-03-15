@@ -25,10 +25,11 @@ const GameBar = ({
   headerText,
 }: GameBarProps) => {
   const ContentWrapper = isAbsolute ? SafeAreaView : View;
-  const { lobbyCode } = useLobby();
+  const { lobbyCode, toggleVisible } = useLobby();
 
   const onStoryPress = () => {
-    router.push('/(game)/(play)/story-view');
+    toggleVisible();
+    //router.push('/(game)/(play)/story-view');
   };
 
   return (
