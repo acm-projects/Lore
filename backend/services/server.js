@@ -43,15 +43,6 @@ io.on("connection", (socket) => {
 
   // Generate a Numeric Game Code
   socket.on("create_room", (callback) => {
-    const existingRoom = Object.keys(rooms).find(
-      (room) => rooms[room].creator === socket.id
-    );
-
-    if (existingRoom) {
-      console.log(`⚠️ Player ${socket.id} already has room ${existingRoom}`);
-      return callback({ success: true, roomCode: existingRoom });
-    }
-
     const room = Math.floor(100000 + Math.random() * 900000).toString();
     rooms[room] = {
       users: [],
