@@ -26,6 +26,17 @@ const io = new Server(server, {
 });
 
 const rooms = {}; // Store game room data
+const getRankings = (room) => {
+  if (!rooms[room]) return [];
+
+  return Object.entries(rooms[room].playerWins)
+    .map(([playerId, wins]) => {
+      let player = rooms[room].users.find(user => user.id === playerId);
+      return { name: player?.name || "Unknown", wins };
+    })
+    .sort((a, b) => b.wins - a.wins); // Sort in descending order
+};
+
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
@@ -53,7 +64,8 @@ io.on("connection", (socket) => {
       storyHistory: [],
       round: 0,
       continueCount: 0,
-      continuePressedBy: new Set()
+      continuePressedBy: new Set(),
+      playerWins: {}
     };
   
     console.log(`Room created: ${room}`);
@@ -146,6 +158,9 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
     rooms[room].winner = winnerName;
     rooms[room].winningPrompts.push(winningPrompt);
 
+    // ✅ Track player wins
+    rooms[room].playerWins[winnerId] = (rooms[room].playerWins[winnerId] || 0) + 1;
+
     console.log(`🏆 Winner of round ${rooms[room].round}: ${winnerName} with prompt: "${winningPrompt}"`);
     console.log(`📡 Sending AI request to expand the story...`);
 
@@ -159,7 +174,7 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
         let newStoryPart = response.data.story;
 
         // ✅ Limit AI response to 3 paragraphs
-        let paragraphs = newStoryPart.split("\n\n").slice(0, 3).join("\n\n");
+        let paragraphs = newStoryPart.split("\n\n").slice(0, 4).join("\n\n");
 
         // ✅ Save only the latest AI response
         rooms[room].story = paragraphs;
@@ -171,7 +186,7 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
         console.error("❌ AI generation error:", error);
     }
 
-    // ✅ Now increment round BEFORE checking finalRound
+    // ✅ Increment round before checking finalRound
     rooms[room].round++;
 
     console.log(`🚀 Emitting "story_ready" event for room: ${room}, Round: ${rooms[room].round}`);
@@ -179,11 +194,13 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
     io.to(room).emit("story_ready", { 
         prompt: winningPrompt, 
         story: rooms[room].story, 
-        finalRound: rooms[room].round >= 5, // ✅ Now this will work correctly
+        finalRound: rooms[room].round >= 5, 
         creatorId: rooms[room].creator,
+        playerWins: rooms[room].playerWins // ✅ Send player wins to frontend
     });
   }
 });
+
 
 
 // Send current continue count when a player enters the story screen
