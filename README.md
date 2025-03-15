@@ -141,14 +141,8 @@
 * Export and Downloading stories to be shared
 
 
-
-
-
-
-
-
 ## Tech Stack & Resources 💻
-#### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js, Express.js, Vue.js
+#### DynamoDB, AWS Bedrock, Stable Diffusion, Socket.io, Node.js, Express.js, React Native + Expo
 
 
 <details>
@@ -168,9 +162,7 @@
 **<summary>Environment Setup ⚙️</summary>**
  
  - Frontend Set Up
-   - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
-   - [Firebase Auth in Vue](https://www.freecodecamp.org/news/how-to-add-authentication-to-a-vue-app-using-firebase/)
    - [Git](https://git-scm.com/downloads)
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
@@ -180,7 +172,6 @@
    - [Node + Express](https://daily.dev/blog/setup-nodejs-express-project-a-beginners-guide)
    - [Socket.IO](https://socket.io/docs/v4/server-installation/)
    - [Firebase](https://firebase.google.com/docs/web/setup)
-   - [OpenAI](https://platform.openai.com/docs/quickstart)
    - [Git](https://git-scm.com/downloads)
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
