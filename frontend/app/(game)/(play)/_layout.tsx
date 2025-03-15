@@ -9,6 +9,7 @@ const PlayLayout = () => {
       <Stack.Screen name="players-waiting" />
       <Stack.Screen name="voting" />
       <Stack.Screen name="ai-gen" />
+      <Stack.Screen name="story-view" />
     </Stack>
   );
 };

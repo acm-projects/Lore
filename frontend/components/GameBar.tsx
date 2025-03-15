@@ -5,6 +5,7 @@ import Button from './Button';
 import { BookOpen } from 'lucide-react-native';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { useLobby } from '~/context/LobbyContext';
+import { router } from 'expo-router';
 
 interface GameBarProps {
   onComplete?: () => void;
@@ -26,10 +27,16 @@ const GameBar = ({
   const ContentWrapper = isAbsolute ? SafeAreaView : View;
   const { lobbyCode } = useLobby();
 
+  const onStoryPress = () => {
+    router.push('/(game)/(play)/story-view');
+  };
+
   return (
     <ContentWrapper
       className={`${isAbsolute ? 'absolute left-0 right-0 top-5' : 'mt-5'} flex w-full max-w-full flex-row items-center justify-between`}>
-      <TouchableOpacity className="ml-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2">
+      <TouchableOpacity
+        className="ml-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"
+        onPress={onStoryPress}>
         <BookOpen size={24} color="white" />
         <Text className="text-white">View story</Text>
       </TouchableOpacity>
