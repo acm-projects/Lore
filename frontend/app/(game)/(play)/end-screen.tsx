@@ -5,6 +5,7 @@ import Button from '~/components/Button';
 import LeaderboardComponent, { Players } from '~/components/Leaderboard';
 
 const EndScreen = () => {
+  //As of right now the avatar does not work
   const players: Players[] = [
     { avatar: '', plotPoints: 1 },
     { avatar: '', plotPoints: 2 },
