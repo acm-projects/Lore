@@ -1,7 +1,7 @@
 import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';  // ✅ Import router
+import { useRouter } from 'expo-router'; // ✅ Import router
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
@@ -11,7 +11,7 @@ import { socket } from '~/socket';
 const AIGen = () => {
   const { lobbyCode } = useLobby();
   const { prompt, story, finalRound } = useLocalSearchParams();
-  const router = useRouter();  // ✅ Initialize router
+  const router = useRouter(); // ✅ Initialize router
 
   const [continueCount, setContinueCount] = useState(0);
   const [totalPlayers, setTotalPlayers] = useState(1);
@@ -20,33 +20,34 @@ const AIGen = () => {
 
   useEffect(() => {
     // Listen for updated continue count
-    socket.on("update_continue_count", ({ count, total }) => {
+    socket.on('update_continue_count', ({ count, total }) => {
       setContinueCount(count);
       setTotalPlayers(total);
     });
 
     // Listen for global navigation to write.tsx
-    socket.on("go_to_prompt", () => {
-      console.log("🔄 Navigating back to write.tsx...");  // ✅ Debugging
-      router.replace({
-        pathname: finalRound ? "/(main)/stories" : "/(game)/(play)/write",
-        params: { lobbyCode },
-      });
+    socket.on('go_to_prompt', () => {
+      console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
+      if (finalRound) {
+        router.dismissTo('/(main)/stories');
+      } else {
+        router.replace('/(game)/(play)/write');
+      }
     });
 
     // Request current player count when entering
-    socket.emit("request_continue_count", lobbyCode);
+    socket.emit('request_continue_count', lobbyCode);
 
     return () => {
-      socket.off("update_continue_count");
-      socket.off("go_to_prompt");
+      socket.off('update_continue_count');
+      socket.off('go_to_prompt');
     };
   }, [lobbyCode, finalRound]);
 
   const handleContinue = () => {
     if (!hasPressedContinue) {
       setHasPressedContinue(true);
-      socket.emit("continue_pressed", lobbyCode);
+      socket.emit('continue_pressed', lobbyCode);
     }
   };
 
@@ -71,12 +72,12 @@ const AIGen = () => {
           <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{story}</Text>
         </ScrollView>
 
-        <View className="items-center mt-4 flex-[0.2] flex-row justify-center">
+        <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
           <View className="w-full flex-1">
             <Button
               title={`Continue (${continueCount}/${totalPlayers})`}
-              bgVariant={hasPressedContinue ? "secondary" : "primary"}
-              textVariant={hasPressedContinue ? "secondary" : "primary"}
+              bgVariant={hasPressedContinue ? 'secondary' : 'primary'}
+              textVariant={hasPressedContinue ? 'secondary' : 'primary'}
               onPress={handleContinue}
             />
           </View>

@@ -9,6 +9,7 @@ const Stories = () => {
   const createGameRoom = () => {
     socket.emit('create_room', (response: any) => {
       if (response.success) {
+        console.log('Room created:', response);
         router.push(`/(game)/lobby?lobbyCode=${response.roomCode}`);
       } else {
         Alert.alert('Error', 'Failed to create room. Try again.');

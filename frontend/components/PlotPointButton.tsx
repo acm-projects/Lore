@@ -80,7 +80,7 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
       {/* Plot Point */}
       <View className="flex-1 px-3">
         <Text
-          className={`${isSelected ? 'text-primaryText' : 'text-secondaryText'} text-lg`}
+          className={`${isSelected ? 'text-primaryText' : 'text-primaryText'} text-lg`}
           numberOfLines={0}>
           {plotPoint}
         </Text>
@@ -89,7 +89,7 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
       {/* Votes */}
       <View className="items-center justify-center">
         <Text
-          className={`text-sm font-bold ${isSelected ? 'text-primaryText' : 'text-secondaryText'}`}>
+          className={`text-sm font-bold ${isSelected ? 'text-primaryText' : 'text-primaryText'}`}>
           Votes
         </Text>
         <Text

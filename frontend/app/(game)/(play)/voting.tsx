@@ -11,7 +11,7 @@ const Voting = () => {
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
 
   /*const plotPoints = [
     {
