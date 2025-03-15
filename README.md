@@ -150,9 +150,6 @@
 
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
 - [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
-- [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
-- [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
-- [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
 - [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
 - [Hugging Face Stable Diffusion](https://www.youtube.com/watch?v=kOBxiZpzYe0)
 
