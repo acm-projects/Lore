@@ -159,7 +159,7 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
         let newStoryPart = response.data.story;
 
         // ✅ Limit AI response to 3 paragraphs
-        let paragraphs = newStoryPart.split("\n\n").slice(0, 4).join("\n\n");
+        let paragraphs = newStoryPart.split("\n\n").slice(0, 3).join("\n\n");
 
         // ✅ Save only the latest AI response
         rooms[room].story = paragraphs;
@@ -185,24 +185,6 @@ socket.on("submit_vote", async ({ room, votedPrompt }) => {
   }
 });
 
-
-  // Handle "Next" button click (only creator can trigger)
-  socket.on("next_to_prompt", (room) => {
-    if (!rooms[room] || socket.id !== rooms[room].creator) return;
-
-    console.log(`🔄 Resetting for next round in room: ${room}`);
-
-    // ✅ Reset prompts, votes, and continue counts
-    rooms[room].prompts = {};
-    rooms[room].votes = {};
-    rooms[room].totalVotes = 0;
-    rooms[room].continueCount = 0;
-    rooms[room].continuePressedBy.clear();
-
-    // Notify all players to move to prompt.tsx
-    io.to(room).emit("go_to_prompt");
-  }
-});
 
 // Send current continue count when a player enters the story screen
 socket.on("request_continue_count", (room) => {
