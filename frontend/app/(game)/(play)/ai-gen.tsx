@@ -1,26 +1,64 @@
 import { View, Text, Image, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router'; // ✅ Import router
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
 import { useLocalSearchParams } from 'expo-router';
+import { socket } from '~/socket';
 
 const AIGen = () => {
   const { lobbyCode } = useLobby();
-  const { prompt, story } = useLocalSearchParams();
+  const { prompt, story, round } = useLocalSearchParams();
+  const router = useRouter(); // ✅ Initialize router
 
+  const [continueCount, setContinueCount] = useState(0);
+  const [totalPlayers, setTotalPlayers] = useState(1);
+  const [hasPressedContinue, setHasPressedContinue] = useState(false);
   const winnerAvatar = require('../../../assets/avatar1.png');
-  const winnerPlotPoint = 'The hero discovers a hidden treasure map';
 
-  const AIText =
-    "The villain reveals their master plan and the hero's true identity. He then steps back in fear waiting for death by a thousand cuts. This is not the end though, the villian continues to berate the hero. This nonstop flurry of insults baffles the hero.";
+  // ✅ Convert round to a number
+  const roundNumber = round ? parseInt(round as string, 10) : 1;
+
+  useEffect(() => {
+    // Listen for updated continue count
+    socket.on('update_continue_count', ({ count, total }) => {
+      setContinueCount(count);
+      setTotalPlayers(total);
+    });
+
+    // Listen for global navigation to write.tsx
+    socket.on('go_to_prompt', () => {
+      console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
+      if (roundNumber >= 5) {
+        router.replace('/(main)/stories'); // ✅ Corrected navigation
+      } else {
+        router.replace('/(game)/(play)/write');
+      }
+    });
+
+    // Request current player count when entering
+    socket.emit('request_continue_count', lobbyCode);
+
+    return () => {
+      socket.off('update_continue_count');
+      socket.off('go_to_prompt');
+    };
+  }, [lobbyCode]); // ✅ Removed `finalRound` from dependencies
+
+  const handleContinue = () => {
+    if (!hasPressedContinue) {
+      setHasPressedContinue(true);
+      socket.emit('continue_pressed', lobbyCode);
+    }
+  };
 
   return (
     <SafeAreaView className="max-h-full flex-1 bg-background">
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
-        {/* Plot Point Winner*/}
+        {/* Plot Point Winner */}
         <View className="flex w-full flex-row rounded-lg border-2 border-primary bg-backgroundAccent p-4">
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
             <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
@@ -32,23 +70,19 @@ const AIGen = () => {
           </View>
         </View>
 
-        {/* AI Text */}
+        {/* AI Generated Story */}
         <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
-          <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">{story}</Text>
+          <Text className="text-center text-2xl font-bold text-backgroundText">{story}</Text>
         </ScrollView>
 
-        <View className="itmes-center mt-4 flex-[0.2] flex-row justify-center">
-          {/*<View className="flex-1">
-            <Image
-              source={require('../../../assets/lore-guy.png')}
-              className="h-full w-full"
-              resizeMode="cover"
-            />
-          </View>*/}
-
+        <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
           <View className="w-full flex-1">
-            <Button title="Continue" bgVariant="primary" textVariant="primary" onPress={() => {}} />
-            <Text className="mt-4 text-center text-2xl font-bold text-backgroundText">4/5</Text>
+            <Button
+              title={`Continue (${continueCount}/${totalPlayers})`}
+              bgVariant={hasPressedContinue ? 'secondary' : 'primary'}
+              textVariant={hasPressedContinue ? 'secondary' : 'primary'}
+              onPress={handleContinue}
+            />
           </View>
         </View>
       </View>

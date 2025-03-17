@@ -8,10 +8,10 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [timeRemaining, setTimeRemaining] = useState(30);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
 
   /*const plotPoints = [
     {
@@ -69,8 +69,8 @@ const Voting = () => {
     <SafeAreaView className="flex-1 bg-background">
       <GameBar
         onComplete={onTimerEnd}
-        duration={10}
-        initialRemainingTime={10}
+        duration={30}
+        initialRemainingTime={30}
         isAbsolute={false}
         onUpdate={onUpdate}
       />
