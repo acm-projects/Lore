@@ -43,6 +43,7 @@ const Write = () => {
         duration={60}
         initialRemainingTime={60}
         onUpdate={onUpdate}
+        isAbsolute={true}
       />
       <ScrollView
         className="flex-1 px-5 py-10"

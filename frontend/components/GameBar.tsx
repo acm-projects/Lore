@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from './Button';
@@ -6,6 +6,7 @@ import { BookOpen } from 'lucide-react-native';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { useLobby } from '~/context/LobbyContext';
 import { router } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 
 interface GameBarProps {
   onComplete?: () => void;
@@ -32,8 +33,14 @@ const GameBar = ({
     //router.push('/(game)/(play)/story-view');
   };
 
+  const onCodePress = async () => {
+    await Clipboard.setStringAsync(lobbyCode);
+    Alert.alert('Copied!', 'Lobby code copied to clipboard.');
+  };
+
   return (
     <ContentWrapper
+      style={isAbsolute ? { zIndex: 9999 } : {}}
       className={`${isAbsolute ? 'absolute left-0 right-0 top-5' : 'mt-5'} flex w-full max-w-full flex-row items-center justify-between`}>
       <TouchableOpacity
         className="ml-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"

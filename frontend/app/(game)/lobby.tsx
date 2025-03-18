@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -6,6 +6,7 @@ import Button from '~/components/Button';
 import ProfileDisplay from '~/components/ProfileDisplay';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
+import * as Clipboard from 'expo-clipboard';
 
 const Lobby = () => {
   const { lobbyCode } = useLocalSearchParams();
@@ -51,13 +52,18 @@ const Lobby = () => {
     socket.emit('start_game', lobbyCode);
   };
 
+  const onCodePress = async () => {
+    await Clipboard.setStringAsync(lobbyCode.toString());
+    Alert.alert('Copied!', 'Lobby code copied to clipboard.');
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="mt-10 self-center">
         <Text className="text-3xl font-bold text-backgroundText">Join Code:</Text>
-        <View className="mt-2 rounded-full bg-primary px-4 py-2">
+        <TouchableOpacity className="mt-2 rounded-full bg-primary px-4 py-2" onPress={onCodePress}>
           <Text className="text-center text-2xl font-bold text-primaryText">{lobbyCode}</Text>
-        </View>
+        </TouchableOpacity>
       </View>
       <ScrollView className="flex-1 px-5 py-10">
         {players.length > 0 ? (

@@ -42,7 +42,8 @@
     "react-native-svg-transformer": "^1.5.0",
     "react-native-web": "~0.19.10",
     "socket.io-client": "^4.8.1",
-    "expo-asset": "~11.0.4"
+    "expo-asset": "~11.0.4",
+    "expo-clipboard": "~7.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

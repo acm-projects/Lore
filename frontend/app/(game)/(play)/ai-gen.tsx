@@ -59,7 +59,7 @@ const AIGen = () => {
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
         {/* Plot Point Winner */}
-        <View className="flex w-full flex-row rounded-lg border-2 border-primary bg-backgroundAccent p-4">
+        <View className="flex w-full flex-row rounded-lg bg-backgroundAccent p-4">
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
             <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
           </View>
@@ -72,7 +72,7 @@ const AIGen = () => {
 
         {/* AI Generated Story */}
         <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
-          <Text className="text-center text-2xl font-bold text-backgroundText">{story}</Text>
+          <Text className="text-center text-xl text-backgroundText">{story.toString().trim()}</Text>
         </ScrollView>
 
         <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
