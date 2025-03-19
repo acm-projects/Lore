@@ -15,21 +15,18 @@ const PlayersWaiting = () => {
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
   const round = params.round ? parseInt(params.round as string) : 1;
 
-  const [players, setPlayers] = useState<{ id: string, currentScreen: string }[]>([]);
+  const [players, setPlayers] = useState<{ id: string, currentScreen?: string }[]>([]);
 
   useEffect(() => {
     console.log(`🚀 Waiting Screen Loaded | Phase: ${phase}`);
 
-    // ✅ Tell the server the player is now in the "waiting" screen
-    socket.emit("update_screen", { room: lobbyCode, screen: "waiting" });
+    // ✅ Notify server that the player is now in "players-waiting"
+    socket.emit("update_screen", { room: lobbyCode, screen: "players-waiting" });
 
     // ✅ Listen for user updates
     socket.on("update_users", (updatedUsers) => {
       console.log('👥 Updated Players List:', updatedUsers);
-
-      // ✅ Filter only players who are currently in the waiting screen
-      const waitingPlayers = updatedUsers.filter(user => user.currentScreen === "waiting");
-      setPlayers(waitingPlayers);
+      setPlayers(updatedUsers.map(user => ({ ...user, currentScreen: user.currentScreen || "unknown" }))); // ✅ Ensure currentScreen exists
     });
 
     if (phase === 'prompts') {
@@ -55,6 +52,8 @@ const PlayersWaiting = () => {
     }
 
     return () => {
+      console.log('🚪 Leaving Waiting Screen, updating server...');
+      socket.emit("update_screen", { room: lobbyCode, screen: "unknown" }); // ✅ Move this ABOVE cleanup
       console.log('🧹 Cleaning up event listeners');
       socket.off('update_users');
       socket.off('prompts_ready');
@@ -71,11 +70,30 @@ const PlayersWaiting = () => {
         isAbsolute={false}
       />
       <ScrollView className="flex-1 px-5 py-10" contentContainerStyle={{ flexGrow: 1, gap: 10 }}>
-        {/* ✅ Dynamically display only players in "waiting" */}
+        {/* ✅ Display all players but change styles based on their screen */}
         {players.length > 0 ? (
-          players.map((player, index) => (
-            <ProfileDisplay key={player.id} username={`Player ${index + 1}: ${player.id}`} isVariant={index % 2 === 0} />
-          ))
+          players.map((player) => {
+            const isWaiting = player.currentScreen === "players-waiting"; // ✅ Check if player is on the waiting screen
+
+            return isWaiting ? (
+              // ✅ Players on waiting screen use ProfileDisplay for correct primary colors
+              <ProfileDisplay 
+                key={player.id} 
+                username={player.id} 
+                isVariant={true} 
+              />
+            ) : (
+              // ✅ Players NOT on waiting screen get a black box with white text
+              <View
+                key={player.id}
+                className="w-full flex flex-row items-center justify-between rounded-lg bg-black p-4"
+              >
+                <Text className="text-lg font-bold text-white">
+                  {player.id}
+                </Text>
+              </View>
+            );
+          })
         ) : (
           <Text className="text-center text-xl font-bold text-backgroundText">Waiting for players...</Text>
         )}

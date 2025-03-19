@@ -27,16 +27,18 @@ const io = new Server(server, {
 });
 
 const rooms = {}; // Store game room data
+// ✅ Function to get ranked results based on prompts won
 const getRankings = (room) => {
   if (!rooms[room]) return [];
 
-  return Object.entries(rooms[room].playerWins)
+  return Object.entries(rooms[room].playerWins || {})
     .map(([playerId, wins]) => {
-      let player = rooms[room].users.find((user) => user.id === playerId);
-      return { name: player?.name || "Unknown", wins };
+      let player = rooms[room].users.find(user => user.id === playerId);
+      return { id: player?.id || "Unknown", plotPoints: wins };
     })
-    .sort((a, b) => b.wins - a.wins); // Sort in descending order
+    .sort((a, b) => b.plotPoints - a.plotPoints); // Sort in descending order
 };
+
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
@@ -65,6 +67,15 @@ io.on("connection", (socket) => {
     callback({ success: true, roomCode: room });
   });
 
+  // ✅ Listen for rankings request
+  socket.on("request_rankings", (room) => {
+    if (!rooms[room]) return;
+
+    const rankings = getRankings(room);
+    console.log(`🏆 Sending Rankings for Room ${room}:`, rankings);
+    io.to(room).emit("receive_rankings", rankings);
+  });
+
   // Join an existing room
   socket.on("join_room", ({ room }, callback) => {
     if (!rooms[room]) return;
@@ -79,17 +90,19 @@ io.on("connection", (socket) => {
     io.to(room).emit("update_users", rooms[room].users);
   });
 
-  // ✅ NEW: Update player screen status when they switch screens
   socket.on("update_screen", ({ room, screen }) => {
     if (!rooms[room]) return;
-
+  
     const player = rooms[room].users.find(user => user.id === socket.id);
     if (player) {
       player.currentScreen = screen;
     }
-
+  
+    console.log(`🔄 Player ${socket.id} moved to screen: ${screen}`);
+  
+    // Emit updated users list
     io.to(room).emit("update_users", rooms[room].users);
-  });
+  });  
 
   socket.on("start_game", (room) => {
     if (rooms[room] && rooms[room].creator === socket.id) {
@@ -177,21 +190,26 @@ io.on("connection", (socket) => {
           current_story: rooms[room].storyHistory.join("\n\n"),
           round: rooms[room].round,
         });
-
-        let newStoryPart = response.data.story;
-
-        // ✅ Limit AI response to 3 paragraphs
-        let paragraphs = newStoryPart.split("\n\n").slice(0, 4).join("\n\n");
-
+      
+        let aiResponse = response.data.story;
+      
+        // ✅ Extract the first three numbered paragraphs only
+        let numberedParagraphs = aiResponse
+          .split("\n") // Split into lines
+          .filter(line => /^\d+\.\s/.test(line)) // Keep only lines that start with "1. ", "2. ", etc.
+          .map(line => line.replace(/^\d+\.\s/, "")) // Remove the numbering
+          .slice(0, 3) // Take only the first three paragraphs
+          .join("\n\n"); // Join them back as paragraphs
+      
         // ✅ Save only the latest AI response
-        rooms[room].story = paragraphs;
-        rooms[room].storyHistory.push(paragraphs); // Keep track of full story progression
-
-        console.log("✅ AI Response Received:", paragraphs);
+        rooms[room].story = numberedParagraphs;
+        rooms[room].storyHistory.push(numberedParagraphs); // Keep track of full story progression
+      
+        console.log("✅ AI Response Processed:", numberedParagraphs);
       } catch (error) {
         rooms[room].story = "Error generating story.";
         console.error("❌ AI generation error:", error);
-      }
+      }      
 
       // ✅ Increment round before checking finalRound
       rooms[room].round++;

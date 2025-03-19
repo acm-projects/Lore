@@ -141,14 +141,8 @@
 * Export and Downloading stories to be shared
 
 
-
-
-
-
-
-
 ## Tech Stack & Resources 💻
-#### Firebase, OpenAI, Stable Diffusion, Socket.io, Node.js, Express.js, Vue.js
+#### DynamoDB, AWS Bedrock, Stable Diffusion, Socket.io, Node.js, Express.js, React Native + Expo
 
 
 <details>
@@ -156,9 +150,6 @@
 
 - [Vue.js Tutorial](https://youtu.be/1GNsWa_EZdw?si=NU2GSCARyILMMz5V)
 - [Intro to Express & Node](https://youtu.be/jivyItmsu18?si=YbLWhSxKg1C44Qht)
-- [Getting Started with OpenAI API](https://www.youtube.com/watch?v=Zb5Nylziu6E)
-- [Firebase](https://www.youtube.com/watch?v=fgdpvwEWJ9M)
-- [Firebase Auth & Vue.js](https://www.youtube.com/watch?v=XtbYBoKb2zY)
 - [Express Chat App + Socket IO Tutorial](https://www.youtube.com/watch?v=ypqs_u9GbpQ)
 - [Hugging Face Stable Diffusion](https://www.youtube.com/watch?v=kOBxiZpzYe0)
 
@@ -168,9 +159,7 @@
 **<summary>Environment Setup ⚙️</summary>**
  
  - Frontend Set Up
-   - [Vue](https://vuejs.org/guide/quick-start)
    - [Socket.IO](https://socket.io/docs/v4/client-installation/)
-   - [Firebase Auth in Vue](https://www.freecodecamp.org/news/how-to-add-authentication-to-a-vue-app-using-firebase/)
    - [Git](https://git-scm.com/downloads)
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
@@ -180,7 +169,6 @@
    - [Node + Express](https://daily.dev/blog/setup-nodejs-express-project-a-beginners-guide)
    - [Socket.IO](https://socket.io/docs/v4/server-installation/)
    - [Firebase](https://firebase.google.com/docs/web/setup)
-   - [OpenAI](https://platform.openai.com/docs/quickstart)
    - [Git](https://git-scm.com/downloads)
    - [NPM](https://www.geeksforgeeks.org/how-to-download-and-install-node-js-and-npm/)
    - [VS Code](https://code.visualstudio.com/docs/introvideos/versioncontrol)
