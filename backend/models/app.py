@@ -17,9 +17,9 @@ def generate_story():
     round_number = data.get("round", 1)  # Default to round 1
 
     if round_number == 1:
-        instruction = f"Provide only three paragraphs to start the story using this prompt:\n{prompt}\n After the three paragraphs I do not want any further output and end with a new line and ..."
+        instruction = f"Provide only three short numbered paragraphs to start the story using this prompt:\n{prompt}\n After the three paragraphs I do not want any further output and end with a new line and ..."
     else:
-        instruction = f"Using the following prompt:{prompt}\n Generate 3 short paragraphs to continue the following story:\n\n{current_story}\n\nContinue the story by adding the three short paragraphs and do not generate further after 3 paragraphs and end with a new line and ..."
+        instruction = f"Using the following prompt:{prompt}\n Generate 3 short numbered paragraphs to continue the following story:\n\n{current_story}\n\nContinue the story by adding the three short paragraphs and do not generate further after 3 paragraphs and end with a new line and ..."
 
     # AI Generation Configuration
     payload = {

@@ -1,20 +1,39 @@
 import { View, Text, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
 import LeaderboardComponent, { Players } from '~/components/Leaderboard';
 import { useLobby } from '~/context/LobbyContext';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { socket } from '~/socket';
 
 const EndScreen = () => {
-  //As of right now the avatar does not work
-  const players: Players[] = [
-    { avatar: '', plotPoints: 1 },
-    { avatar: '', plotPoints: 2 },
-    { avatar: '', plotPoints: 4 },
-  ];
+  const router = useRouter();
+  const { toggleVisible, lobbyCode } = useLobby();
+  const [players, setPlayers] = useState<Players[]>([]);
 
-  const { toggleVisible } = useLobby();
+  useEffect(() => {
+    // Request rankings from the server
+    socket.emit('request_rankings', lobbyCode);
+
+    // Listen for ranking data
+    socket.on('receive_rankings', (rankings) => {
+      console.log('🏆 Received Player Rankings:', rankings);
+
+      // ✅ Transform rankings into correct format for LeaderboardComponent
+      const formattedPlayers = rankings.map((player, index) => ({
+        avatar: '', // Placeholder for now
+        plotPoints: player.plotPoints,
+        username: `Player ${index + 1}: ${player.id}`
+      }));
+
+      setPlayers(formattedPlayers);
+    });
+
+    return () => {
+      socket.off('receive_rankings'); // Cleanup listener
+    };
+  }, [lobbyCode]);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -24,9 +43,7 @@ const EndScreen = () => {
         </Text>
         <Button
           title="View the Full Story"
-          onPress={() => {
-            toggleVisible();
-          }}
+          onPress={toggleVisible}
           className="mt-10 w-[80%]"
         />
         <Text className="mt-10 text-2xl font-bold text-backgroundText">
@@ -36,7 +53,7 @@ const EndScreen = () => {
         <Button
           title="Home"
           onPress={() => {
-            router.dismissTo('/(main)/home');
+            router.replace('/(main)/home');
           }}
           className="mt-10 w-[80%]"
         />

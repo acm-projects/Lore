@@ -31,8 +31,8 @@ const AIGen = () => {
     // Listen for global navigation to write.tsx
     socket.on('go_to_prompt', () => {
       console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
-      if (roundNumber >= 5) {
-        router.replace('/(main)/stories'); // ✅ Corrected navigation
+      if (roundNumber >= 2) {
+        router.replace('/(game)/(play)/end-screen'); // ✅ Corrected navigation
       } else {
         router.replace('/(game)/(play)/write');
       }
