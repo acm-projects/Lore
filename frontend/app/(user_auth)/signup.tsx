@@ -8,63 +8,74 @@ import { View,
          TouchableWithoutFeedback, 
          Keyboard, 
          ScrollView,
-         TouchableOpacity,} from 'react-native';
+         TouchableOpacity,
+         StatusBar,} from 'react-native';
+import { useFonts } from 'expo-font';
 
 const SignUp = () => {
-    const styles = require('../globalStyles');
+
+    useFonts({
+        'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMono-ExtraBold.ttf')
+    });
+
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView className="flex-1 bg-background">
+            <StatusBar />
             <View className="flex-1 bg-background">
                 <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Loginbg.png")}/> 
                 <ScrollView automaticallyAdjustKeyboardInsets={true} className="">
-                    <SafeAreaView className="justify-center items-center">
+                    <View className="justify-center items-center">
                         <Image 
                             source={require("assets/Logo 1.png")}
                             style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
                         </Image>
 
-                        <View style={styles.box}>
+                        <View className="flex-1 bg-backgroundSecondary w-5/2 justify-center items-center rounded-xl">
                             <View className="items-center m-4">
-                                <Text className="color-white" style={{fontSize: 18}}>
+                                <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}}>
                                     Welcome to Lore!
                                 </Text>
-                                <Text style={[styles.secondaryText, {fontSize: 12}]}>
+                                <Text className="color-secondaryText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}}>
                                     Start your storytelling journey here.
                                 </Text>
                             </View>
 
                             <View className="mb-4">
-                                <Text style={styles.secondaryText}>Username</Text>
-                                <TextInput style={styles.textInput}/>
+                                <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Username</Text>
+                                <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}/>
                             </View>
 
                             <View className="mb-4">
-                                <Text style={styles.secondaryText}>Email</Text>
-                                <TextInput style={styles.textInput}/>
+                                <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Email</Text>
+                                <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}/>
                             </View>
 
                             <View className="mb-4">
-                                <Text style={styles.secondaryText}>Password</Text>
-                                <TextInput style={styles.textInput}/>
+                                <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Password</Text>
+                                <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}/>
                             </View>
 
                             <View className="mb-4">
-                                <Text style={styles.secondaryText}> Confirm Password</Text>
-                                <TextInput style={styles.textInput}/>
+                                <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}> Confirm Password</Text>
+                                <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}/>
                             </View>
 
                             <View className="m-4">
-                                <TouchableOpacity style={styles.button} onPress={() => {router.push("/"); }}>
-                                <Text style={styles.buttonText}> Sign Up </Text>
+                                <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]" 
+                                                  onPress={() => {router.push("/"); }}>
+                                <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}> Sign Up </Text>
                                 </TouchableOpacity>
-                                <Text style={[styles.linkText, {fontSize: 12}]} onPress={() => {router.push("/"); }}> 
+                                <Text className="color-linkText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} onPress={() => {router.push("/"); }}> 
                                     Already have an account? 
                                 </Text>
                             </View>
                         </View>
-                    </SafeAreaView>
+                    </View>
                 </ScrollView>
             </View>
+        </SafeAreaView>
         </TouchableWithoutFeedback>
     )
 }

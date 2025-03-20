@@ -18,9 +18,6 @@ module.exports = {
         backgroundAccent: '#1E1F22',
         backgroundAccentText: '#FFFFFF',
       },
-      fontFamily: {
-        "jetbrainsmono-regular": ["Regular"],
-      },
     },
   },
   plugins: [],

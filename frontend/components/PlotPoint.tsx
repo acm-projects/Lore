@@ -36,9 +36,9 @@ import Avatar from './Avatar';
         <SafeAreaView>
           <View className="items-center justify-center w-full">
 
-            {!isArrayAtEnd && <View className="bg-primaryAccent w-[25px] h-[40px]" />}
+            {isArrayAtEnd && <View className="bg-primaryAccent w-[25px] h-[40px]" />}
 
-            <TouchableOpacity className="w-10/12 h-1/12 p-4 bg-backgroundSecondary flex flex-row rounded-t-lg"               
+            <TouchableOpacity className="w-10/12 h-1/12 p-4 bg-background flex flex-row rounded-t-lg"               
                                         /*style={isArrayAtEnd ? 
                                         {borderColor: "#06D6A1", borderWidth: 2, shadowColor: "#06D6A1", shadowOpacity: 3, shadowRadius: 3, shadowOffset: {width:0, height: 4}} : {}}*/                                                
                                         onPress={() => {toggleCollapsed()}}>
@@ -46,8 +46,8 @@ import Avatar from './Avatar';
               <Text className="color-white ml-2" style={{flex: 1, flexWrap: 'wrap'}}>{props.text}</Text> 
             </TouchableOpacity>
 
-            <Collapsible collapsed={isCollapsed}>
-              <View className="bg-background w-[312px] h-auto rounded-b-lg">
+            <Collapsible collapsed={isCollapsed} style={{width: '83.33333%' }}>
+              <View className="bg-backgroundSecondary h-auto rounded-b-lg">
                 <Text className="color-white p-2" style={{flexWrap: 'wrap'}}> {props.story} </Text>
               </View>
             </Collapsible>

@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView, Dimensions } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router'; // ✅ Import router
@@ -56,11 +56,12 @@ const AIGen = () => {
 
   return (
     <SafeAreaView className="max-h-full flex-1 bg-background">
+      <Image className="w-full" style={{resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg4.gif")}/> 
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
         {/* Plot Point Winner */}
         <View className="flex w-full flex-row rounded-lg border-2 border-primary bg-backgroundAccent p-4">
-          <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
+          <View className="h-16 w-16 overflow-hidden rounded-full border-2 border-white">
             <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
           </View>
           <View className="flex-1 px-3">

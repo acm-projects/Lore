@@ -36,7 +36,7 @@ const GameBar = ({
     <ContentWrapper
       className={`${isAbsolute ? 'absolute left-0 right-0 top-5' : 'mt-5'} flex w-full max-w-full flex-row items-center justify-between`}>
       <TouchableOpacity
-        className="ml-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"
+        className="h-16 w-24 items-center justify-center rounded-r-xl bg-primary p-2"
         onPress={onStoryPress}>
         <BookOpen size={24} color="white" />
         <Text className="text-white">View story</Text>
@@ -64,7 +64,7 @@ const GameBar = ({
           <Text className="text-center text-4xl font-bold text-white">{headerText}</Text>
         </View>
       )}
-      <TouchableOpacity className="mr-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2">
+      <TouchableOpacity className="h-16 w-24 items-center justify-center rounded-l-xl bg-primary p-2">
         <Text className="font-semibold text-white">Join Code</Text>
         <Text className="text-white">{lobbyCode}</Text>
       </TouchableOpacity>
