@@ -29,6 +29,8 @@ const Login = () => {
     } catch (err) {
       setError((err as Error).message || 'Invalid email or password.');
     }
+
+    router.push('/home');
   };
 
   return (
