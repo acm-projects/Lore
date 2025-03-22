@@ -19,7 +19,7 @@ function UserCard (props: {name: string, image: string, friends: boolean})
 
     useFonts({
         'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
-        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMono-ExtraBold.ttf')
+        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
     });
     
     return( 

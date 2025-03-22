@@ -28,13 +28,15 @@ const Playground = () => {
 
     // For redoing
     const [canvasHistory, setCanvasHistory] = useState<string[][]>([])
-    const [historyIndex, setHistoryIndex] = useState(canvasHistory.length-1)
-    //const [savedPaths, setSavedPaths] = useState<string[]>([])
-    //const [savedPathLengths, setSavedPathLengths] = useState<string[]>([])
+    const [historyIndex, setHistoryIndex] = useState(canvasHistory.length)
     
     const [isClearButtonClicked, setClearButtonClicked] = useState(false)
-
     const [strokeColor, setStrokeColor] = useState("black")
+
+    useEffect(() => {
+        console.log(historyIndex)
+        console.log(canvasHistory)
+    }, [historyIndex])
 
     const handleCanvasSave = () => {
         canvasHistory.push(paths)
@@ -42,27 +44,39 @@ const Playground = () => {
             canvasHistory.shift()
         }
         setCanvasHistory(canvasHistory)
-        setHistoryIndex(canvasHistory.length-1)
+        setHistoryIndex(canvasHistory.length)
     }
 
     const handleClear = () => {
-        
-        handleCanvasSave()
+        const newCanvasHistory = ([])
 
         setPaths([])
         setCurrentPath([])
 
-        //setSavedPathLengths([])
-        //setSavedPaths([])
-
+        handleCanvasSave()
+        for(let i = 0; i < historyIndex; i++) { // Make the current history index the latest one
+            newCanvasHistory.push(canvasHistory[i])
+        }
+        
+        setCanvasHistory(newCanvasHistory)
+        
         setClearButtonClicked(true)
     }
 
     const onTouchEnd = () => {
+        const newCanvasHistory = ([])
+        
         paths.push(...currentPath)
         pathLengths.push((currentPath.length).toString())
         setCurrentPath([])
         setClearButtonClicked(false)
+        
+        handleCanvasSave()
+        for(let i = 0; i < historyIndex; i++) { // Make the current history index the latest one
+            newCanvasHistory.push(canvasHistory[i])
+        }
+        
+        setCanvasHistory(newCanvasHistory)
     }
 
     const onTouchMove = (event: any) => {
@@ -76,24 +90,10 @@ const Playground = () => {
     }
 
     const undoMove = () => {
-
-        isClearButtonClicked ? setPaths(canvasHistory[canvasHistory.length-1]) : console.log()
-
-        const newPathLengths = ([]) // Empty newPathLengths to prevent duplicates
-
-        // Uses the pathLengths to get the number of svg paths in paths variable, then cuts off that # of elements to "undo" a stroke
-        // Also puts it in savedPaths in order to be able to be redone. 
-        paths.splice(-Number(pathLengths[pathLengths.length-1]), Number(pathLengths[pathLengths.length-1]))
-        //savedPathLengths.push(pathLengths[pathLengths.length-1])
-
-        for(let i = 0; i < pathLengths.length-1; i++) // Will loop through all pathLength elements except the last one because 
-                                                      // that's the stroke that was deleted
-        {
-            pathLengths[i] == "0" ? console.log() : newPathLengths.push(pathLengths[i]) // After undoing, get all relevant pathLengths
-        }                                                                               // because there will be some useless elements in pathLengths
-        
-        setPathLengths(newPathLengths) // Put all the useful stuff back into pathLengths
-        
+        if(historyIndex != 0) {            
+            setPaths(canvasHistory[historyIndex-1])
+            setHistoryIndex(historyIndex-1)
+        }
     }
 
     const redoMove = () => {
@@ -155,7 +155,7 @@ const Playground = () => {
                     <TouchableOpacity className="bg-white w-[50px] h-[50px]" onPress={() => {undoMove()}}/>
 
                 <TouchableOpacity className="bg-red-500 w-[50px] h-[50px]" onPress={() => {redoMove()}}/>
-                <TouchableOpacity className="bg-blue-500 w-[50px] h-[50px]" onPress={() => {undoMove()}}/>
+                <TouchableOpacity className="bg-blue-500 w-[50px] h-[50px]" onPress={() => {setHistoryIndex(0); setCanvasHistory([])}}/>
                 </View>
 
             </View>

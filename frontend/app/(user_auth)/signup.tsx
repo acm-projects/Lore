@@ -10,7 +10,7 @@ import { useFonts } from 'expo-font';
 const SignUp = () => {  
   useFonts({
     'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
-    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMono-ExtraBold.ttf')
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
   });
 
   // State to hold input values
@@ -73,7 +73,7 @@ const SignUp = () => {
       <StatusBar />
         <View className="flex-1 bg-background">
           <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Loginbg.png")}/> 
-          <ScrollView automaticallyAdjustKeyboardInsets={true} className="bg-background">
+          <ScrollView automaticallyAdjustKeyboardInsets={true} className="">
             <View className="justify-center items-center">
               <Image 
                 source={require("assets/Logo 1.png")}
@@ -127,11 +127,14 @@ const SignUp = () => {
                     </View>
 
                     <View className="m-4">
-                      <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]" onPress={handleSignUp} disabled={loading}>
+                      <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primary h-[40px] w-[285px]" onPress={handleSignUp} disabled={loading}>
                         <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}>
                           {loading ? 'Signing Up...' : 'Sign Up'}
                         </Text>
-                      </TouchableOpacity>
+                      </TouchableOpacity>    
+                      <Text className="color-linkText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} onPress={() => {router.push("/"); }}>
+                        Already have an account? Log in here.
+                      </Text>
                     </View>
                   </>
                 ) : (
@@ -147,7 +150,7 @@ const SignUp = () => {
                     </View>
 
                     <View className="m-4">
-                    <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"
+                    <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent h-[40px] w-[285px]"
                                       onPress={handleConfirm} disabled={loading}>
                         <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}>
                           {loading ? 'Confirming...' : 'Confirm'}
@@ -157,9 +160,6 @@ const SignUp = () => {
                   </>
                 )}
 
-                <Text className="color-linkText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} onPress={() => {router.push("/"); }}>
-                  Already have an account? Log in here.
-                </Text>
               </View>
             </View>
           </ScrollView>

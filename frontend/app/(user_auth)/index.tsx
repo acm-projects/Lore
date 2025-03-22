@@ -34,7 +34,7 @@ const Login = () => {
   
     useFonts({
         'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
-        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMono-ExtraBold.ttf')
+        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
     });
 
     return (

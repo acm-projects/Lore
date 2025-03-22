@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import React, { createRef, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Modal from 'react-native-modal'
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
+import Modal from 'react-native-modal';
 import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
@@ -17,7 +17,8 @@ import {View,
         ScrollView,
         useAnimatedValue,
         Dimensions,
-        Animated} from 'react-native';
+        Animated,
+        } from 'react-native';
 
 const DATA = data.reverse();
 

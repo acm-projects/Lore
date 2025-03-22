@@ -9,13 +9,12 @@ import { View,
          Image,
          TouchableOpacity
        } from 'react-native'
-import Avatar from './Avatar';
 import { BookOpen } from 'lucide-react-native';
        
   function StoryCard(props: {count: any, text: string, story: string}) 
   {
     useFonts({'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'), 
-              'JetBrainsMonoBold': require('assets/fonts/JetBrainsMono-ExtraBold.ttf')
+              'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
     });
     
     const fetchData = async () => {
