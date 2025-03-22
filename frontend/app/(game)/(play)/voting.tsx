@@ -8,10 +8,10 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
 
   /*const plotPoints = [
     {
@@ -71,8 +71,8 @@ const Voting = () => {
       
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={10}
+        initialRemainingTime={10}
         isAbsolute={false}
         onUpdate={onUpdate}
       />

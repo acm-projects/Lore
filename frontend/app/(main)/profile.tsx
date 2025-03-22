@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Modal from 'react-native-modal'
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
+import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
-import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import Avatar from '~/components/Avatar';
+import { signOutUser } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
 import {View, 
         Text, 
         FlatList,
@@ -74,13 +75,19 @@ const Profile = () => {
     setFilteredUsers(filteredData)
   }
 
+  // Handle Logout functionality
+  const handleLogout = () => {
+    signOutUser(); // Call signOutUser function to log the user out
+    router.push('/'); // Redirect to login page after logging out
+  };
+
   return (
     <SafeAreaView className="bg-backgroundSecondary flex-1">
       <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"red"} onPress={() => {router.push("/")}}/>
+          <LogOut size={20} color={"red"} onPress={() => {handleLogout}}/>
         </View>
       </View>
 

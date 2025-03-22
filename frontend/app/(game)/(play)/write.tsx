@@ -9,7 +9,7 @@ import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(60);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
 
@@ -42,8 +42,8 @@ const Write = () => {
       
       <GameBar
         onComplete={onTimerEnd}
-        duration={60}
-        initialRemainingTime={60}
+        duration={10}
+        initialRemainingTime={10}
         onUpdate={onUpdate}
       />
       <ScrollView
