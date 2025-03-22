@@ -80,7 +80,7 @@ const Profile = () => {
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"white"} onPress={() => {slideInAnimation()}}/>
+          <LogOut size={20} color={"red"} onPress={() => {router.push("/")}}/>
         </View>
       </View>
 

@@ -29,7 +29,7 @@ const SignUp = () => {
       const result = await signUpUser(username, password, email);
       setSuccessMessage('Sign-up successful!');
       // Optionally navigate after successful sign-up
-      // router.push('/nextPage');
+      router.push('/');
     } catch (err) {
       setError((err as Error).message || 'An error occurred during sign-up.');
     }
@@ -48,7 +48,7 @@ const SignUp = () => {
                   source={require("assets/Logo 1.png")}
                   style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
               </Image>
-              <View className="flex-1 bg-backgroundSecondary w-5/2 justify-center items-center rounded-xl">
+              <View className="flex-1 bg-backgroundSecondary w-[320px] justify-center items-center rounded-xl">
                 <View className="items-center m-4">
                   <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}}>
                       Welcome to Lore!
@@ -98,7 +98,7 @@ const SignUp = () => {
                 {/* Show success message if sign-up is successful */}
                 {successMessage && <Text style={{ color: 'green' }}>{successMessage}</Text>}
 
-                <View className="m-4">
+                <View className="m-4 w-[285px]">
                   <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"  
                                     onPress={handleSignUp}>
                     <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}> Sign Up </Text>
