@@ -27,7 +27,7 @@ const Login = () => {
       setSuccessMessage('Login successful!');
       router.push('/home');  // Navigate to home screen after successful login
     } catch (err) {
-      setError(err.message || 'Invalid email or password.');
+      setError((err as Error).message || 'Invalid email or password.');
     }
   };
 

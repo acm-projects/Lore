@@ -42,7 +42,7 @@ const SignUp = () => {
       console.log("Switching to confirmation mode"); // Debugging
       setIsConfirmationMode(true); // Switch to confirmation mode
     } catch (err) {
-      setError(err.message || 'An error occurred during sign-up.');
+      setError((err as Error).message || 'An error occurred during sign-up.');
     }
   };
 
@@ -62,7 +62,7 @@ const SignUp = () => {
       // Redirect to login or home page after successful confirmation
       router.push('/home');
     } catch (err) {
-      setError(err.message || 'Invalid confirmation code.');
+      setError((err as Error).message || 'Invalid confirmation code.');
     }
   };
 
