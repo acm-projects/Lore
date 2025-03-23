@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, 
-  ScrollView, TouchableOpacity, Alert 
-} from 'react-native';
-import { signUpUser, confirmUser } from './CognitoConfig'; // Import authentication functions
+import {   View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, 
+  ScrollView, TouchableOpacity, Alert,  
+  StatusBar} from 'react-native';
+  import { signUpUser, confirmUser } from './CognitoConfig'; // Import authentication functions
+import { useFonts } from 'expo-font';
 
-const SignUp = () => {
-  const styles = require('../globalStyles');
+const SignUp = () => {  
+  useFonts({
+    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
+  });
 
-  // State variables for user input
+  // State to hold input values
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,7 +41,7 @@ const SignUp = () => {
       Alert.alert('Success', 'Sign-up successful! Please check your email for the confirmation code.');
       setIsCodeSent(true); // Show confirmation code input
     } catch (error) {
-      Alert.alert('Sign-up Failed', error.message || 'Something went wrong.');
+      Alert.alert('Sign-up Failed', (error as Error).message || 'Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -56,9 +59,9 @@ const SignUp = () => {
     try {
       await confirmUser(email, confirmationCode);
       Alert.alert('Success', 'Your account has been confirmed! You can now log in.');
-      router.push('(user_auth)'); // Navigate to login page
+      router.push('/'); // Navigate to login page
     } catch (error) {
-      Alert.alert('Confirmation Failed', error.message || 'Invalid code.');
+      Alert.alert('Confirmation Failed', (error as Error).message || 'Invalid code.');
     } finally {
       setLoading(false);
     }
@@ -66,101 +69,102 @@ const SignUp = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScrollView automaticallyAdjustKeyboardInsets={true} className="bg-background">
-        <SafeAreaView style={styles.screen}>
-          <Image 
-            source={require("assets/Logo 1.png")}
-            style={[{ width: 300, height: 150 }, { resizeMode: "contain" }]}
-          />
+      <SafeAreaView className="flex-1 bg-background">
+      <StatusBar />
+        <View className="flex-1 bg-background">
+          <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Loginbg.png")}/> 
+          <ScrollView automaticallyAdjustKeyboardInsets={true} className="">
+            <View className="justify-center items-center">
+              <Image 
+                source={require("assets/Logo 1.png")}
+                style={[{ width: 300, height: 150 }, { resizeMode: "contain" }]}>
+              </Image>
+              <View className="flex-1 bg-backgroundSecondary w-5/2 justify-center items-center rounded-xl">
+                <View className="items-center m-4">
+                  <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}}>Welcome to Lore!</Text>
+                  <Text className="color-secondaryText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}}>
+                    Start your storytelling journey here.
+                  </Text>
+                </View>
 
-          <View style={styles.container}>
-            <View className="items-center m-4">
-              <Text style={styles.titleText}>Welcome to Lore!</Text>
-              <Text style={[styles.secondaryText, { fontSize: 12 }]}>
-                Start your storytelling journey here.
-              </Text>
+                {!isCodeSent ? (
+                  // Sign-up form
+                  <>
+                    <View className="mb-4">
+                      <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Name</Text>
+                      <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
+                        value={displayName} 
+                        onChangeText={setDisplayName} 
+                      />
+                    </View>
+
+                    <View className="mb-4">
+                      <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Email</Text>
+                      <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
+                        value={email} 
+                        onChangeText={setEmail} 
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
+                    </View>
+
+                    <View className="mb-4">
+                      <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Password</Text>
+                      <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
+                        secureTextEntry 
+                        value={password} 
+                        onChangeText={setPassword} 
+                      />
+                    </View>
+
+                    <View className="mb-4">
+                      <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Confirm Password</Text>
+                      <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
+                        secureTextEntry 
+                        value={confirmPassword} 
+                        onChangeText={setConfirmPassword} 
+                      />
+                    </View>
+
+                    <View className="m-4">
+                      <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primary h-[40px] w-[285px]" onPress={handleSignUp} disabled={loading}>
+                        <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}>
+                          {loading ? 'Signing Up...' : 'Sign Up'}
+                        </Text>
+                      </TouchableOpacity>    
+                      <Text className="color-linkText" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} onPress={() => {router.push("/"); }}>
+                        Already have an account? Log in here.
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  // Confirmation code input
+                  <>
+                    <View className="mb-4">
+                      <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Enter Confirmation Code</Text>
+                      <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
+                        value={confirmationCode} 
+                        onChangeText={setConfirmationCode} 
+                        keyboardType="numeric"
+                      />
+                    </View>
+
+                    <View className="m-4">
+                    <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent h-[40px] w-[285px]"
+                                      onPress={handleConfirm} disabled={loading}>
+                        <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}>
+                          {loading ? 'Confirming...' : 'Confirm'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+
+              </View>
             </View>
-
-            {!isCodeSent ? (
-              // Sign-up form
-              <>
-                <View className="mb-4">
-                  <Text style={styles.secondaryText}>Name</Text>
-                  <TextInput 
-                    style={styles.textInput} 
-                    value={displayName} 
-                    onChangeText={setDisplayName} 
-                  />
-                </View>
-
-                <View className="mb-4">
-                  <Text style={styles.secondaryText}>Email</Text>
-                  <TextInput 
-                    style={styles.textInput} 
-                    value={email} 
-                    onChangeText={setEmail} 
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                <View className="mb-4">
-                  <Text style={styles.secondaryText}>Password</Text>
-                  <TextInput 
-                    style={styles.textInput} 
-                    secureTextEntry 
-                    value={password} 
-                    onChangeText={setPassword} 
-                  />
-                </View>
-
-                <View className="mb-4">
-                  <Text style={styles.secondaryText}>Confirm Password</Text>
-                  <TextInput 
-                    style={styles.textInput} 
-                    secureTextEntry 
-                    value={confirmPassword} 
-                    onChangeText={setConfirmPassword} 
-                  />
-                </View>
-
-                <View className="m-4">
-                  <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
-                    <Text style={styles.buttonText}>
-                      {loading ? 'Signing Up...' : 'Sign Up'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              // Confirmation code input
-              <>
-                <View className="mb-4">
-                  <Text style={styles.secondaryText}>Enter Confirmation Code</Text>
-                  <TextInput 
-                    style={styles.textInput} 
-                    value={confirmationCode} 
-                    onChangeText={setConfirmationCode} 
-                    keyboardType="numeric"
-                  />
-                </View>
-
-                <View className="m-4">
-                  <TouchableOpacity style={styles.button} onPress={handleConfirm} disabled={loading}>
-                    <Text style={styles.buttonText}>
-                      {loading ? 'Confirming...' : 'Confirm'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-
-            <Text style={[styles.linkText, { fontSize: 12 }]} onPress={() => router.push('(user_auth)')}> 
-              Already have an account? Log in here.
-            </Text>
-          </View>
-        </SafeAreaView>
-      </ScrollView>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };

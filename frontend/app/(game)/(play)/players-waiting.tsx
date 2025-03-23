@@ -1,5 +1,5 @@
-import { View, Text, ScrollView } from 'react-native';
-import React, { useEffect } from 'react';
+import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import Profile from '~/app/(main)/profile';
@@ -50,6 +50,8 @@ const PlayersWaiting = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+        <Image className="w-full" style={{resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg2.gif")}/> 
+      
       <GameBar
         onComplete={onTimerEnd}
         duration={30}
