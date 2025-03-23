@@ -88,9 +88,17 @@ const Login = () => {
 
                             <View className="mb-4">
                               <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]" 
-                                                onPress={() => {handleSignIn}}>
+                                                onPress={() => {handleSignIn()}}>
                               <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}> Login </Text>
                               </TouchableOpacity>
+
+                            {/* ---------------------------------------------------------------------------------------------------------------------*/}
+                              <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]" 
+                                                onPress={() => {router.push('/home')}}>
+                              <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}> Login </Text>
+                              </TouchableOpacity>
+                            {/* ---------------------------------------------------------------------------------------------------------------------*/}
+
 
                               <Text className="color-secondaryText pb-2" style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}}>
                                   Don't Have an account?
