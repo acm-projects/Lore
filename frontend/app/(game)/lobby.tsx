@@ -57,6 +57,10 @@ const Lobby = () => {
     Alert.alert('Copied!', 'Lobby code copied to clipboard.');
   };
 
+  const onEditSettingsPress = () => {
+    router.push('/(game)/settings');
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="mt-10 self-center">
@@ -80,6 +84,7 @@ const Lobby = () => {
           bgVariant="secondary"
           textVariant="secondary"
           className="flex-1"
+          onPress={onEditSettingsPress}
         />
         <Button
           title="Start Game"
