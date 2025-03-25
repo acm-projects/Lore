@@ -241,7 +241,7 @@ io.on("connection", (socket) => {
       });
     }
   });
-
+  
   // Send current continue count when a player enters the story screen
   socket.on("request_continue_count", (room) => {
     if (!rooms[room]) return;

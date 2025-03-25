@@ -68,6 +68,7 @@ const Lobby = () => {
           <Text className="text-center text-backgroundText">Waiting for players...</Text>
         )}
       </ScrollView>
+      {isCreator && (
       <View className="mx-2 mb-2 flex flex-row gap-x-3">
         <Button
           title="Edit Settings"
@@ -83,6 +84,7 @@ const Lobby = () => {
           onPress={startGame}
         />
       </View>
+      )}
     </SafeAreaView>
   );
 };
