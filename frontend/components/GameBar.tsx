@@ -24,14 +24,20 @@ const GameBar = ({
   headerText,
 }: GameBarProps) => {
   const ContentWrapper = isAbsolute ? SafeAreaView : View;
-  const { lobbyCode } = useLobby();
+  const { lobbyCode, toggleVisible } = useLobby();
+
+  const onStoryPress = () => {
+    toggleVisible();
+    //router.push('/(game)/(play)/story-view');
+  };
+
 
   return (
     <ContentWrapper
       className={`${isAbsolute ? 'absolute left-0 right-0 top-5' : 'mt-5'} flex w-full max-w-full flex-row items-center justify-between`}>
       <TouchableOpacity
         className="h-16 w-24 items-center justify-center rounded-r-xl bg-primary p-2"
-        onPress={() => {console.log("Should have a function named 'onStoryPress' here.")}}>
+        onPress={() => {onStoryPress()}}>
         <BookOpen size={24} color="white" />
         <Text className="text-white">View story</Text>
       </TouchableOpacity>

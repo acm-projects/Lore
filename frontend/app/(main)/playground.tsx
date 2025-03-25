@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/core';
-import data from '~/data/data.json'
-import { Asset } from 'expo-asset';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler'
 import {Svg, Path} from 'react-native-svg'
 import {
   View,
@@ -91,8 +83,8 @@ const Playground = () => {
 
     const undoMove = () => {
         if(historyIndex != 0) {            
-            setPaths(canvasHistory[historyIndex-1])
             setHistoryIndex(historyIndex-1)
+            setPaths(canvasHistory[historyIndex])
         }
     }
 

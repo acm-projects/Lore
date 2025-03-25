@@ -1,8 +1,10 @@
-import { router } from 'expo-router';
 import React, { createRef, useEffect, useRef, useState } from 'react';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import data from '~/data/data.json'
+import data from '~/data/data.json';
+import AWS from 'aws-sdk';
 import { useFonts } from 'expo-font';
+import * as ImagePicker from 'expo-image-picker';
 import Modal from 'react-native-modal';
 import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
@@ -20,14 +22,57 @@ import {View,
         Animated,
         } from 'react-native';
 
-const DATA = data.reverse();
-
-const Profile = () => {
-
-  useFonts({
-    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
-  });
+  const s3 = new AWS.S3();
+        
+  const DATA = data.reverse();
   
+  const Profile = () => {
+    
+    const [image, setImage] = useState<string>("")
+    
+    const pickImage = async () => {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1
+      })
+
+      if(!result.canceled) {
+        setImage(result.assets[0].uri)
+      } 
+      console.log(image)
+      uploadImageToS3(image, "new")
+    }
+
+    const uploadImageToS3 = async (imageUri: string, imageName: string) => {
+      const response = await fetch(imageUri)
+      const blob = await response.blob()
+
+      const params = {
+        Bucket: 'loreprofilepictures',
+        Key: `profile-pictures/${imageName}`,
+        Body: blob,
+        ContentType: "image/jpeg",
+        ACL: 'public-read'
+      }
+
+      try{
+        const result = await s3.upload(params).promise()
+        return result.Location
+
+      } catch (error) {
+        console.error('Error uploading image:', error)
+        throw error
+      }
+
+    }
+    
+    useFonts({
+      'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    });
+    
+    /* ----------------------------------------- Animation ----------------------------------------------------------------- */
   const slideValue = useRef(useAnimatedValue((Dimensions.get("window").width))).current
 
   const slideOutAnimation = () => {
@@ -45,7 +90,8 @@ const Profile = () => {
       useNativeDriver: false
     }).start()
   }
-  
+  /* ------------------------------------------------------------------------------------------------------------------- */
+
   // ----------------------------------- Scrolling Functionality -----------------------------------------------------------
   let flatListRef = createRef<FlatList<any>>()
 
@@ -88,7 +134,7 @@ const Profile = () => {
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"red"} onPress={() => {handleLogout}}/>
+          <LogOut size={20} color={"red"} onPress={() => {handleLogout()}}/>
         </View>
       </View>
 
@@ -106,7 +152,8 @@ const Profile = () => {
             <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingBottom: 10}}>Avatar</Text>
             <View className="pl-4 flex flex-row items-center justify-between">
               <Avatar size={100} image={'https://picsum.photos/200/300'}></Avatar>
-              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl ml-6">
+              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl ml-6"
+                                onPress={() => {pickImage()}}>
                 <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Edit Avatar </Text>
               </TouchableOpacity>
             </View>
