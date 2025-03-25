@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, Modal, Pressable, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, Image, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
@@ -34,7 +34,7 @@ const Summary = () => {
       setTotalPlayers(total);
     });
 
-    socket.on("go_to_next", () => {
+    socket.on("go_to_end", () => {
       router.replace("/(game)/(play)/end-screen");
     });
 
@@ -56,42 +56,48 @@ const Summary = () => {
     }
   };
 
+  // 🔄 Show loading screen until image is available
+  if (!bookCover) {
+    return (
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+        <Text className="text-2xl font-bold text-backgroundText mb-4">Loading...</Text>
+        <ActivityIndicator size="large" color="#888" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <GameBar isAbsolute={false} headerText="Book Cover & Story" />
 
       <ScrollView className="flex-1 px-6 py-4 space-y-6">
         {/* 📕 Book Cover (Tap to Expand) */}
-        {bookCover && (
-          <>
-            <Pressable className="items-center" onPress={() => setModalVisible(true)}>
+        <Pressable className="items-center" onPress={() => setModalVisible(true)}>
+          <Image
+            source={{ uri: bookCover }}
+            style={{ width: 600, height: 900, borderRadius: 16 }}
+            resizeMode="contain"
+          />
+        </Pressable>
+
+        {/* 🪟 Fullscreen Modal */}
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+            <View className="flex-1 items-center justify-center bg-black/90">
               <Image
                 source={{ uri: bookCover }}
-                style={{ width: 600, height: 900, borderRadius: 16 }}
+                style={{ width: '80%', height: '80%' }}
                 resizeMode="contain"
               />
-            </Pressable>
-
-            {/* 🪟 Fullscreen Modal */}
-            <Modal
-              visible={modalVisible}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setModalVisible(false)}
-            >
-              <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                <View className="flex-1 items-center justify-center bg-black/90">
-                  <Image
-                    source={{ uri: bookCover }}
-                    style={{ width: '80%', height: '80%' }}
-                    resizeMode="contain"
-                  />
-                  <Text className="mt-4 text-white text-base">Tap anywhere to close</Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
-          </>
-        )}
+              <Text className="mt-4 text-white text-base">Tap anywhere to close</Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
 
         {/* 📖 Full Story Scrollbox */}
         <View className="h-64 bg-white/10 rounded-lg p-4">

@@ -32,13 +32,11 @@ const AIGen = () => {
     });
 
     // Listen for global navigation to write.tsx
-    socket.on('go_to_next', () => {
-      console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
-      if (isFinalRound) {
-        router.replace('/(game)/(play)/summary');
-      } else {
+    socket.on('go_to_prompt', () => {
         router.replace('/(game)/(play)/write');
-      }      
+    });
+    socket.on('go_to_end', () => {
+      router.replace('/(game)/(play)/summary');
     });
 
     // Request current player count when entering

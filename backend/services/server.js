@@ -65,10 +65,11 @@ io.on("connection", (socket) => {
       winningPrompts: [],
       storyHistory: [],
       round: 0,
-      lastRound: 2,
+      lastRound: 3,
       continueCount: 0,
       continuePressedBy: new Set(),
-      playerWins: {}
+      playerWins: {},
+      imageAlreadyGenerated: false
     };
 
     console.log(`Room created: ${room}`);
@@ -286,7 +287,14 @@ io.on("connection", (socket) => {
       rooms[room].continuePressedBy.clear();
 
       // Notify all players to move to prompt.tsx
-      io.to(room).emit("go_to_next");
+      if(rooms[room].round>=rooms[room].lastRound){
+        console.log(`Going end`)
+        io.to(room).emit("go_to_end");
+      } else{
+        console.log(`Next round`)
+        io.to(room).emit("go_to_prompt");
+      }
+      
     }
   });
 
@@ -294,24 +302,30 @@ io.on("connection", (socket) => {
     if (!rooms[room]) return;
     if (rooms[room].imageAlreadyGenerated) return;
     rooms[room].imageAlreadyGenerated = true;
-    
-    const storyText = rooms[room].storyHistory.join("\n\n");
-
+  
+    const full_story = rooms[room].storyHistory.join("\n\n");
+  
     try {
-      // ✅ Step 1: Get summary from app.py
+      // Step 1: Get summary from app.py
       const summaryResponse = await axios.post("http://127.0.0.1:5000/summarize", {
-        story: storyText
+        story: full_story
       });
-
-      const summary = summaryResponse.data.summary;
-      console.log("📚 Summary generated:", summary);
-
-      // ✅ Step 2: Generate image using Stable Diffusion
-      const prompt = `Create a cartoon book cover for this story: ${summary}`;
+  
+      let rawSummary = summaryResponse.data.summary;
+      console.log("🧠 Raw AI Summary Response:", rawSummary);
+  
+      // ✅ Extract paragraph after "Summary:"
+      const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
+      const cleanSummary = summaryMatch ? summaryMatch[1].trim() : "No summary found.";
+  
+      console.log("📚 Cleaned Summary:", cleanSummary);
+  
+      // Step 2: Generate image using Stable Diffusion
+      const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
       const form = new FormData();
       form.append("prompt", prompt);
       form.append("output_format", "webp");
-
+  
       const imageResponse = await axios.post(
         "https://api.stability.ai/v2beta/stable-image/generate/core",
         form,
@@ -324,14 +338,13 @@ io.on("connection", (socket) => {
           responseType: "arraybuffer"
         }
       );
-
+  
       if (imageResponse.status === 200) {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
-
-        // ✅ Step 3: Emit image + summary to room
+  
         io.to(room).emit("receive_story_image", {
-          summary,
+          summary: cleanSummary,
           image: imageDataUri
         });
       } else {
@@ -345,6 +358,7 @@ io.on("connection", (socket) => {
       });
     }
   });
+  
 
   socket.on("request_full_story", (room) => {
   if (!rooms[room]) return;

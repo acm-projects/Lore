@@ -72,13 +72,12 @@ def summarize_story():
 
     # Instruction for summarization
     instruction = (
-        f"Summarize the following story into one concise paragraph:\n\n{full_story}\n\n"
-        "Only give a single paragraph with no introduction or follow-up."
+        f"Return a one paragraph summary of the story:\n\n{full_story}\n\n Label the beginning of the paragraph with Summary: "
     )
 
     payload = {
         "prompt": instruction,
-        "temperature": 0.5
+        "temperature": 0.6
     }
 
     body = json.dumps(payload)
