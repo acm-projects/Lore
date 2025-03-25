@@ -14,7 +14,7 @@ const PlayersWaiting = () => {
   const { lobbyCode, addPlotPoint } = useLobby();
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
   const round = params.round ? parseInt(params.round as string) : 1;
-
+  const lastRound = params.lastRound ? parseInt(params.lastRound as string) : 1;
   const [players, setPlayers] = useState<{ id: string, currentScreen?: string }[]>([]);
 
   useEffect(() => {
@@ -46,6 +46,7 @@ const PlayersWaiting = () => {
             prompt, 
             story, 
             round: round.toString(),
+            lastRound: lastRound.toString()
           },
         });
       });

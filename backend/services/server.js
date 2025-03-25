@@ -3,6 +3,13 @@ import axios from "axios";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
+import dotenv from "dotenv";
+import FormData from "form-data";
+
+dotenv.config({ path: '../.env' }); // load secret keys
+
+// Replace this with your actual Stability API key
+const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
 const app = express();
 app.use(express.json());
@@ -58,9 +65,10 @@ io.on("connection", (socket) => {
       winningPrompts: [],
       storyHistory: [],
       round: 0,
+      lastRound: 2,
       continueCount: 0,
       continuePressedBy: new Set(),
-      playerWins: {},
+      playerWins: {}
     };
 
     console.log(`Room created: ${room}`);
@@ -179,6 +187,12 @@ io.on("connection", (socket) => {
       rooms[room].playerWins[winnerId] =
         (rooms[room].playerWins[winnerId] || 0) + 1;
 
+      rooms[room].round++;
+      let isFinalRound = false;
+      if(rooms[room].round >= rooms[room].lastRound){
+        isFinalRound = true;
+      }
+
       console.log(
         `🏆 Winner of round ${rooms[room].round}: ${winnerName} with prompt: "${winningPrompt}"`
       );
@@ -189,6 +203,7 @@ io.on("connection", (socket) => {
           prompt: winningPrompt,
           current_story: rooms[room].storyHistory.join("\n\n"),
           round: rooms[room].round,
+          final: isFinalRound
         });
       
         let aiResponse = response.data.story;
@@ -211,9 +226,6 @@ io.on("connection", (socket) => {
         console.error("❌ AI generation error:", error);
       }      
 
-      // ✅ Increment round before checking finalRound
-      rooms[room].round++;
-
       console.log(
         `🚀 Emitting "story_ready" event for room: ${room}, Round: ${rooms[room].round}`
       );
@@ -222,6 +234,7 @@ io.on("connection", (socket) => {
         prompt: winningPrompt,
         story: rooms[room].story,
         round: rooms[room].round,
+        lastRound: rooms[room].lastRound,
         creatorId: rooms[room].creator,
         playerWins: rooms[room].playerWins, // ✅ Send player wins to frontend
       });
@@ -273,9 +286,71 @@ io.on("connection", (socket) => {
       rooms[room].continuePressedBy.clear();
 
       // Notify all players to move to prompt.tsx
-      io.to(room).emit("go_to_prompt");
+      io.to(room).emit("go_to_next");
     }
   });
+
+  socket.on("request_story_summary", async ({ room }) => {
+    if (!rooms[room]) return;
+    if (rooms[room].imageAlreadyGenerated) return;
+    rooms[room].imageAlreadyGenerated = true;
+    
+    const storyText = rooms[room].storyHistory.join("\n\n");
+
+    try {
+      // ✅ Step 1: Get summary from app.py
+      const summaryResponse = await axios.post("http://127.0.0.1:5000/summarize", {
+        story: storyText
+      });
+
+      const summary = summaryResponse.data.summary;
+      console.log("📚 Summary generated:", summary);
+
+      // ✅ Step 2: Generate image using Stable Diffusion
+      const prompt = `Create a cartoon book cover for this story: ${summary}`;
+      const form = new FormData();
+      form.append("prompt", prompt);
+      form.append("output_format", "webp");
+
+      const imageResponse = await axios.post(
+        "https://api.stability.ai/v2beta/stable-image/generate/core",
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${STABILITY_API_KEY}`,
+            ...form.getHeaders(),
+            Accept: "image/*"
+          },
+          responseType: "arraybuffer"
+        }
+      );
+
+      if (imageResponse.status === 200) {
+        const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
+        const imageDataUri = `data:image/webp;base64,${imageBase64}`;
+
+        // ✅ Step 3: Emit image + summary to room
+        io.to(room).emit("receive_story_image", {
+          summary,
+          image: imageDataUri
+        });
+      } else {
+        throw new Error(`Image generation failed: ${imageResponse.status}`);
+      }
+    } catch (err) {
+      console.error("❌ Summary or image generation failed:", err);
+      io.to(room).emit("receive_story_image", {
+        summary: "Summary could not be generated.",
+        image: null
+      });
+    }
+  });
+
+  socket.on("request_full_story", (room) => {
+  if (!rooms[room]) return;
+  const fullStory = rooms[room].storyHistory.join("\n\n");
+  io.to(socket.id).emit("receive_full_story", fullStory); 
+  });  
 
   // Handle player disconnect
   socket.on("disconnect", () => {

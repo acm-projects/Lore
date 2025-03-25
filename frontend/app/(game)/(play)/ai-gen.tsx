@@ -10,7 +10,7 @@ import { socket } from '~/socket';
 
 const AIGen = () => {
   const { lobbyCode } = useLobby();
-  const { prompt, story, round } = useLocalSearchParams();
+  const { prompt, story, round, lastRound } = useLocalSearchParams();
   const router = useRouter(); // ✅ Initialize router
 
   const [continueCount, setContinueCount] = useState(0);
@@ -19,7 +19,10 @@ const AIGen = () => {
   const winnerAvatar = require('../../../assets/avatar1.png');
 
   // ✅ Convert round to a number
-  const roundNumber = round ? parseInt(round as string, 10) : 1;
+  const roundNumber = parseInt(round as string, 10);
+  const lastRoundNumber = parseInt(lastRound as string, 10);
+  const isFinalRound = roundNumber >= lastRoundNumber;
+
 
   useEffect(() => {
     // Listen for updated continue count
@@ -29,13 +32,13 @@ const AIGen = () => {
     });
 
     // Listen for global navigation to write.tsx
-    socket.on('go_to_prompt', () => {
+    socket.on('go_to_next', () => {
       console.log('🔄 Navigating back to write.tsx...'); // ✅ Debugging
-      if (roundNumber >= 2) {
-        router.replace('/(game)/(play)/end-screen'); // ✅ Corrected navigation
+      if (isFinalRound) {
+        router.replace('/(game)/(play)/summary');
       } else {
         router.replace('/(game)/(play)/write');
-      }
+      }      
     });
 
     // Request current player count when entering
