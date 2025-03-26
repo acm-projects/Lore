@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Asset } from 'expo-asset';
+import {  } from '../(user_auth)/CognitoConfig';
+import Slider from '@react-native-community/slider'
 import {
   View,
   Image,
@@ -10,7 +12,6 @@ import {
 } from 'react-native'
 
 const Home = () => {
-  
   useEffect(() => {
     async function loadGifs() {
       await Asset.loadAsync(require('assets/bg2.gif'));
