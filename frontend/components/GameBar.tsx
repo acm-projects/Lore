@@ -71,7 +71,9 @@ const GameBar = ({
           <Text className="text-center text-4xl font-bold text-white">{headerText}</Text>
         </View>
       )}
-      <TouchableOpacity className="mr-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2">
+      <TouchableOpacity
+        className="mr-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"
+        onPress={onCodePress}>
         <Text className="font-semibold text-white">Join Code</Text>
         <Text className="text-white">{lobbyCode}</Text>
       </TouchableOpacity>

@@ -47,6 +47,7 @@ const AIGen = () => {
       console.log('✅ AI story received');
       setStory(finalStory);
       setIsLoading(false);
+      console.log(finalPrompt, finalStory);
       addPlotPoint({ winningPlotPoint: finalPrompt, story: finalStory });
     });
 
@@ -82,7 +83,9 @@ const AIGen = () => {
         </View>
 
         {/* 📖 Story Box or Loading Spinner */}
-        <ScrollView className="flex-1 items-center justify-center rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
+        <ScrollView
+          className="w-full flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4"
+          contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}>
           {isLoading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#ffffff" />
