@@ -14,7 +14,6 @@ const Write = () => {
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
-    if (prompt.trim() === '') return;
 
     socket.emit('submit_prompt', { room: lobbyCode, prompt });
 
