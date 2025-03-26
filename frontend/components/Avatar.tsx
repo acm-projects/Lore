@@ -1,12 +1,26 @@
-import React from 'react'
+import { useFonts } from 'expo-font';
+import React, { useState } from 'react'
 import {View,
-        Image
+        Image,
+        SafeAreaView,
+        Text,
+        TouchableOpacity
  } from 'react-native'
 
-function Avatar (props: {image: string, size: any})
+function Avatar (props: {size: number, image: string})
 {
+    useFonts({
+        'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+        'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf')
+    });
+    
     return( 
-        <Image style={{width: props.size, height: props.size, borderRadius: props.size/2}} source={{uri : props.image}} />
+        <View>
+            <Image style={{width: props.size, height: props.size}} className="rounded-full"
+                    source={{uri : props.image}}>
+
+            </Image>
+        </View>
     )
 }
 

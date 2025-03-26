@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -8,10 +8,10 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
 
   useEffect(() => {
     // Request prompts when screen loads
@@ -69,10 +69,12 @@ const Voting = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg3.gif")}/> 
+      
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={10}
+        initialRemainingTime={10}
         isAbsolute={false}
         onUpdate={onUpdate}
       />

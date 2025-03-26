@@ -1,13 +1,17 @@
 import { Stack } from 'expo-router';
 import { Undo2 } from 'lucide-react-native';
+import { useState } from 'react';
 import { View } from 'react-native';
+import Modal from 'react-native-modal';
 import GameBar from '~/components/GameBar';
 import StoryView from '~/components/story-view';
-import { LobbyProvider, useLobby } from '~/context/LobbyContext';
-import Modal from 'react-native-modal';
+import { LobbyProvider } from '~/context/LobbyContext';
 
 const PlayLayout = () => {
-  const { isVisible, toggleVisible } = useLobby();
+  const [isVisible, setVisible] = useState(false)
+  const toggleVisible = () => {
+    setVisible(!isVisible)
+  }
 
   return (
     <>
@@ -18,7 +22,7 @@ const PlayLayout = () => {
         <Stack.Screen name="ai-gen" />
         <Stack.Screen name="end-screen" />
       </Stack>
-      <Modal isVisible={isVisible} animationIn="slideInLeft" animationOut="slideOutLeft">
+      <Modal isVisible={isVisible} animationIn="slideInLeft" animationOut="slideOutLeft" style={{margin: 0}}>
         <View className="flex h-[100px] w-full flex-row items-center justify-between bg-backgroundSecondary pt-4">
           <View className="h-[40px] w-[50px] items-center justify-center rounded-r-lg bg-primaryAccent">
             <Undo2
