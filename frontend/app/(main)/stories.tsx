@@ -7,7 +7,6 @@ import { socket } from '~/socket';
 
 const Stories = () => {
   const createGameRoom = () => {
-    router.push('/(game)/settings');
     socket.emit('create_room', (response: any) => {
       if (response.success) {
         console.log('Room created:', response);
