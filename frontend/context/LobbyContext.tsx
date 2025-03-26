@@ -1,17 +1,9 @@
-import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
-import { Animated, Dimensions } from 'react-native';
-
-type PlotPoint = {
-  winningPlotPoint: string;
-  story: string;
-};
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 // Define the shape of our context state
 type LobbyContextType = {
   lobbyCode: string;
-  plotPoints: PlotPoint[];
-  isVisible: boolean;
-  toggleVisible: () => void;
+  plotPoints: string[];
   players: { id: string }[];
   creatorId: string | null;
   setCreator: (id: string) => void;
@@ -20,8 +12,8 @@ type LobbyContextType = {
   removePlayer: (player: string) => void;
   clearPlayers: () => void;
   setLobbyCode: (code: string) => void;
-  setPlotPoints: (points: PlotPoint[]) => void;
-  addPlotPoint: (plotPoint: PlotPoint) => void;
+  setPlotPoints: (points: string[]) => void;
+  addPlotPoint: (point: string) => void;
   removePlotPoint: (index: number) => void;
   clearPlotPoints: () => void;
 };
@@ -37,21 +29,9 @@ type LobbyProviderProps = {
 // Provider component
 export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [lobbyCode, setLobbyCode] = useState<string>('');
-  const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
+  const [plotPoints, setPlotPoints] = useState<string[]>([]);
   const [players, setPlayers] = useState<{ id: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
-
-  const animationValue = useRef(new Animated.Value(0)).current;
-  let [isVisible, setVisible] = useState(false);
-
-  const toggleVisible = () => {
-    setVisible(!isVisible);
-    Animated.timing(animationValue, {
-      toValue: isVisible ? 0 : Dimensions.get('window').width,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
 
   // Helper function to set the creator ID
   const setCreator = (id: string) => {
@@ -73,8 +53,8 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
     setPlayers([]);
   };
   // Helper function to add a single plot point
-  const addPlotPoint = (plotPoint: PlotPoint) => {
-    setPlotPoints((prevPoints) => [...prevPoints, plotPoint]);
+  const addPlotPoint = (point: string) => {
+    setPlotPoints((prevPoints) => [...prevPoints, point]);
   };
 
   // Helper function to remove a plot point
@@ -91,8 +71,6 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const value = {
     lobbyCode,
     plotPoints,
-    isVisible,
-    toggleVisible,
     players,
     setLobbyCode,
     setPlotPoints,

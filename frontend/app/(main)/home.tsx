@@ -12,15 +12,11 @@ import {
 } from 'react-native'
 
 const Home = () => {
-
   useEffect(() => {
     async function loadGifs() {
-      await Asset.loadAsync(require('assets/bg1.gif'));
       await Asset.loadAsync(require('assets/bg2.gif'));
-      await Asset.loadAsync(require('assets/bg3.gif'));
-      await Asset.loadAsync(require('assets/bg4.gif'));
-      await Asset.loadAsync(require('assets/bg5.gif'));
     }
+
     loadGifs();
   }, []);
 

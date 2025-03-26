@@ -1,15 +1,14 @@
 import React, { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import data from '~/data/data.json';
-import AWS from 'aws-sdk';
+import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
-import * as ImagePicker from 'expo-image-picker';
 import Modal from 'react-native-modal';
 import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
+import * as ImagePicker from 'expo-image-picker';
 import { signOutUser, getUserAttributes } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
 import {View, 
         Text, 
@@ -21,6 +20,7 @@ import {View,
         Dimensions,
         Animated,
         } from 'react-native';
+import AWS from 'aws-sdk';
         
 const DATA = data.reverse();
         
@@ -134,8 +134,7 @@ const DATA = data.reverse();
       useNativeDriver: false
     }).start()
   }
-  /* ------------------------------------------------------------------------------------------------------------------- */
-
+  
   // ----------------------------------- Scrolling Functionality -----------------------------------------------------------
   let flatListRef = createRef<FlatList<any>>()
 
@@ -178,7 +177,7 @@ const DATA = data.reverse();
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"red"} onPress={() => {handleLogout()}}/>
+          <LogOut size={20} color={"red"} onPress={() => {handleLogout}}/>
         </View>
       </View>
 
