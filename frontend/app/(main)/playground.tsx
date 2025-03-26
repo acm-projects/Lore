@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/core';
+import data from '~/data/data.json'
+import { Asset } from 'expo-asset';
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 import {Svg, Path} from 'react-native-svg'
 import { Bomb, Redo, Undo, Palette, BoomBox, Pen } from 'lucide-react-native';
 import Slider from '@react-native-community/slider'
