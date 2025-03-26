@@ -13,39 +13,54 @@ const Lobby = () => {
   const [isCreator, setIsCreator] = useState(false);
 
   useEffect(() => {
-    if (lobbyCode) {
-      setLobbyCode(lobbyCode as string);
-    } else {
+    if (!lobbyCode) {
       console.log('No lobby code found');
       router.replace('/');
+      return;
     }
-
-    // Join the room and receive creatorId from the server
-    socket.emit('join_room', { room: lobbyCode }, (response: any) => {
-      if (!response.success) {
-        console.error('❌ Failed to join room:', response.message);
-        router.replace('/');
-      } else {
-        setCreator(response.creatorId); // Save creatorId from the server
-        setIsCreator(response.creatorId === socket.id);
-      }
-    });
-
+  
+    setLobbyCode(lobbyCode as string);
+  
+    const joinAfterConnect = () => {
+      console.log("✅ Connected with ID:", socket.id);
+  
+      socket.emit('join_room', { room: lobbyCode }, (response: any) => {
+        console.log("🏠 Room Creator ID:", response.creatorId);
+  
+        if (!response.success) {
+          console.error('❌ Failed to join room:', response.message);
+          router.replace('/');
+        } else {
+          setCreator(response.creatorId);
+          setIsCreator(response.creatorId === socket.id);
+          console.log("🧠 Is Creator?", response.creatorId === socket.id);
+        }
+      });
+    };
+  
+    if (socket.connected) {
+      joinAfterConnect();
+    } else {
+      socket.once("connect", joinAfterConnect);
+    }
+  
     socket.on('update_users', (users) => {
       console.log('👥 Updated Users List:', users);
       setPlayers(users || []);
     });
-
+  
     socket.on('game_started', () => {
       console.log('🎮 Game Started! Navigating to prompt.tsx');
       router.replace('/(game)/(play)/write');
     });
-
+  
     return () => {
       socket.off('update_users');
       socket.off('game_started');
+      socket.off('connect', joinAfterConnect);
     };
   }, [lobbyCode]);
+  
 
   const startGame = () => {
     socket.emit('start_game', lobbyCode);

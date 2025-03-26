@@ -88,16 +88,21 @@ io.on("connection", (socket) => {
   // Join an existing room
   socket.on("join_room", ({ room }, callback) => {
     if (!rooms[room]) return;
-
+  
     socket.join(room);
     const isAlreadyInRoom = rooms[room].users.some(user => user.id === socket.id);
     
     if (!isAlreadyInRoom) {
       rooms[room].users.push({ id: socket.id, currentScreen: "lobby" }); // ✅ Default screen is lobby
     }
-
+  
+    // ✅ Send creatorId to the client
+    if (typeof callback === "function") {
+      callback({ success: true, creatorId: rooms[room].creator });
+    }
+  
     io.to(room).emit("update_users", rooms[room].users);
-  });
+  });  
 
   socket.on("update_screen", ({ room, screen }) => {
     if (!rooms[room]) return;
@@ -145,102 +150,89 @@ io.on("connection", (socket) => {
     );
   });
 
-  // When all votes are submitted, determine the winner and send prompt to AI
-  socket.on("submit_vote", async ({ room, votedPrompt }) => {
+  socket.on("submit_vote", ({ room, votedPrompt }) => {
     if (!rooms[room]) return;
-
-    console.log(`🗳 Vote received for: "${votedPrompt}" in room: ${room}`);
-
-    const promptEntry = Object.values(rooms[room].prompts).find(
-      (entry) => entry.prompt === votedPrompt
-    );
-    if (!promptEntry) {
-      console.log("❌ Invalid vote: Prompt not found");
-      return;
-    }
-
+  
+    const promptEntry = Object.values(rooms[room].prompts).find(entry => entry.prompt === votedPrompt);
+    if (!promptEntry) return;
+  
     const votedPlayerId = promptEntry.playerId;
-    rooms[room].votes[votedPlayerId] =
-      (rooms[room].votes[votedPlayerId] || 0) + 1;
+    rooms[room].votes[votedPlayerId] = (rooms[room].votes[votedPlayerId] || 0) + 1;
     rooms[room].totalVotes++;
-
+  
+    // If all players have voted, proceed to AI
     if (rooms[room].totalVotes === Object.keys(rooms[room].prompts).length) {
-      console.log("🔍 All votes submitted. Determining winner...");
-
-      let maxVotes = Math.max(...Object.values(rooms[room].votes));
-      let tiedPlayers = Object.keys(rooms[room].votes).filter(
-        (playerId) => rooms[room].votes[playerId] === maxVotes
-      );
-      let winnerId =
-        tiedPlayers.length > 1
-          ? tiedPlayers[Math.floor(Math.random() * tiedPlayers.length)]
-          : tiedPlayers[0];
-
-      let winningPrompt = rooms[room].prompts[winnerId].prompt;
-      let winnerName =
-        rooms[room].users.find((user) => user.id === winnerId)?.name ||
-        "Unknown";
-
-      rooms[room].winner = winnerName;
-      rooms[room].winningPrompts.push(winningPrompt);
-
-      // ✅ Track player wins
-      rooms[room].playerWins[winnerId] =
-        (rooms[room].playerWins[winnerId] || 0) + 1;
-
-      rooms[room].round++;
-      let isFinalRound = false;
-      if(rooms[room].round >= rooms[room].lastRound){
-        isFinalRound = true;
-      }
-
-      console.log(
-        `🏆 Winner of round ${rooms[room].round}: ${winnerName} with prompt: "${winningPrompt}"`
-      );
-      console.log(`📡 Sending AI request to expand the story...`);
-
-      try {
-        const response = await axios.post("http://127.0.0.1:5000/generate", {
-          prompt: winningPrompt,
-          current_story: rooms[room].storyHistory.join("\n\n"),
-          round: rooms[room].round,
-          final: isFinalRound
-        });
-      
-        let aiResponse = response.data.story;
-      
-        // ✅ Extract the first three numbered paragraphs only
-        let numberedParagraphs = aiResponse
-          .split("\n") // Split into lines
-          .filter(line => /^\d+\.\s/.test(line)) // Keep only lines that start with "1. ", "2. ", etc.
-          .map(line => line.replace(/^\d+\.\s/, "")) // Remove the numbering
-          .slice(0, 3) // Take only the first three paragraphs
-          .join("\n\n"); // Join them back as paragraphs
-      
-        // ✅ Save only the latest AI response
-        rooms[room].story = numberedParagraphs;
-        rooms[room].storyHistory.push(numberedParagraphs); // Keep track of full story progression
-      
-        console.log("✅ AI Response Processed:", numberedParagraphs);
-      } catch (error) {
-        rooms[room].story = "Error generating story.";
-        console.error("❌ AI generation error:", error);
-      }      
-
-      console.log(
-        `🚀 Emitting "story_ready" event for room: ${room}, Round: ${rooms[room].round}`
-      );
-
-      io.to(room).emit("story_ready", {
-        prompt: winningPrompt,
-        story: rooms[room].story,
-        round: rooms[room].round,
-        lastRound: rooms[room].lastRound,
-        creatorId: rooms[room].creator,
-        playerWins: rooms[room].playerWins, // ✅ Send player wins to frontend
-      });
+      determineWinnerAndStartAI(room);
+    } else {
+      // If not all have voted, this player waits on waiting screen
+      socket.emit("go_to_waiting", { phase: "story" });
     }
   });
+
+  socket.on("force_end_voting", (room) => {
+    if (!rooms[room]) return;
+    determineWinnerAndStartAI(room);
+  });  
+
+  function determineWinnerAndStartAI(room) {
+    const roomData = rooms[room];
+    if (!roomData) return;
+  
+    const votes = roomData.votes;
+    const prompts = roomData.prompts;
+    const users = roomData.users;
+  
+    let maxVotes = Math.max(...Object.values(votes));
+    let tiedPlayers = Object.keys(votes).filter(playerId => votes[playerId] === maxVotes);
+    let winnerId = tiedPlayers.length > 1
+      ? tiedPlayers[Math.floor(Math.random() * tiedPlayers.length)]
+      : tiedPlayers[0];
+  
+    let winningPrompt = prompts[winnerId].prompt;
+    let winnerName = users.find(u => u.id === winnerId)?.name || "Unknown";
+  
+    roomData.winner = winnerName;
+    roomData.winningPrompts.push(winningPrompt);
+    roomData.playerWins[winnerId] = (roomData.playerWins[winnerId] || 0) + 1;
+  
+    roomData.round++;
+    const isFinalRound = roomData.round >= roomData.lastRound;
+  
+    // Send players to ai-gen with loading text
+    io.to(room).emit("go_to_ai_gen", { prompt: winningPrompt });
+  
+    // Now request AI
+    axios.post("http://127.0.0.1:5000/generate", {
+      prompt: winningPrompt,
+      current_story: roomData.storyHistory.join("\n\n"),
+      round: roomData.round,
+      final: isFinalRound
+    }).then(response => {
+      let aiResponse = response.data.story;
+  
+      let numberedParagraphs = aiResponse
+        .split("\n")
+        .filter(line => /^\d+\.\s/.test(line))
+        .map(line => line.replace(/^\d+\.\s/, ""))
+        .slice(0, 3)
+        .join("\n\n");
+  
+      roomData.story = numberedParagraphs;
+      roomData.storyHistory.push(numberedParagraphs);
+  
+      io.to(room).emit("story_ready", {
+        story: numberedParagraphs,
+        round: roomData.round,
+        lastRound: roomData.lastRound,
+        creatorId: roomData.creator,
+        playerWins: roomData.playerWins,
+      });
+    }).catch(err => {
+      console.error("❌ AI error:", err);
+      roomData.story = "Error generating story.";
+      io.to(room).emit("story_ready", { story: "Error generating story." });
+    });
+  }  
   
   // Send current continue count when a player enters the story screen
   socket.on("request_continue_count", (room) => {

@@ -1,7 +1,7 @@
-import { View, Text, Image, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router'; // ✅ Import router
+import { useRouter } from 'expo-router';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
@@ -9,44 +9,54 @@ import { useLocalSearchParams } from 'expo-router';
 import { socket } from '~/socket';
 
 const AIGen = () => {
-  const { lobbyCode } = useLobby();
-  const { prompt, story, round, lastRound } = useLocalSearchParams();
-  const router = useRouter(); // ✅ Initialize router
+  const { lobbyCode, addPlotPoint } = useLobby();
+  const { prompt, story: initialStory, round, lastRound } = useLocalSearchParams();
+  const router = useRouter();
 
+  const [story, setStory] = useState<string>(
+    initialStory === "Loading..." ? "Loading..." : (initialStory as string)
+  );
   const [continueCount, setContinueCount] = useState(0);
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [hasPressedContinue, setHasPressedContinue] = useState(false);
+  const [isLoading, setIsLoading] = useState(story === "Loading...");
+
   const winnerAvatar = require('../../../assets/avatar1.png');
 
-  // ✅ Convert round to a number
   const roundNumber = parseInt(round as string, 10);
   const lastRoundNumber = parseInt(lastRound as string, 10);
   const isFinalRound = roundNumber >= lastRoundNumber;
 
-
   useEffect(() => {
-    // Listen for updated continue count
+    socket.emit('request_continue_count', lobbyCode);
+
     socket.on('update_continue_count', ({ count, total }) => {
       setContinueCount(count);
       setTotalPlayers(total);
     });
 
-    // Listen for global navigation to write.tsx
     socket.on('go_to_prompt', () => {
-        router.replace('/(game)/(play)/write');
+      router.replace('/(game)/(play)/write');
     });
+
     socket.on('go_to_end', () => {
       router.replace('/(game)/(play)/summary');
     });
 
-    // Request current player count when entering
-    socket.emit('request_continue_count', lobbyCode);
+    socket.on('story_ready', ({ prompt: finalPrompt, story: finalStory }) => {
+      console.log("✅ AI story received");
+      setStory(finalStory);
+      setIsLoading(false);
+      addPlotPoint({ winningPlotPoint: finalPrompt, story: finalStory });
+    });
 
     return () => {
       socket.off('update_continue_count');
       socket.off('go_to_prompt');
+      socket.off('go_to_end');
+      socket.off('story_ready');
     };
-  }, [lobbyCode]); // ✅ Removed `finalRound` from dependencies
+  }, [lobbyCode]);
 
   const handleContinue = () => {
     if (!hasPressedContinue) {
@@ -59,7 +69,7 @@ const AIGen = () => {
     <SafeAreaView className="max-h-full flex-1 bg-background">
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
-        {/* Plot Point Winner */}
+        {/* 🏆 Winning Prompt */}
         <View className="flex w-full flex-row rounded-lg border-2 border-primary bg-backgroundAccent p-4">
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
             <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
@@ -71,11 +81,21 @@ const AIGen = () => {
           </View>
         </View>
 
-        {/* AI Generated Story */}
-        <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4">
-          <Text className="text-center text-2xl font-bold text-backgroundText">{story}</Text>
+        {/* 📖 Story Box or Loading Spinner */}
+        <ScrollView className="flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4 items-center justify-center">
+          {isLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#ffffff" />
+              <Text className="mt-4 text-lg text-white">Loading story...</Text>
+            </View>
+          ) : (
+            <Text className="text-center text-2xl font-bold text-backgroundText whitespace-pre-line">
+              {story}
+            </Text>
+          )}
         </ScrollView>
 
+        {/* ✅ Continue Button */}
         <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
           <View className="w-full flex-1">
             <Button
