@@ -1,4 +1,5 @@
 import { useFonts } from 'expo-font';
+import { router } from 'expo-router';
 import React, { useState } from 'react'
 import {View,
         Image,
@@ -24,7 +25,8 @@ function UserCard (props: {name: string, image: string, friends: boolean})
     
     return( 
         <SafeAreaView className="flex-1 items-center my-2">
-            <View className="rounded-xl bg-backgroundSecondary h-[70px] w-[330px] items-center flex-row">
+            <TouchableOpacity className="rounded-xl bg-backgroundSecondary h-[70px] w-[330px] items-center flex-row"
+                              onPress={() => {router.push("/(social)/otherUserProfile")}}>
 
                 <Image className="rounded-full ml-4" style={{width: 55, height: 55}} source={{uri : props.image}} />
                 <View className="w-[130px] h-auto flex-row items-start">
@@ -60,7 +62,7 @@ function UserCard (props: {name: string, image: string, friends: boolean})
                         </View>) 
                     }
                 </View>
-            </View>
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
