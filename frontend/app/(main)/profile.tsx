@@ -2,13 +2,13 @@ import React, { createRef, useCallback, useEffect, useRef, useState } from 'reac
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json'
-import * as ImagePicker from 'expo-image-picker';
 import { useFonts } from 'expo-font';
 import Modal from 'react-native-modal';
 import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
+import * as ImagePicker from 'expo-image-picker';
 import { signOutUser, getUserAttributes } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
 import {View, 
         Text, 
