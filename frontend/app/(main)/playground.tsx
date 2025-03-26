@@ -1,74 +1,79 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {Svg, Path} from 'react-native-svg'
+import { Bomb, Redo, Undo, Palette, BoomBox, Pen } from 'lucide-react-native';
+import Slider from '@react-native-community/slider'
 import {
   View,
   Image,
   Text,
   TouchableOpacity,
-  StatusBar,
-  Touchable,
+  Animated,
+  Easing,
+  useAnimatedValue,
 } from 'react-native'
+import { useFocusEffect } from 'expo-router';
 
 const Playground = () => {
-    // For drawing
-    const [paths, setPaths] = useState<string[]>([]) 
-    const [currentPath, setCurrentPath] = useState<string[]>([])
 
-    // For undoing
-    const [pathLengths, setPathLengths] = useState<string[]>([])
-
-    // For redoing
-    const [canvasHistory, setCanvasHistory] = useState<string[][]>([])
-    const [historyIndex, setHistoryIndex] = useState(canvasHistory.length)
+    useFocusEffect( useCallback(() => { 
+        setUndoStack([])
+        setRedoStack([])
+        setPaths([])
+        setCurrentPath([])
+    }, []))
     
-    const [isClearButtonClicked, setClearButtonClicked] = useState(false)
+    // ------------------------------- Drawing -------------------------------------------------
+    type PathPoint = { d: string; color: string; strokeWidth: number };
+    
+    const [paths, setPaths] = useState<PathPoint[]>([]) 
+    const [currentPath, setCurrentPath] = useState<PathPoint[]>([])
+    
+    const [undoStack, setUndoStack] = useState<PathPoint[][]>([]);
+    const [redoStack, setRedoStack] = useState<PathPoint[][]>([]);
+    
     const [strokeColor, setStrokeColor] = useState("black")
+    const [strokeWidth, setStrokeWidth] = useState(3)
 
-    useEffect(() => {
-        console.log(historyIndex)
-        console.log(canvasHistory)
-    }, [historyIndex])
-
-    const handleCanvasSave = () => {
-        canvasHistory.push(paths)
-        if(canvasHistory.length > 15) { // A total of 15 canvas states will be saved 
-            canvasHistory.shift()
-        }
-        setCanvasHistory(canvasHistory)
-        setHistoryIndex(canvasHistory.length)
-    }
 
     const handleClear = () => {
-        const newCanvasHistory = ([])
+        if(paths.length === 0) {
+            return;
+        }
 
         setPaths([])
         setCurrentPath([])
 
-        handleCanvasSave()
-        for(let i = 0; i < historyIndex; i++) { // Make the current history index the latest one
-            newCanvasHistory.push(canvasHistory[i])
-        }
-        
-        setCanvasHistory(newCanvasHistory)
-        
-        setClearButtonClicked(true)
+        setUndoStack((prevUndoStack) => [...prevUndoStack, [{d: paths.map(point => point.d).join(' '), 
+                                                            color: strokeColor,
+                                                            strokeWidth: strokeWidth}, 
+                                                            {d: currentPath.map(point => point.d).join(' '), 
+                                                            color: strokeColor,
+                                                            strokeWidth: strokeWidth}]])
+        setRedoStack([])
     }
 
-    const onTouchEnd = () => {
-        const newCanvasHistory = ([])
-        
-        paths.push(...currentPath)
-        pathLengths.push((currentPath.length).toString())
+    const onTouchEnd = () => {        
+        if (currentPath.length === 0) return;
+
+        setPaths((prevPaths) => [
+            ...prevPaths,
+            {
+                d: currentPath.map(point => point.d).join(' '), // Combine points into one path
+                color: strokeColor,
+                strokeWidth: strokeWidth
+            }
+        ]);        
+
         setCurrentPath([])
-        setClearButtonClicked(false)
-        
-        handleCanvasSave()
-        for(let i = 0; i < historyIndex; i++) { // Make the current history index the latest one
-            newCanvasHistory.push(canvasHistory[i])
-        }
-        
-        setCanvasHistory(newCanvasHistory)
+        console.log(paths.map(point => point.color).at(0))
+        setUndoStack((prevUndoStack) => [...prevUndoStack, [{d: paths.map(point => point.d).join(' '), 
+                                                             color: strokeColor,
+                                                             strokeWidth: strokeWidth}, 
+                                                            {d: currentPath.map(point => point.d).join(' '), 
+                                                             color: strokeColor,
+                                                             strokeWidth: strokeWidth}]])
+        setRedoStack([])
     }
 
     const onTouchMove = (event: any) => {
@@ -76,80 +81,164 @@ const Playground = () => {
         const locationX = event.nativeEvent.locationX;
         const locationY = event.nativeEvent.locationY;
 
-        const newPoint = `${newPath.length === 0 ? 'M' : ''} ${locationX.toFixed(0)}, ${locationY.toFixed(0)} `
+        const newPoint = 
+        {
+            d: `${newPath.length === 0 ? 'M' : 'L'} ${locationX.toFixed(0)}, ${locationY.toFixed(0)}`,
+            color: strokeColor,
+            strokeWidth: strokeWidth
+        }
         newPath.push(newPoint)
         setCurrentPath(newPath)
     }
 
     const undoMove = () => {
-        if(historyIndex != 0) {            
-            setHistoryIndex(historyIndex-1)
-            setPaths(canvasHistory[historyIndex])
+        if(undoStack.length > 1) {            
+            const previousPaths = undoStack[undoStack.length-2]
+            const lastPath = undoStack[undoStack.length -1]
+
+            console.log(undoStack)
+            for(let i = 0; i < previousPaths.length; i++)
+            {
+                previousPaths.map(item => {if(item.d.length == 0) {
+                    previousPaths.splice(i, 1)
+                }})
+
+            }
+            console.log(previousPaths)
+
+            setRedoStack(prevRedoStack => [...prevRedoStack, lastPath])
+            setUndoStack(prevUndoStack => prevUndoStack.slice(0, -1))
+            setPaths(previousPaths)
+
+        } else if(undoStack.length == 1) {
+            const lastPath = undoStack[undoStack.length -1]
+            
+            setRedoStack(prevRedoStack => [...prevRedoStack, lastPath])
+            setUndoStack([])
+            setPaths([])
         }
     }
-
+    
     const redoMove = () => {
-       /*  const newSavePathLengths = ([])
-        const newSavedPaths = ([])
-
-        console.log(savedPaths)
-        console.log(savedPathLengths)
-
-        for(let j = 0; j < Number(savedPathLengths[0]); j++)
-        {
-            paths.push(savedPaths[j])
+        if (redoStack.length > 0) {
+            const nextPaths = redoStack[redoStack.length - 1]; // Use the 
+            setUndoStack(prevUndoStack => [...prevUndoStack, nextPaths]); 
+            setRedoStack(prevRedoStack => prevRedoStack.slice(0, -1)); // Removes the last index of RedoStack
+            setPaths(nextPaths);
         }
+    }
+// ---------------------------------------------------------------------------------------------------------
 
-        for(let i = Number(savedPathLengths[0]); i < savedPaths.length; i++)
-        {
-            savedPaths[i] == "0" ? console.log() : newSavedPaths.push(savedPaths[i])
-        }
+// ----------------------------------- Color Picker --------------------------------------------------------
+    const slideValue = useRef(useAnimatedValue(0)).current
+    const containerWidth = useRef(0); // To store the initial width of the container
+    const [isColorPickerVisible, setColorPickerVisible] = useState(false)
 
-        for(let k = 1; k < savedPathLengths.length; k++)
-        {
-            savedPathLengths[k] == "0" ? console.log() : newSavePathLengths.push(savedPathLengths[k])
-        }
-        
-        setSavedPaths(newSavedPaths) 
-        setSavedPathLengths(newSavePathLengths) */
+    const onLayoutColor = (event: any) => {
+        containerWidth.current = event.nativeEvent.layout.width;
+    };
+
+    const colorPickerSlideInAnimation = () => {
+        setColorPickerVisible(false)
+        Animated.timing(slideValue, {
+                toValue: 0,
+                duration: 300,
+                easing: Easing.ease,
+                useNativeDriver: false,
+            }).start()
+    }
+
+    const colorPickerSlideOutAnimation = () => {
+        setColorPickerVisible(true)
+        Animated.timing(slideValue, {
+            toValue: -5,
+            duration: 300,
+            useNativeDriver: false,
+        }).start()
+    }
+
+    const changeStrokeColor = (color: string) => {
+        setStrokeColor(color)
+    }
+// ---------------------------------------------------------------------------------------------------------
+
+// ----------------------------------- Width Slider --------------------------------------------------------
+const [isWidthSliderVisible, setWidthSliderVisible] = useState(false)
+
+    const onLayoutWidth = (event: any) => {
+        containerWidth.current = event.nativeEvent.layout.width;
+    };
+
+    const changeStrokeWidth = (width: number) => {
+        setStrokeWidth(width)
+    }
+
+    const widthSliderSlideInAnimation = () => {
+        setWidthSliderVisible(false)
+        Animated.timing(slideValue, {
+                toValue: 0,
+                duration: 300,
+                easing: Easing.ease,
+                useNativeDriver: false,
+            }).start()
+    }
+
+    const widthSliderSlideOutAnimation = () => {
+        setWidthSliderVisible(true)
+        Animated.timing(slideValue, {
+            toValue: -5,
+            duration: 300,
+            useNativeDriver: false,
+        }).start()
     }
 
     return (
         <SafeAreaView className="flex-1 bg-background">
             <View className="bg-white h-1/2" onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
                 <Svg>
+                    {paths.map((item, index) => (
+                        <Path
+                            key={`path-${index}`}
+                            d={item.d}
+                            stroke={item.color}
+                            fill={'transparent'}
+                            strokeWidth={item.strokeWidth}
+                            strokeLinejoin={'round'}
+                            strokeLinecap={'round'}/>
+                    ))}
                     <Path
-                        d={paths.join('')}
-                        stroke={'red'}
+                        d={currentPath.map(point => point.d).join(' ')}
+                        stroke={strokeColor}
                         fill={'transparent'}
                         strokeWidth={3}
                         strokeLinejoin={'round'}
                         strokeLinecap={'round'}/>
-                    {paths.map((item, index) => (
-                        <Path
-                            key={`path-${index}`}
-                            d={currentPath.join('')}
-                            stroke={'red'}
-                            fill={'transparent'}
-                            strokeWidth={3}
-                            strokeLinejoin={'round'}
-                            strokeLinecap={'round'}/>
-                    ))}
                 </Svg>
-
-
             </View>
             <View className="flex-1 flex flex-col">
-
-                <View className="flex-1 justify-between flex flex-row">
-
-                    <TouchableOpacity className="bg-black w-[50px] h-[50px]" onPress={() => {handleClear()}}/>
-                    <TouchableOpacity className="bg-white w-[50px] h-[50px]" onPress={() => {undoMove()}}/>
-
-                <TouchableOpacity className="bg-red-500 w-[50px] h-[50px]" onPress={() => {redoMove()}}/>
-                <TouchableOpacity className="bg-blue-500 w-[50px] h-[50px]" onPress={() => {setHistoryIndex(0); setCanvasHistory([])}}/>
+                <View className="m-6 flex-1 justify-between flex flex-row">
+                    <Bomb size={40} color="black" onPress={() => {handleClear()}}/>
+                    <Undo size={40} color="black" onPress={() => {undoMove()}}/>
+                    <Redo size={40} color="black" onPress={() => {redoMove()}}/>
+                    <Pen size={40} color="black" onPress={() => {isWidthSliderVisible ? widthSliderSlideInAnimation : widthSliderSlideOutAnimation}}/>
+                    <TouchableOpacity className="rounded-full w-[40px] h-[40px]" style={{backgroundColor: strokeColor}} onPress={() => {isColorPickerVisible ? colorPickerSlideInAnimation() : colorPickerSlideOutAnimation()}}/>
                 </View>
 
+                {/* Interpolate will force the width to be 0, meaning that the left side will expand only*/}
+                <Animated.View style={{transform: [{scaleX: slideValue}], 
+                                       width: slideValue.interpolate({inputRange: [0, 10], outputRange: [0, 0]}), 
+                                       position: 'absolute', marginLeft: 310}} 
+                                       onLayout={onLayoutColor}>
+                    <View className="bg-secondaryText w-[10px] h-[300px] rounded-sm ">
+                        <View className="flex-1 flex-col items-center justify-between py-4">
+
+                        <TouchableOpacity className="bg-black w-[7px] h-[30px]" onPress={() => changeStrokeColor('black')}/>
+                        <TouchableOpacity className="bg-white w-[7px] h-[30px] " onPress={() => changeStrokeColor('white')}/>
+                        <TouchableOpacity className="bg-red-600 w-[7px] h-[30px] " onPress={() => changeStrokeColor('red')}/>
+                        </View>
+
+                    </View>
+                </Animated.View>
             </View>
         </SafeAreaView>
     )

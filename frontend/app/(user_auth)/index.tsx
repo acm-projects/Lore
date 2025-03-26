@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
-import { signInUser } from './CognitoConfig'; // Adjust import path if needed
+import { signInUser, getUserAttributes } from './CognitoConfig'; // Adjust import path if needed
 import { useFonts } from 'expo-font';
 
 const Login = () => {
@@ -24,12 +24,11 @@ const Login = () => {
     try {
       const result = await signInUser(email, password); // Use email for authentication
       setSuccessMessage('Login successful!');
+      getUserAttributes()
       router.push('/home');  // Navigate to home screen after successful login
     } catch (err) {
       setError((err as Error).message || 'Invalid email or password.');
     }
-
-    router.push('/home');
   };
   
     useFonts({

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Asset } from 'expo-asset';
-import { getUserAttributes } from '../(user_auth)/CognitoConfig';
+import {  } from '../(user_auth)/CognitoConfig';
+import Slider from '@react-native-community/slider'
 import {
   View,
   Image,
@@ -11,10 +12,6 @@ import {
 } from 'react-native'
 
 const Home = () => {
-  
-  const printUser = () => {
-    getUserAttributes();
-  }
 
   useEffect(() => {
     async function loadGifs() {
@@ -41,9 +38,6 @@ const Home = () => {
             source={require('assets/Logo 1.png')}
             style={[{ width: 300, height: 150 }, { resizeMode: 'contain' }]}></Image>
         </View>
-        <TouchableOpacity className="bg-primaryAccent w-[50px] h-[50px]" onPress={() => {printUser()}}>
-
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

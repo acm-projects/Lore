@@ -1,5 +1,5 @@
-import React, { createRef, useEffect, useRef, useState } from 'react';
-import { router } from 'expo-router';
+import React, { createRef, useCallback, useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json';
 import AWS from 'aws-sdk';
@@ -10,7 +10,7 @@ import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, Users
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
-import { signOutUser } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
+import { signOutUser, getUserAttributes } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
 import {View, 
         Text, 
         FlatList,
@@ -21,13 +21,59 @@ import {View,
         Dimensions,
         Animated,
         } from 'react-native';
-
-  const s3 = new AWS.S3();
         
-  const DATA = data.reverse();
-  
+const DATA = data.reverse();
+        
   const Profile = () => {
-    
+    const s3 = new AWS.S3()
+    const dynamodb = new AWS.DynamoDB.DocumentClient()
+    const [username, setUsername] = useState("")
+    const [friends, setFriends] = useState([])
+    const [avatar, setAvatar] = useState("")
+    const [bio, setBio] = useState("")
+    const [stories, setStories] = useState([])
+
+    const getUsername = async () => { // Get username from Cognito Config in order to get primary key
+      setUsername(await getUserAttributes())
+    }
+
+    useFocusEffect(useCallback(() => {
+      getUsername()
+      getItems()
+    }, []))
+
+    useFonts({
+      'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    });
+
+    const params = {
+      TableName: 'Players',
+      IndexName: 'Username-index',
+      KeyConditionExpression: 'Username = :usernameValue',
+      ProjectionExpression: "Username, Email, Friends, ProfilePicURL, Stories",
+      ExpressionAttributeValues: {
+        ':usernameValue': username
+      }
+    }
+  
+    const getItems = async () => {
+      dynamodb.query(params, (err, data) => {
+        if (err) {
+          console.log('' + err)
+        } else {
+          data.Items?.forEach(item => {
+            setUsername(item.Username)
+            setAvatar(item.ProfilePicURL)
+            setBio(item.Biography)
+            //setStories(item.StoriesParticipated)
+            //setFriends(item.Friends)
+          })
+
+        }
+      })
+    }
+
+    // ------------------------------------------- Profile Pictures Picking --------------------------------------------------------
     const [image, setImage] = useState<string>("")
     
     const pickImage = async () => {
@@ -67,12 +113,10 @@ import {View,
       }
 
     }
+  /* ------------------------------------------------------------------------------------------------------------------- */
+
     
-    useFonts({
-      'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
-    });
-    
-    /* ----------------------------------------- Animation ----------------------------------------------------------------- */
+  /* ----------------------------------------- Animation ----------------------------------------------------------------- */
   const slideValue = useRef(useAnimatedValue((Dimensions.get("window").width))).current
 
   const slideOutAnimation = () => {
@@ -151,7 +195,7 @@ import {View,
           <View className="flex flex-col flex-1 items-start">
             <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingBottom: 10}}>Avatar</Text>
             <View className="pl-4 flex flex-row items-center justify-between">
-              <Avatar size={100} image={'https://picsum.photos/200/300'}></Avatar>
+              <Avatar size={100} image={avatar}></Avatar>
               <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl ml-6"
                                 onPress={() => {pickImage()}}>
                 <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Edit Avatar </Text>
@@ -181,7 +225,8 @@ import {View,
                   placeholder = ""
                   /> 
               </View>
-              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl mt-4">
+              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl mt-4"
+                                onPress={() => {getItems()}}>
                 <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Username </Text>
               </TouchableOpacity>
             </View>
@@ -223,26 +268,26 @@ import {View,
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         ListHeaderComponent={
-          // -----------------------------------   Header Component -----------------------------------------------
+  // ------------------------------------------------------   Header Component -----------------------------------------------
           <View className="w-full bg-backgroundSecondary items-start flex flex-col" style={isFollowingVisible || isSearchVisible ? {marginTop: -500, height: 806} 
                                                                                                                 : {marginTop: -500, height: 720}}>
             <View className="pt-[500px]">
               <View className="w-2/3 flex-2 pl-4 flex flex-row items-center">
-                <Avatar size={100} image={'https://picsum.photos/200/300'}></Avatar>
+                <Avatar size={100} image={avatar}></Avatar>
                 <View className="h-[100px] px-2">
-                  <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">Username</Text>
-                  <Text numberOfLines={4} style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">Bio</Text>
+                  <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">{username}</Text>
+                  <Text numberOfLines={4} style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{bio}</Text>
                 </View>
               </View>
 
               <View className="px-16 w-full flex-1 flex-row justify-between items-center">
                 <View className="mt-10 justify-center items-center">
                   <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">Stories</Text>
-                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">Story Count</Text>
+                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{stories.length}</Text>
                 </View>
                 <View className="mt-10 justify-center items-center">
                   <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">Friends</Text>
-                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">Friend Count</Text>
+                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{friends.length}</Text>
                 </View>
               </View>
 

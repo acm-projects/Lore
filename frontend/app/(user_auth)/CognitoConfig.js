@@ -54,17 +54,31 @@ export const signOutUser = () => {
 };
 
 // Fetch User Attributes
-export const getUserAttributes = () => {
-  const user = userPool.getCurrentUser();
-  if (user) {
-    user.getUserAttributes((err, attributes) => {
-      if (!err) {
-        const displayName = attributes.find(attr => attr.Name === 'custom:display_name');
-        console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
-      }
-    });
-  }
-};
+export const getUserAttributes = () => { // Currently only retrieves username
+  return new Promise((resolve, reject) => {
+    const user = userPool.getCurrentUser();
+  
+    if (user) {
+      user.getSession((err, session) => { // Make sure session is valid
+        if (err || !session.isValid()) {
+          console.log('Session error:', err || 'Session invalid');
+          return reject('Session error or invalid');
+        }
+  
+        user.getUserAttributes((err, attributes) => {
+          if (err) {
+            console.log(err)
+            return reject(err)
+          } else {
+            const displayName = attributes.find(attr => attr.Name === 'custom:display_name');
+            //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
+            resolve(displayName ? displayName.Value : null);
+          }
+        })
+      })
+    }
+  })
+}
 
 /*
 // Handle Google Sign-Up (Commented Out)
