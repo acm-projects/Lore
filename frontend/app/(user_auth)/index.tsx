@@ -78,7 +78,7 @@ const Login = () => {
                       value={email}
                       onChangeText={setEmail}
                       placeholder="Enter your email"
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#2d2e33"
                     />
                   </View>
 
@@ -91,16 +91,16 @@ const Login = () => {
                       value={password}
                       onChangeText={setPassword}
                       placeholder="Enter your password"
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#2d2e33"
                     />
                     <Text className="color-linkText pb-4" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>Forgot Password?</Text>
                   </View>
 
                   {/* Show error message if any */}
-                  {error && <Text style={{ color: 'red' }}>{error}</Text>}
+                  {error && <Text style={{ color: 'red', fontFamily: 'JetBrainsMonoRegular', paddingBottom: 6 }}>{error}</Text>}
 
                   {/* Show success message if login is successful */}
-                  {successMessage && <Text style={{ color: 'green' }}>{successMessage}</Text>}
+                  {successMessage && <Text style={{ color: 'green', fontFamily: 'JetBrainsMonoRegular', paddingBottom: 6}}>{successMessage}</Text>}
 
                   <View className="mb-4">
                     <TouchableOpacity

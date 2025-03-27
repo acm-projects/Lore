@@ -25,11 +25,6 @@ import AWS from 'aws-sdk';
 const DATA = data.reverse();
         
   const Profile = () => {
-    AWS.config.update({
-      //accessKeyId: 'AKIAQQABDJ7GWG7CMXGN',
-      //secretAccessKey: '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',
-      region: 'us-east-2',
-    });
 
     const s3 = new AWS.S3()
     const dynamodb = new AWS.DynamoDB.DocumentClient()

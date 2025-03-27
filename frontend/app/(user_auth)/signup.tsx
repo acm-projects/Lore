@@ -33,7 +33,7 @@ const SignUp = () => {
   });
 
   // Validate email format
-  const validateEmail = (email) => {
+  const validateEmail = (email: string) => {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email);
   };
@@ -84,7 +84,7 @@ const SignUp = () => {
     try {
       await confirmUser(email, confirmationCode);
       Alert.alert('Success', 'Your account has been confirmed! You can now log in.');
-      router.push('(user_auth)'); 
+      router.push('/(user_auth)/index'); 
     } catch (error) {
       Alert.alert('Confirmation Failed', (error as Error).message || 'Invalid code.');
     } finally {
