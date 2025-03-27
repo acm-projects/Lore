@@ -25,6 +25,12 @@ import AWS from 'aws-sdk';
 const DATA = data.reverse();
         
   const Profile = () => {
+    AWS.config.update({
+      //accessKeyId: 'AKIAQQABDJ7GWG7CMXGN',
+      //secretAccessKey: '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',
+      region: 'us-east-2',
+    });
+
     const s3 = new AWS.S3()
     const dynamodb = new AWS.DynamoDB.DocumentClient()
     const [username, setUsername] = useState("")
@@ -177,11 +183,12 @@ const DATA = data.reverse();
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"red"} onPress={() => {handleLogout}}/>
+          <LogOut size={20} color={"red"} onPress={() => {handleLogout()}}/>
         </View>
       </View>
 
       {/*----------------------------------------------- EDITING PROFILE --------------------------------------*/}
+      <SafeAreaView className="flex-1">
       <Modal animationIn={"slideInRight"} animationOut={"slideOutRight"} className="flex-1 bg-background" style={{marginHorizontal: 0, marginBottom: 0}} isVisible={isEditVisible}>
         <View className="bg-background flex-1 p-4">
         <ScrollView className="flex-1" automaticallyAdjustKeyboardInsets={true} stickyHeaderIndices={[0]}>
@@ -235,6 +242,7 @@ const DATA = data.reverse();
         </ScrollView>
         </View>
       </Modal>
+      </SafeAreaView>
       {/*---------------------------------------------------------------------------------------------------------*/}
 
       <FlatList 

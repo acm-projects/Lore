@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Asset } from 'expo-asset';
 import {  } from '../(user_auth)/CognitoConfig';
@@ -10,15 +10,19 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native'
+import { useFocusEffect } from 'expo-router';
 
 const Home = () => {
+
   useEffect(() => {
     async function loadGifs() {
       await Asset.loadAsync(require('assets/bg2.gif'));
     }
-
     loadGifs();
   }, []);
+  
+  useFocusEffect(useCallback(() => {
+  }, []))
 
   return (
     <SafeAreaView className="flex-1 bg-backgroundSecondary">

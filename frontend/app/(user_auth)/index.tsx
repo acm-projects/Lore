@@ -87,7 +87,7 @@ const Login = () => {
 
                             <View className="mb-4">
                               <TouchableOpacity className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]" 
-                                                onPress={() => {handleSignIn}}>
+                                                onPress={() => {handleSignIn()}}>
                               <Text className="color-white" style={{fontFamily: 'JetBrainsMonoBold'}}> Login </Text>
                               </TouchableOpacity>
 
