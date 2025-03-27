@@ -313,5 +313,3 @@ import {View,
 };
 
 export default Profile;
-
-
