@@ -365,5 +365,3 @@ const DATA = data.reverse();
 };
 
 export default Profile;
-
-
