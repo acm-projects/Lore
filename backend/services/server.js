@@ -65,6 +65,7 @@ io.on("connection", (socket) => {
       storyHistory: [],
       round: 0,
       lastRound: 3,
+      maxPlayers: 4,
       continueCount: 0,
       continuePressedBy: new Set(),
       playerWins: {},
@@ -86,24 +87,39 @@ io.on("connection", (socket) => {
 
   // Join an existing room
   socket.on("join_room", ({ room }, callback) => {
-    if (!rooms[room]) return;
-
+    if (!rooms[room]) {
+      return callback({ success: false, message: "Lobby does not exist" });
+    }
+  
+    if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
+      return callback({ success: false, message: "Max Players Reached" });
+    }
+  
     socket.join(room);
-    const isAlreadyInRoom = rooms[room].users.some(
-      (user) => user.id === socket.id
-    );
-
+  
+    const isAlreadyInRoom = rooms[room].users.some(user => user.id === socket.id);
     if (!isAlreadyInRoom) {
-      rooms[room].users.push({ id: socket.id, currentScreen: "lobby" }); // ✅ Default screen is lobby
+      rooms[room].users.push({ id: socket.id, currentScreen: "lobby" });
     }
-
-    // ✅ Send creatorId to the client
-    if (typeof callback === "function") {
-      callback({ success: true, creatorId: rooms[room].creator });
-    }
-
+  
+    callback({ success: true, creatorId: rooms[room].creator });
+  
     io.to(room).emit("update_users", rooms[room].users);
-  });
+  });  
+  
+  socket.on("update_room_settings", ({ roomCode, settings }) => {
+    if (!rooms[roomCode]) return;
+  
+    const { maxPlayers, maxRounds } = settings;
+    if (typeof maxPlayers === "number") {
+      rooms[roomCode].maxPlayers = maxPlayers;
+    }
+    if (typeof maxRounds === "number") {
+      rooms[roomCode].lastRound = maxRounds;
+    }
+  
+    console.log(`⚙️ Settings updated for room ${roomCode}:`, settings);
+  });  
 
   socket.on("update_screen", ({ room, screen }) => {
     if (!rooms[room]) return;

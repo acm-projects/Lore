@@ -5,16 +5,27 @@ import { OtpInput } from 'react-native-otp-entry';
 import Button from '~/components/Button';
 import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { socket } from '~/socket';
 
 const JoinGame = () => {
   const [code, setCode] = useState('');
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const joinGameWithCode = () => {
-    router.replace({
-      pathname: '/(game)/lobby',
-      params: {
-        lobbyCode: code,
-      },
+    setErrorMessage(null); // Clear previous error
+
+    socket.emit('join_room', { room: code }, (response: any) => {
+      if (!response.success) {
+        setErrorMessage(response.message); // Set error message from backend
+      } else {
+        router.replace({
+          pathname: '/(game)/lobby',
+          params: {
+            lobbyCode: code,
+          },
+        });
+      }
     });
   };
 
@@ -37,6 +48,11 @@ const JoinGame = () => {
             onTextChange={(text) => setCode(text)}
             theme={{ pinCodeTextStyle: { color: '#FFFFFF' } }}
           />
+          {errorMessage && (
+          <Text className="mt-4 text-center text-red-500 text-lg font-semibold">
+            {errorMessage}
+          </Text>
+        )}
           <Button
             title="Join Game"
             bgVariant="primary"

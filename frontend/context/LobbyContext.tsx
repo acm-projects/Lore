@@ -24,6 +24,14 @@ type LobbyContextType = {
   addPlotPoint: (plotPoint: PlotPoint) => void;
   removePlotPoint: (index: number) => void;
   clearPlotPoints: () => void;
+  writingDuration: { minutes: number; seconds: number };
+  setWritingDuration: (duration: { minutes: number; seconds: number }) => void;
+  votingDuration: { minutes: number; seconds: number };
+  setVotingDuration: (duration: { minutes: number; seconds: number }) => void;
+  maxPlayers: number;
+  setMaxPlayers: (val: number) => void;
+  maxRounds: number;
+  setMaxRounds: (val: number) => void;
 };
 
 // Create the context with a default value
@@ -40,6 +48,11 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
   const [players, setPlayers] = useState<{ id: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+
+  const [writingDuration, setWritingDuration] = useState({ minutes: 0, seconds: 30 });
+  const [votingDuration, setVotingDuration] = useState({ minutes: 0, seconds: 30 });
+  const [maxPlayers, setMaxPlayers] = useState(4);
+  const [maxRounds, setMaxRounds] = useState(3);
 
   const animationValue = useRef(new Animated.Value(0)).current;
   let [isVisible, setVisible] = useState(false);
@@ -72,6 +85,7 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const clearPlayers = () => {
     setPlayers([]);
   };
+
   // Helper function to add a single plot point
   const addPlotPoint = (plotPoint: PlotPoint) => {
     setPlotPoints((prevPoints) => [...prevPoints, plotPoint]);
@@ -105,6 +119,14 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
     addPlayer,
     removePlayer,
     clearPlayers,
+    writingDuration,
+    setWritingDuration,
+    votingDuration,
+    setVotingDuration,
+    maxPlayers,
+    setMaxPlayers,
+    maxRounds,
+    setMaxRounds,
   };
 
   return <LobbyContext.Provider value={value}>{children}</LobbyContext.Provider>;

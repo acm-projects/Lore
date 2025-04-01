@@ -8,7 +8,8 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const { votingDuration } = useLobby();
+  const [timeRemaining, setTimeRemaining] = useState(votingDuration.minutes * 60 + votingDuration.seconds);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
   const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
@@ -71,8 +72,8 @@ const Voting = () => {
     <SafeAreaView className="flex-1 bg-background">
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={votingDuration.minutes * 60 + votingDuration.seconds}
+        initialRemainingTime={votingDuration.minutes * 60 + votingDuration.seconds}
         isAbsolute={false}
         onUpdate={onUpdate}
       />
