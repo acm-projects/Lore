@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InputField from '~/components/InputField';
@@ -9,12 +9,11 @@ import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(60);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
-    if (prompt.trim() === '') return;
 
     socket.emit('submit_prompt', { room: lobbyCode, prompt });
 
@@ -38,11 +37,14 @@ const Write = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <Image className="w-full" style={{resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg1.gif")}/> 
+      
       <GameBar
         onComplete={onTimerEnd}
-        duration={60}
-        initialRemainingTime={60}
+        duration={10}
+        initialRemainingTime={10}
         onUpdate={onUpdate}
+        isAbsolute={true}
       />
       <ScrollView
         className="flex-1 px-5 py-10"
@@ -51,7 +53,7 @@ const Write = () => {
           className="flex flex-1 items-center justify-center"
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Text className="text-3xl font-bold text-backgroundText">Start Writing!</Text>
-          <Text className="text-xl font-bold text-gray-600">
+          <Text className="text-xl font-bold color-secondaryText">
             Create a plot point (Keep it short!)
           </Text>
           <View className="w-full">

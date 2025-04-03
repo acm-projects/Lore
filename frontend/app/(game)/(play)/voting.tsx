@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -8,53 +8,54 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
-
-  /*const plotPoints = [
-    {
-      id: 1,
-      //avatar: require('../../../assets/avatar1.png'),
-      plotPoint: 'The hero discovers a hidden treasure map',
-      votes: 2,
-    },
-    {
-      id: 2,
-      //avatar: require('../../../assets/avatar1.png'),
-      plotPoint: 'The villain reveals their master plan',
-      votes: 5,
-    },
-  ];*/
+  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
 
   useEffect(() => {
-    console.log('📡 Requesting prompts for voting...');
-    socket.emit('request_prompts', { room: lobbyCode });
+    // Request prompts when screen loads
+    console.log("📡 Requesting prompts...");
+    socket.emit("request_prompts", { room: lobbyCode });
 
-    socket.on('receive_prompts', (receivedPrompts) => {
-      if (!Array.isArray(receivedPrompts)) {
-        console.error('❌ Invalid prompts received:', receivedPrompts);
-        return;
+    socket.on("receive_prompts", (receivedPrompts) => {
+      console.log("✅ Prompts received:", receivedPrompts);
+      if (Array.isArray(receivedPrompts)) {
+        setPrompts(receivedPrompts);
+      } else {
+        console.warn("❌ Invalid prompts received");
       }
-      console.log('✅ Prompts received:', receivedPrompts);
-      setPrompts(receivedPrompts);
+    });
+
+    // Navigation handlers
+    socket.on('go_to_waiting', ({ phase }) => {
+      router.replace({
+        pathname: '/(game)/(play)/players-waiting',
+        params: { timeRemaining, phase },
+      });
+    });
+
+    socket.on('go_to_ai_gen', ({ prompt }) => {
+      router.replace({
+        pathname: '/(game)/(play)/ai-gen',
+        params: { prompt, story: "Loading..." },
+      });
     });
 
     return () => {
-      socket.off('receive_prompts');
+      socket.off("receive_prompts");
+      socket.off('go_to_waiting');
+      socket.off('go_to_ai_gen');
     };
-  }, [lobbyCode]);
+  }, [lobbyCode, timeRemaining]);
 
   useEffect(() => {
     if (selectedId === -1) return;
-    console.log(`🗳 Submitting vote for: "${prompts[selectedId]}"`);
-    socket.emit('submit_vote', { room: lobbyCode, votedPrompt: prompts[selectedId].prompt });
 
-    router.replace({
-      pathname: '/(game)/(play)/players-waiting',
-      params: { timeRemaining: timeRemaining, phase: 'story' },
-    });
+    const selectedPrompt = prompts[selectedId];
+    console.log(`🗳 Submitting vote for: "${selectedPrompt.prompt}"`);
+    socket.emit('submit_vote', { room: lobbyCode, votedPrompt: selectedPrompt.prompt });
+
   }, [selectedId]);
 
   const onUpdate = (remainingTime: number) => {
@@ -62,15 +63,18 @@ const Voting = () => {
   };
 
   const onTimerEnd = () => {
-    router.replace('/(game)/(play)/ai-gen');
+    console.log("⏰ Voting timer ended. Forcing vote evaluation.");
+    socket.emit("force_end_voting", lobbyCode);
   };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg3.gif")}/> 
+      
       <GameBar
         onComplete={onTimerEnd}
-        duration={30}
-        initialRemainingTime={30}
+        duration={10}
+        initialRemainingTime={10}
         isAbsolute={false}
         onUpdate={onUpdate}
       />
@@ -83,7 +87,6 @@ const Voting = () => {
           {prompts.map((item, index) => (
             <PlotPointButton
               key={index}
-              //avatar={item.avatar}
               plotPoint={item.prompt}
               votes={1}
               isSelected={selectedId === index}

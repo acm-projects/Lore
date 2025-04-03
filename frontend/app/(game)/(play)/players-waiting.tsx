@@ -14,7 +14,6 @@ const PlayersWaiting = () => {
   const { lobbyCode, addPlotPoint } = useLobby();
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
   const round = params.round ? parseInt(params.round as string) : 1;
-
   const [players, setPlayers] = useState<{ id: string, currentScreen?: string }[]>([]);
 
   useEffect(() => {
@@ -36,20 +35,31 @@ const PlayersWaiting = () => {
       });
     } else if (phase === 'story') {
       socket.on('story_ready', ({ prompt, story, round }) => {
-        console.log(`✅ Received 'story_ready' event. Moving to story screen (Round: ${round}).`);
-
+        console.log(`✅ 'story_ready' received. Updating and navigating to ai-gen.tsx`);
         addPlotPoint({ winningPlotPoint: prompt, story });
-
+    
         router.replace({
           pathname: '/(game)/(play)/ai-gen',
-          params: { 
-            prompt, 
-            story, 
+          params: {
+            prompt,
+            story,
             round: round.toString(),
           },
         });
       });
+    
+      // 👇 Optional: Handle early go_to_ai_gen if needed
+      socket.on('go_to_ai_gen', ({ prompt }) => {
+        router.replace({
+          pathname: '/(game)/(play)/ai-gen',
+          params: {
+            prompt,
+            story: "Loading...",
+          },
+        });
+      });
     }
+    
 
     return () => {
       console.log('🚪 Leaving Waiting Screen, updating server...');
@@ -58,6 +68,7 @@ const PlayersWaiting = () => {
       socket.off('update_users');
       socket.off('prompts_ready');
       socket.off('story_ready');
+      socket.off('go_to_ai_gen');
     };
   }, [lobbyCode, phase]);
 

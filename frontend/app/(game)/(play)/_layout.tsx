@@ -18,7 +18,11 @@ const PlayLayout = () => {
         <Stack.Screen name="ai-gen" />
         <Stack.Screen name="end-screen" />
       </Stack>
-      <Modal isVisible={isVisible} animationIn="slideInLeft" animationOut="slideOutLeft">
+      <Modal
+        style={{ margin: 0 }}
+        isVisible={isVisible}
+        animationIn="slideInLeft"
+        animationOut="slideOutLeft">
         <View className="flex h-[100px] w-full flex-row items-center justify-between bg-backgroundSecondary pt-4">
           <View className="h-[40px] w-[50px] items-center justify-center rounded-r-lg bg-primaryAccent">
             <Undo2

@@ -3,7 +3,6 @@ import { TouchableOpacityProps, TextInputProps } from 'react-native';
 export declare interface ButtonProps extends TouchableOpacityProps {
   title?: string;
   bgVariant?:
-      'primaryAccent'
     | 'primary'
     | 'secondary'
     | 'danger'

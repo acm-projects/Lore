@@ -1,12 +1,13 @@
-import { View, Text, ScrollView, SafeAreaView, Image, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, Image, Animated, Easing, useAnimatedValue, Dimensions } from 'react-native';
 import { router } from 'expo-router';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import PlotPoint from '~/components/PlotPoint';
 import components from '~/data/data.json';
 import { BookOpen, Undo2, ChevronDown } from 'lucide-react-native';
 import { useLobby } from '~/context/LobbyContext';
 
 const StoryView = (props: { code: String }) => {
+
   const bounceValue = useRef(new Animated.Value(0)).current;
   const { plotPoints } = useLobby();
 
@@ -29,14 +30,16 @@ const StoryView = (props: { code: String }) => {
       ])
     ).start();
   }, [bounceValue]);
-
+    
   return (
+    <SafeAreaView className="flex-1">
+
     <View className="flex-1">
       <Image
         className="h-full w-full"
         style={{ resizeMode: 'cover', position: 'absolute' }}
         source={require('assets/bg2.gif')}
-      />
+        />
 
       <ScrollView className="flex-1">
         <SafeAreaView>
@@ -49,17 +52,18 @@ const StoryView = (props: { code: String }) => {
           <View className="mb-12 flex-col-reverse">
             {plotPoints.map((component, index) => (
               <PlotPoint
-                key={index}
-                count={index}
-                image={'assets/avatar1.png'}
-                text={component.winningPlotPoint}
-                story={component.story}
+              key={index}
+              count={index}
+              image={'assets/avatar1.png'}
+              text={component.winningPlotPoint}
+              story={component.story}
               />
             ))}
           </View>
         </SafeAreaView>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 
