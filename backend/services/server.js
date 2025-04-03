@@ -5,11 +5,120 @@ import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
 import FormData from "form-data";
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+} from "@aws-sdk/client-bedrock-runtime";
 
 dotenv.config({ path: "../.env" }); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
+
+// Initialize Amazon Bedrock client
+const bedrock = new BedrockRuntimeClient();
+
+/**
+ * Generates story content based on the provided parameters
+ * @param {string} prompt - The creative prompt for story generation
+ * @param {string} currentStory - The existing story content (empty for first round)
+ * @param {number} roundNumber - The current round number (starts at 1)
+ * @param {boolean} isFinal - Whether this is the final round
+ * @returns {Promise<string>} The generated story text
+ */
+async function generateStory(
+  prompt,
+  currentStory = "",
+  roundNumber = 1,
+  isFinal = false
+) {
+  // 🧠 Prompt logic for final round vs normal
+  let instruction;
+  if (isFinal) {
+    instruction =
+      `With this story:\n\n${currentStory}\n\n` +
+      `write a conclusion in three short, numbered paragraphs following this prompt: ${prompt}. ` +
+      "End with a new line and ...";
+  } else if (roundNumber === 1) {
+    instruction =
+      `Provide only three short numbered paragraphs to start the story using this prompt:\n${prompt}\n` +
+      "After the three paragraphs, do not include any further explanation or comments. End with a new line and ...";
+  } else {
+    instruction =
+      `Using the following prompt: ${prompt}, generate 3 short numbered paragraphs to continue the following story:\n\n` +
+      `${currentStory}\n\n` +
+      "Only generate 3 short paragraphs. Do not include anything else after. End with a new line and ...";
+  }
+
+  // AI Generation Configuration
+  const payload = {
+    prompt: instruction,
+    temperature: 0.9,
+  };
+
+  const body = JSON.stringify(payload);
+  const modelId = "meta.llama3-3-70b-instruct-v1:0";
+
+  try {
+    const command = new InvokeModelCommand({
+      body,
+      modelId,
+      accept: "application/json",
+      contentType: "application/json",
+    });
+
+    const response = await bedrock.send(command);
+    const responseBody = JSON.parse(Buffer.from(response.body).toString());
+    return (
+      responseBody.generation ||
+      responseBody.output ||
+      "Error generating response"
+    );
+  } catch (error) {
+    throw new Error(`Error generating story: ${error.message}`);
+  }
+}
+
+/**
+ * Summarizes a complete story into a single paragraph
+ * @param {string} fullStory - The complete story text to summarize
+ * @returns {Promise<string>} The summarized text
+ */
+async function summarizeStory(fullStory) {
+  if (!fullStory) {
+    throw new Error("No story provided for summarization");
+  }
+
+  // Instruction for summarization
+  const instruction = `Return a one paragraph summary of the story:\n\n${fullStory}\n\n Label the beginning of the paragraph with Summary: `;
+
+  const payload = {
+    prompt: instruction,
+    temperature: 0.6,
+  };
+
+  const body = JSON.stringify(payload);
+  const modelId = "meta.llama3-3-70b-instruct-v1:0";
+
+  try {
+    const command = new InvokeModelCommand({
+      body,
+      modelId,
+      accept: "application/json",
+      contentType: "application/json",
+    });
+
+    const response = await bedrock.send(command);
+    const responseBody = JSON.parse(Buffer.from(response.body).toString());
+    return (
+      responseBody.generation ||
+      responseBody.output ||
+      "Error generating summary"
+    );
+  } catch (error) {
+    throw new Error(`Error summarizing story: ${error.message}`);
+  }
+}
 
 const app = express();
 app.use(express.json());
@@ -178,7 +287,7 @@ io.on("connection", (socket) => {
     determineWinnerAndStartAI(room);
   });
 
-  function determineWinnerAndStartAI(room) {
+  async function determineWinnerAndStartAI(room) {
     const roomData = rooms[room];
     if (!roomData) return;
 
@@ -208,41 +317,39 @@ io.on("connection", (socket) => {
     // Send players to ai-gen with loading text
     io.to(room).emit("go_to_ai_gen", { prompt: winningPrompt });
 
-    // Now request AI
-    axios
-      .post("http://127.0.0.1:5000/generate", {
-        prompt: winningPrompt,
-        current_story: roomData.storyHistory.join("\n\n"),
+    try {
+      // Use our generateStory function instead of axios call to Python backend
+      const aiResponse = await generateStory(
+        winningPrompt,
+        roomData.storyHistory.join("\n\n"),
+        roomData.round,
+        isFinalRound
+      );
+
+      // Process the response to extract numbered paragraphs
+      let numberedParagraphs = aiResponse
+        .split("\n")
+        .filter((line) => /^\d+\.\s/.test(line))
+        .map((line) => line.replace(/^\d+\.\s/, ""))
+        .slice(0, 3)
+        .join("\n\n");
+
+      roomData.story = numberedParagraphs;
+      roomData.storyHistory.push(numberedParagraphs);
+
+      io.to(room).emit("story_ready", {
+        story: numberedParagraphs,
         round: roomData.round,
-        final: isFinalRound,
-      })
-      .then((response) => {
-        let aiResponse = response.data.story;
-
-        let numberedParagraphs = aiResponse
-          .split("\n")
-          .filter((line) => /^\d+\.\s/.test(line))
-          .map((line) => line.replace(/^\d+\.\s/, ""))
-          .slice(0, 3)
-          .join("\n\n");
-
-        roomData.story = numberedParagraphs;
-        roomData.storyHistory.push(numberedParagraphs);
-
-        io.to(room).emit("story_ready", {
-          story: numberedParagraphs,
-          round: roomData.round,
-          lastRound: roomData.lastRound,
-          creatorId: roomData.creator,
-          playerWins: roomData.playerWins,
-          prompt: roomData.winningPrompts,
-        });
-      })
-      .catch((err) => {
-        console.error("❌ AI error:", err);
-        roomData.story = "Error generating story.";
-        io.to(room).emit("story_ready", { story: "Error generating story." });
+        lastRound: roomData.lastRound,
+        creatorId: roomData.creator,
+        playerWins: roomData.playerWins,
+        prompt: roomData.winningPrompts,
       });
+    } catch (err) {
+      console.error("❌ AI error:", err);
+      roomData.story = "Error generating story.";
+      io.to(room).emit("story_ready", { story: "Error generating story." });
+    }
   }
 
   // Send current continue count when a player enters the story screen
@@ -308,15 +415,8 @@ io.on("connection", (socket) => {
     const full_story = rooms[room].storyHistory.join("\n\n");
 
     try {
-      // Step 1: Get summary from app.py
-      const summaryResponse = await axios.post(
-        "http://127.0.0.1:5000/summarize",
-        {
-          story: full_story,
-        }
-      );
-
-      let rawSummary = summaryResponse.data.summary;
+      // Step 1: Get summary using our summarizeStory function
+      const rawSummary = await summarizeStory(full_story);
       console.log("🧠 Raw AI Summary Response:", rawSummary);
 
       // ✅ Extract paragraph after "Summary:"
