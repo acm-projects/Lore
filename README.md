@@ -211,7 +211,7 @@
 - Real-Time Voting System & Multiplayer
     - Get started early on or have multiple teams so the game can be played on a singular device.
 
-
+![image](https://drive.google.com/uc?export=view&id=1OM-sY8uNAJMVKcON5uv4tqjDtW882C57)
   
 ## Meet the Team
 
