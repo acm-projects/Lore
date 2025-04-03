@@ -22,10 +22,7 @@ const Home = () => {
   return (
     <SafeAreaView className="flex-1 bg-backgroundSecondary">
       <View className="flex-1 bg-background">
-        <Image
-          source={require('assets/waiting_animation.gif')}
-          className="absolute h-full w-full"
-        />
+        <Image source={require('assets/waiting_animation.gif')} className="w-full" />
         <Button title="Bring Wheel On Screen" onPress={() => setIsWheelVisible(!isWheelVisible)} />
         <Button title="Spin" onPress={() => setSpins(spins + 1)} />
         <LuckyWheel
