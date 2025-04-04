@@ -16,8 +16,9 @@ const Write = () => {
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
+    if (!prompt.trim()) return;
 
-    socket.emit('submit_prompt', { room: lobbyCode, prompt });
+    socket.emit('submit_prompt', { room: lobbyCode, prompt, username: socket.username });
 
     if (timeRemaining === 1) {
       router.replace('/(game)/(play)/voting');

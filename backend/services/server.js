@@ -41,7 +41,7 @@ const getRankings = (room) => {
   return Object.entries(rooms[room].playerWins || {})
     .map(([playerId, wins]) => {
       let player = rooms[room].users.find((user) => user.id === playerId);
-      return { id: player?.id || "Unknown", plotPoints: wins };
+      return { id: player?.name || "Unknown", plotPoints: wins };
     })
     .sort((a, b) => b.plotPoints - a.plotPoints); // Sort in descending order
 };
@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
   });
 
   // Join an existing room
-  socket.on("join_room", ({ room }, callback) => {
+  socket.on("join_room", ({ room, username }, callback) => {
     if (!rooms[room]) {
       return callback({ success: false, message: "Lobby does not exist" });
     }
@@ -99,13 +99,14 @@ io.on("connection", (socket) => {
   
     const isAlreadyInRoom = rooms[room].users.some(user => user.id === socket.id);
     if (!isAlreadyInRoom) {
-      rooms[room].users.push({ id: socket.id, currentScreen: "lobby" });
+      rooms[room].users.push({ id: socket.id, name: username, currentScreen: "lobby" });
     }
   
     callback({ success: true, creatorId: rooms[room].creator });
   
     io.to(room).emit("update_users", rooms[room].users);
-  });  
+  });
+  
   
   socket.on("update_room_settings", ({ roomCode, settings }) => {
     if (!rooms[roomCode]) return;
@@ -145,27 +146,39 @@ io.on("connection", (socket) => {
 
   socket.on("submit_prompt", ({ room, prompt }) => {
     if (!rooms[room]) return;
-
-    rooms[room].prompts[socket.id] = { prompt, playerId: socket.id };
-
-    console.log(`📢 Prompt received from ${socket.id} in ${room}: "${prompt}"`);
-
+  
+    const user = rooms[room].users.find(u => u.id === socket.id);
+  
+    rooms[room].prompts[socket.id] = {
+      prompt,
+      playerId: socket.id,
+      name: user?.name || "Unknown"
+    };
+  
+    console.log(`📢 Prompt received from ${user?.name || socket.id} in ${room}: "${prompt}"`);
+  
     if (Object.keys(rooms[room].prompts).length === rooms[room].users.length) {
       console.log(
         `✅ All prompts submitted in room: ${room}. Moving to voting phase.`
       );
       io.to(room).emit("prompts_ready");
     }
-  });
+  });  
 
   // Request prompts for voting screen
   socket.on("request_prompts", ({ room }) => {
     if (!rooms[room]) return;
-    io.to(socket.id).emit(
-      "receive_prompts",
-      Object.values(rooms[room].prompts)
-    );
-  });
+  
+    const promptsWithNames = Object.values(rooms[room].prompts).map((entry) => {
+      const player = rooms[room].users.find(u => u.id === entry.playerId);
+      return {
+        ...entry,
+        name: player?.name || entry.playerId,
+      };
+    });
+  
+    io.to(socket.id).emit("receive_prompts", promptsWithNames);
+  });  
 
   socket.on("submit_vote", ({ room, votedPrompt }) => {
     if (!rooms[room]) return;

@@ -6,28 +6,38 @@ import Button from '~/components/Button';
 import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { socket } from '~/socket';
+import { getUserAttributes } from '../(user_auth)/CognitoConfig';
 
 const JoinGame = () => {
   const [code, setCode] = useState('');
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const joinGameWithCode = () => {
+  const joinGameWithCode = async () => {
     setErrorMessage(null); // Clear previous error
-
-    socket.emit('join_room', { room: code }, (response: any) => {
-      if (!response.success) {
-        setErrorMessage(response.message); // Set error message from backend
-      } else {
-        router.replace({
-          pathname: '/(game)/lobby',
-          params: {
-            lobbyCode: code,
-          },
-        });
-      }
-    });
+  
+    try {
+      const user = await getUserAttributes();
+      console.log("🔐 Username:", user.displayName);
+  
+      socket.emit('join_room', { room: code, username: user.displayName }, (response: any) => {
+        if (!response.success) {
+          setErrorMessage(response.message); // Set error message from backend
+        } else {
+          router.replace({
+            pathname: '/(game)/lobby',
+            params: {
+              lobbyCode: code,
+            },
+          });
+        }
+      });
+    } catch (err) {
+      console.error("❌ Failed to get user attributes:", err);
+      setErrorMessage("Authentication error.");
+    }
   };
+
 
   const goBack = () => {
     router.back();

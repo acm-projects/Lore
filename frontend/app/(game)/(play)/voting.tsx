@@ -12,7 +12,7 @@ const Voting = () => {
   const [timeRemaining, setTimeRemaining] = useState(votingDuration.minutes * 60 + votingDuration.seconds);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string }[]>([]);
 
   useEffect(() => {
     // Request prompts when screen loads
@@ -22,11 +22,15 @@ const Voting = () => {
     socket.on("receive_prompts", (receivedPrompts) => {
       console.log("✅ Prompts received:", receivedPrompts);
       if (Array.isArray(receivedPrompts)) {
-        setPrompts(receivedPrompts);
+        setPrompts(receivedPrompts.map(p => ({
+          prompt: p.prompt,
+          playerId: p.playerId,
+          name: p.name || p.playerId?.substring(0, 6) || "Unknown",
+        })));
       } else {
         console.warn("❌ Invalid prompts received");
       }
-    });
+    });    
 
     // Navigation handlers
     socket.on('go_to_waiting', ({ phase }) => {
@@ -85,12 +89,13 @@ const Voting = () => {
         <View className="gap-3 p-4">
           {prompts.map((item, index) => (
             <PlotPointButton
-              key={index}
-              plotPoint={item.prompt}
-              votes={1}
-              isSelected={selectedId === index}
-              onPress={() => setSelectedId(index)}
-            />
+            key={index}
+            plotPoint={item.prompt}
+            username={item.name}
+            votes={1}
+            isSelected={selectedId === index}
+            onPress={() => setSelectedId(index)}
+          />          
           ))}
         </View>
       </ScrollView>

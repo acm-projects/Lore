@@ -12,7 +12,7 @@ type LobbyContextType = {
   plotPoints: PlotPoint[];
   isVisible: boolean;
   toggleVisible: () => void;
-  players: { id: string }[];
+  players: { id: string; name?: string }[];
   creatorId: string | null;
   setCreator: (id: string) => void;
   setPlayers: React.Dispatch<React.SetStateAction<{ id: string }[]>>;
@@ -46,7 +46,7 @@ type LobbyProviderProps = {
 export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [lobbyCode, setLobbyCode] = useState<string>('');
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
-  const [players, setPlayers] = useState<{ id: string }[]>([]);
+  const [players, setPlayers] = useState<{ id: string; name?: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
 
   const [writingDuration, setWritingDuration] = useState({ minutes: 0, seconds: 30 });
@@ -72,9 +72,9 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   };
 
   // Helper function to add a player
-  const addPlayer = (player: string) => {
-    setPlayers((prevPlayers) => [...prevPlayers, { id: player }]);
-  };
+  const addPlayer = (playerId: string, name?: string) => {
+    setPlayers((prev) => [...prev, { id: playerId, name }]);
+  };  
 
   // Helper function to remove a player
   const removePlayer = (player: string) => {
