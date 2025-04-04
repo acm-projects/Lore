@@ -34,7 +34,7 @@ const Summary = () => {
       setTotalPlayers(total);
     });
 
-    socket.on("go_to_next", () => {
+    socket.on("go_to_end", () => {
       router.replace("/(game)/(play)/end-screen");
     });
 

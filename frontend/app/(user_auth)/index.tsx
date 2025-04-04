@@ -1,70 +1,145 @@
-import React from 'react'
-import { router } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { View, 
-         Text, 
-         Image, 
-         TextInput, 
-         TouchableWithoutFeedback, 
-         Keyboard, 
-         ScrollView,
-         TouchableOpacity,} from 'react-native';
+import React, { useState } from 'react';
+import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { signInUser } from './CognitoConfig'; // Adjust import path if needed
+import { useFonts } from 'expo-font';
+import { socket } from '~/socket';
+
 
 const Login = () => {
-    const styles = require('../globalStyles');
-    return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View className="flex-1 bg-background">
-                <Image className="w-full h-full" style={{resizeMode: 'cover', position: 'absolute'}} source={require("assets/Loginbg.png")}/> 
-                <ScrollView automaticallyAdjustKeyboardInsets={true} className="">
-                    <SafeAreaView className="justify-center items-center">
-                        <Image 
-                            source={require("assets/Logo 1.png")}
-                            style={[{width: 300, height:150}, {resizeMode: "contain"}]}>
-                        </Image>
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-                        <View style={styles.box}>
-                            <View className="items-center m-4">
-                                <Text style={styles.titleText}>
-                                    Welcome back!
-                                </Text>
-                                <Text style={[styles.secondaryText, {fontSize: 12}]}>
-                                    Log in here with your Email and Password.
-                                </Text>
-                            </View>
+  const handleSignIn = async () => {
+    setError('');
+    setSuccessMessage('');
 
-                            <View className="mb-4">
-                                <Text style={styles.secondaryText}>Email</Text>
-                                <TextInput style={styles.textInput}/>
-                            </View>
+    // ✅ Validate that email and password are entered
+    if (!email.trim() || !password.trim()) {
+      setError('Email and password are required.');
+      return;
+    }
 
-                            <View className="mb-4">
-                                <Text style={styles.secondaryText}>Password</Text>
-                                <TextInput style={styles.textInput}/>
-                                <Text style={[styles.linkText, {fontSize: 12}]}>Forgot Password?</Text>
-                            </View>
+    try {
+      const result = await signInUser(email, password); // Use email for authentication
+      setSuccessMessage('Login successful!');
+      socket.emit('login_success');
+      router.push('/home');  // Navigate to home screen after successful login
+    } catch (err) {
+      setError((err as Error).message || 'Invalid email or password.');
+    }
+  };
 
-                            <View className="mb-4">
-                                <TouchableOpacity style={styles.button} onPress={() => {router.push("/(main)/home"); }}>
-                                <Text style={styles.buttonText}> Login </Text>
-                                </TouchableOpacity>
+  useFonts({
+    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
+  });
 
-                                <Text className="" style={[styles.secondaryText, {fontSize: 12}]}>
-                                    Don't Have an account?
-                                    <Text style={[styles.linkText, {fontSize: 12}]} 
-                                        onPress={() => {router.push("/(user_auth)/signup")}}> Register </Text>
-                                    <Text style={[styles.secondaryText, {fontSize: 12}]}>
-                                        here.
-                                    </Text>
-                                </Text>
+  return (
+    <SafeAreaView className="flex-1 bg-background">
+      <View className="flex-1 bg-background">
+        <Image className="w-full h-full" style={{ resizeMode: 'cover', position: 'absolute' }} source={require('assets/Loginbg.png')} />
 
-                            </View>
-                        </View>
-                    </SafeAreaView>
-                </ScrollView>
-            </View>
+        {/* Wrap the content with TouchableWithoutFeedback to dismiss keyboard on tap */}
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          {/* Wrap everything in a KeyboardAvoidingView to prevent keyboard overlap */}
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust for iOS
+          >
+            <ScrollView 
+              automaticallyAdjustKeyboardInsets={true} 
+              keyboardShouldPersistTaps="handled" // This allows taps on inputs even if the keyboard is visible
+            >
+              <View className="justify-center items-center">
+                <Image 
+                  source={require("assets/Logo 1.png")}
+                  style={[{ width: 300, height: 150 }, { resizeMode: "contain" }]}
+                />
+
+                <View className="flex-1 bg-backgroundSecondary w-5/2 justify-center items-center rounded-xl">
+                  <View className="items-center m-4">
+                    <Text className="color-white items-center" style={{ fontSize: 20, fontFamily: 'JetBrainsMonoRegular' }}>
+                      Welcome back!
+                    </Text>
+                    <Text className="color-secondaryText" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
+                      Log in here with your Email and Password.
+                    </Text>
+                  </View>
+
+                  <View className="mb-4">
+                    <Text className="color-secondaryText pb-2" style={{ fontSize: 15, fontFamily: 'JetBrainsMonoRegular' }}>Email</Text>
+                    <TextInput
+                      className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]"
+                      style={{ fontSize: 15 }}
+                      value={email}
+                      onChangeText={setEmail}
+                      placeholder="Enter your email"
+                      placeholderTextColor="#aaa"
+                    />
+                  </View>
+
+                  <View className="mb-4">
+                    <Text className="color-secondaryText pb-2" style={{ fontSize: 15, fontFamily: 'JetBrainsMonoRegular' }}>Password</Text>
+                    <TextInput
+                      className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]"
+                      style={{ fontSize: 15 }}
+                      secureTextEntry
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#aaa"
+                    />
+                    <Text className="color-linkText pb-4" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>Forgot Password?</Text>
+                  </View>
+
+                  {/* Show error message if any */}
+                  {error && <Text style={{ color: 'red' }}>{error}</Text>}
+
+                  {/* Show success message if login is successful */}
+                  {successMessage && <Text style={{ color: 'green' }}>{successMessage}</Text>}
+
+                  <View className="mb-4">
+                    <TouchableOpacity
+                      className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"
+                      onPress={handleSignIn}
+                    >
+                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Login</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"
+                      onPress={() => { router.push('/home') }}
+                    >
+                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Login</Text>
+                    </TouchableOpacity>
+
+                    <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
+                      Don't Have an account?
+                      <Text
+                        className="color-linkText pb-4"
+                        style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}
+                        onPress={() => { router.push('/(user_auth)/signup') }}
+                      >
+                        Register
+                      </Text>
+                      <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
+                        here.
+                      </Text>
+                    </Text>
+
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
-    )
-}
+      </View>
+    </SafeAreaView>
+  );
+};
 
 export default Login;
