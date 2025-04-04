@@ -320,35 +320,30 @@ io.on("connection", (socket) => {
     if (!rooms[room]) return;
     if (rooms[room].imageAlreadyGenerated) return;
     rooms[room].imageAlreadyGenerated = true;
-
+  
     const full_story = rooms[room].storyHistory.join("\n\n");
-
+  
     try {
       // Step 1: Get summary from app.py
-      const summaryResponse = await axios.post(
-        "http://127.0.0.1:5000/summarize",
-        {
-          story: full_story,
-        }
-      );
-
+      const summaryResponse = await axios.post("http://127.0.0.1:5000/summarize", {
+        story: full_story
+      });
+  
       let rawSummary = summaryResponse.data.summary;
       console.log("🧠 Raw AI Summary Response:", rawSummary);
-
+  
       // ✅ Extract paragraph after "Summary:"
       const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
-      const cleanSummary = summaryMatch
-        ? summaryMatch[1].trim()
-        : "No summary found.";
-
+      const cleanSummary = summaryMatch ? summaryMatch[1].trim() : "No summary found.";
+  
       console.log("📚 Cleaned Summary:", cleanSummary);
-
+  
       // Step 2: Generate image using Stable Diffusion
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
       const form = new FormData();
       form.append("prompt", prompt);
       form.append("output_format", "webp");
-
+  
       const imageResponse = await axios.post(
         "https://api.stability.ai/v2beta/stable-image/generate/core",
         form,
@@ -356,19 +351,19 @@ io.on("connection", (socket) => {
           headers: {
             Authorization: `Bearer ${STABILITY_API_KEY}`,
             ...form.getHeaders(),
-            Accept: "image/*",
+            Accept: "image/*"
           },
-          responseType: "arraybuffer",
+          responseType: "arraybuffer"
         }
       );
-
+  
       if (imageResponse.status === 200) {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
-
+  
         io.to(room).emit("receive_story_image", {
           summary: cleanSummary,
-          image: imageDataUri,
+          image: imageDataUri
         });
       } else {
         throw new Error(`Image generation failed: ${imageResponse.status}`);
@@ -377,11 +372,11 @@ io.on("connection", (socket) => {
       console.error("❌ Summary or image generation failed:", err);
       io.to(room).emit("receive_story_image", {
         summary: "Summary could not be generated.",
-        image: null,
+        image: null
       });
     }
   });
-
+  
   socket.on("request_full_story", (room) => {
     if (!rooms[room]) return;
     const fullStory = rooms[room].storyHistory.join("\n\n");
