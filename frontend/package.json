@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.11.6",
+    "@aws-sdk/credential-providers": "^3.778.0",
     "@expo/vector-icons": "^14.0.0",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/slider": "4.5.5",

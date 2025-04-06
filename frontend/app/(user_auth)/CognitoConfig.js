@@ -1,5 +1,4 @@
 import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribute } from 'amazon-cognito-identity-js';
-
 /*
 import AWS from 'aws-sdk/global';
 // Import Google Sign-In (Commented Out)
@@ -73,6 +72,32 @@ export const getUserAttributes = () => { // Currently only retrieves username
             const displayName = attributes.find(attr => attr.Name === 'custom:display_name');
             //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
             resolve(displayName ? displayName.Value : null);
+          }
+        })
+      })
+    }
+  })
+}
+
+export const getUserCognitoSub = () => {
+  return new Promise((resolve, reject) => {
+    const user = userPool.getCurrentUser();
+  
+    if (user) {
+      user.getSession((err, session) => { // Make sure session is valid
+        if (err || !session.isValid()) {
+          console.log('Session error:', err || 'Session invalid');
+          return reject('Session error or invalid');
+        }
+  
+        user.getUserAttributes((err, attributes) => {
+          if (err) {
+            console.log(err)
+            return reject(err)
+          } else {
+            const sub = attributes.find(attr => attr.Name === 'sub');
+            //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
+            resolve(sub ? sub.Value : null);
           }
         })
       })

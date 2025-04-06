@@ -18,6 +18,7 @@ export const getPlayerByCognitoSub = async (cognitoSub) => {
 
   try {
     const result = await docClient.send(new QueryCommand(params));
+    console.log(result.Items)
     return result.Items?.[0] || null;
   } catch (err) {
     console.error("Error querying player by CognitoSub:", err);

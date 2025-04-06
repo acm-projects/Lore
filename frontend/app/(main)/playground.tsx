@@ -53,10 +53,10 @@ const Playground = () => {
         setCurrentPath([])
 
         setUndoStack((prevUndoStack) => [...prevUndoStack, [{d: paths.map(point => point.d).join(' '), 
-                                                            color: strokeColor,
+                                                            color: paths.map(point => point.color)?.at(paths.length-1)+"",
                                                             strokeWidth: strokeWidth}, 
                                                             {d: currentPath.map(point => point.d).join(' '), 
-                                                            color: strokeColor,
+                                                            color: currentPath.map(point => point.color)?.at(paths.length-1)+"",
                                                             strokeWidth: strokeWidth}]])
         setRedoStack([])
     }
@@ -64,22 +64,29 @@ const Playground = () => {
     const onTouchEnd = () => {        
         if (currentPath.length === 0) return;
 
-        setPaths((prevPaths) => [
-            ...prevPaths,
-            {
+        if (paths.length === 0) {
+            setPaths(() => [{
                 d: currentPath.map(point => point.d).join(' '), // Combine points into one path
                 color: strokeColor,
                 strokeWidth: strokeWidth
-            }
-        ]);        
-
+            }])
+        } else {
+            setPaths((prevPaths) => [
+                ...prevPaths,
+                {
+                    d: currentPath.map(point => point.d).join(' '), // Combine points into one path
+                    color: strokeColor,
+                    strokeWidth: strokeWidth
+                }
+            ])  
+        }
+        // IDEA : CREATE SEPERATE STACKS FOR EACH ATTRIBUTE, LIKE D COLOR, STROKEWIDTH
         setCurrentPath([])
-        console.log(paths.map(point => point.color).at(0))
         setUndoStack((prevUndoStack) => [...prevUndoStack, [{d: paths.map(point => point.d).join(' '), 
-                                                             color: strokeColor,
+                                                             color: paths.map(point => point.color)?.at(paths.length-1)+"",
                                                              strokeWidth: strokeWidth}, 
                                                             {d: currentPath.map(point => point.d).join(' '), 
-                                                             color: strokeColor,
+                                                             color: currentPath.map(point => point.color)?.at(paths.length-1)+"",
                                                              strokeWidth: strokeWidth}]])
         setRedoStack([])
     }
@@ -88,7 +95,6 @@ const Playground = () => {
         const newPath = [...currentPath]
         const locationX = event.nativeEvent.locationX;
         const locationY = event.nativeEvent.locationY;
-
         const newPoint = 
         {
             d: `${newPath.length === 0 ? 'M' : 'L'} ${locationX.toFixed(0)}, ${locationY.toFixed(0)}`,
@@ -100,19 +106,18 @@ const Playground = () => {
     }
 
     const undoMove = () => {
+
         if(undoStack.length > 1) {            
-            const previousPaths = undoStack[undoStack.length-2]
-            const lastPath = undoStack[undoStack.length -1]
+            const previousPaths = undoStack[undoStack.length-2] // Has to be -2 because if length is 1 or 0, it'll be index out of bounds
+            const lastPath = undoStack[undoStack.length -1] // Used to put into redo Stack
 
             console.log(undoStack)
-            for(let i = 0; i < previousPaths.length; i++)
+            for(let i = 0; i <= previousPaths.length; i++)
             {
                 previousPaths.map(item => {if(item.d.length == 0) {
                     previousPaths.splice(i, 1)
                 }})
-
             }
-            console.log(previousPaths)
 
             setRedoStack(prevRedoStack => [...prevRedoStack, lastPath])
             setUndoStack(prevUndoStack => prevUndoStack.slice(0, -1))

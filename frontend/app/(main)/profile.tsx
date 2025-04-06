@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
 import Modal from 'react-native-modal';
-import { ArrowUp, BookOpen, LogOut, Pen, Search, Settings , UserRoundPlus, UsersRound, X } from 'lucide-react-native';
+import { ALargeSmall, ArrowUp, BookOpen, IdCard, LetterText, LogOut, Pen, Search, UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
 import * as ImagePicker from 'expo-image-picker';
-import { signOutUser, getUserAttributes } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
+import { signOutUser, getUserAttributes, getUserCognitoSub } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
 import {View, 
         Text, 
         FlatList,
@@ -19,46 +19,58 @@ import {View,
         useAnimatedValue,
         Dimensions,
         Animated,
+        Image,
+        Keyboard,
+        KeyboardAvoidingView
         } from 'react-native';
-import AWS from 'aws-sdk';
+import AWS, { DynamoDB } from 'aws-sdk';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
         
 const DATA = data.reverse();
         
   const Profile = () => {
-
-    const s3 = new AWS.S3()
-    const dynamodb = new AWS.DynamoDB.DocumentClient()
-    const [username, setUsername] = useState("")
-    const [friends, setFriends] = useState([])
-    const [avatar, setAvatar] = useState("")
-    const [bio, setBio] = useState("")
-    const [stories, setStories] = useState([])
-
-    const getUsername = async () => { // Get username from Cognito Config in order to get primary key
-      setUsername(await getUserAttributes())
-    }
-
-    useFocusEffect(useCallback(() => {
-      getUsername()
-      getItems()
-    }, []))
-
     useFonts({
       'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
 
-    const params = {
+
+
+    const s3 = new AWS.S3()
+    const dynamodb = new AWS.DynamoDB.DocumentClient()
+
+    
+    // ------------------------------------------- Logged On User Details --------------------------------------------------------
+
+    const [username, setUsername] = useState("")
+    const [cognitoSub, setCognitoSub] = useState("")
+    const [friends, setFriends] = useState([])
+    const [avatar, setAvatar] = useState("")
+    const [bio, setBio] = useState("")
+    const [stories, setStories] = useState([])
+    const [primaryKey, setPrimaryKey] = useState(0)
+
+    const getUsername = async () => { // Get username from Cognito Config in order to get primary key for secondary global index
+      setCognitoSub(await getUserCognitoSub())
+    }
+
+    useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
+      getUsername()
+      getItems()
+      scanItems()
+    }, []))
+
+    const queryParams = {
       TableName: 'Players',
-      IndexName: 'Username-index',
-      KeyConditionExpression: 'Username = :usernameValue',
-      ProjectionExpression: "Username, Email, Friends, ProfilePicURL, Stories",
+      IndexName: 'CognitoSub-index',
+      KeyConditionExpression: 'CognitoSub = :subValue',
+      ProjectionExpression: "Username, Email, Friends, ProfilePicURL, Stories, PlayerID, Biography",
       ExpressionAttributeValues: {
-        ':usernameValue': username
+        ':subValue': cognitoSub
       }
     }
   
     const getItems = async () => {
-      dynamodb.query(params, (err, data) => {
+      dynamodb.query(queryParams, (err, data) => {
         if (err) {
           console.log('' + err)
         } else {
@@ -66,12 +78,25 @@ const DATA = data.reverse();
             setUsername(item.Username)
             setAvatar(item.ProfilePicURL)
             setBio(item.Biography)
+            setPrimaryKey(item.PlayerID)
+            console.log(item)
             //setStories(item.StoriesParticipated)
             //setFriends(item.Friends)
           })
 
         }
       })
+    }
+
+    // ------------------------------------------- Get other Users --------------------------------------------------------
+    type user = {Biography: string, CognitoSub: string, CreatedAt: string, Email: string, Friends: {}, PlayerID: number, Stories: number, StoriesParticipated: {}, Username: string}
+    const [otherUsers, setOtherUsers] = useState<user[]>([])
+    
+    const scanItems = async () => {
+
+      const items = await dynamodb.scan({ TableName: 'Players' }).promise();
+      
+      setOtherUsers(items.Items as user[] || [])
     }
 
     // ------------------------------------------- Profile Pictures Picking --------------------------------------------------------
@@ -88,35 +113,88 @@ const DATA = data.reverse();
       if(!result.canceled) {
         setImage(result.assets[0].uri)
       } 
-      console.log(image)
-      uploadImageToS3(image, "new")
+      uploadImageToS3(image, ""+primaryKey)
     }
 
+    // ------------------------------------------- Uploading to S3 Bucket + Updating Profile Picture --------------------------------------------------------
     const uploadImageToS3 = async (imageUri: string, imageName: string) => {
-      const response = await fetch(imageUri)
-      const blob = await response.blob()
 
       const params = {
         Bucket: 'loreprofilepictures',
         Key: `profile-pictures/${imageName}`,
-        Body: blob,
+        Body: await fetch(imageUri).then(res => res.blob()),
         ContentType: "image/jpeg",
         ACL: 'public-read'
       }
 
-      try{
-        const result = await s3.upload(params).promise()
-        return result.Location
+      try {
+        const uploadResult = await s3.upload(params).promise();
+        setAvatar(imageUri)
+        const dbParams = {
+          TableName: 'Players',
+          Key: {PlayerID: primaryKey},
+          UpdateExpression: 'SET ProfilePicURL = :url',
+          ExpressionAttributeValues: {
+            ':url': uploadResult.Location
+          }
+        };
+        await dynamodb.update(dbParams).promise();
+        console.log('Profile picture updated successfully!');
 
       } catch (error) {
-        console.error('Error uploading image:', error)
-        throw error
-      }
+        console.error('Error uploading profile picture:', error);
+      }  
 
     }
-  /* ------------------------------------------------------------------------------------------------------------------- */
+    // ------------------------------------------------------------Updating Username --------------------------------------------------------------- */
+    const [newName, setNewName] = useState("")
 
-    
+    const updateUsername = async (newUsername: string) => {
+
+      try {
+        setUsername(newUsername) // Set the original username to function username parameter
+        setNewName("")
+        const dbParams = {
+          TableName: 'Players',
+          Key: {PlayerID: primaryKey},
+          UpdateExpression: 'SET Username = :username',
+          ExpressionAttributeValues: {
+            ':username': newUsername
+          }
+        }
+        await dynamodb.update(dbParams).promise();
+
+        console.log('Username updated successfully!');
+
+      } catch (error) {
+        console.error('Error updating username:', error);
+      }
+    } 
+
+    // ------------------------------------------------------------Updating Username --------------------------------------------------------------- */
+    const [newBiography, setNewBiography] = useState("")
+
+    const updateBio = async (newBio: string) => {
+
+      try {
+        setBio(newBio)
+        setNewName("")
+        const dbParams = {
+          TableName: 'Players',
+          Key: {PlayerID: primaryKey},
+          UpdateExpression: 'SET Biography = :bio',
+          ExpressionAttributeValues: {
+            ':bio': newBio
+          }
+        }
+        await dynamodb.update(dbParams).promise();
+        console.log('Bio updated successfully!');
+
+      } catch (error) {
+        console.error('Error updating Bio:', error);
+      }
+    } 
+
   /* ----------------------------------------- Animation ----------------------------------------------------------------- */
   const slideValue = useRef(useAnimatedValue((Dimensions.get("window").width))).current
 
@@ -156,13 +234,14 @@ const DATA = data.reverse();
   let [isFollowingVisible, setFollowingVisible] = useState(false)
   let [isSearchVisible, setSearchVisible] = useState(false)
   let [isEditVisible, setEditVisible] = useState(false)
+  let [isLogoutVisible, setLogoutVisible] = useState(false)
 
   let [searchQuery, setSearchQuery] = useState("")
-  let [filteredUsers, setFilteredUsers] = useState(data)
+  let [filteredUsers, setFilteredUsers] = useState<user[]>()
 
   const handleSearch = (text: string) => {
     setSearchQuery(text)
-    const filteredData = data.filter(name => name.name.toLowerCase().includes(text.toLowerCase()) )
+    const filteredData = otherUsers.filter(name => name.Username.toLowerCase().includes(text.toLowerCase()) )
     setFilteredUsers(filteredData)
   }
 
@@ -174,67 +253,106 @@ const DATA = data.reverse();
 
   return (
     <SafeAreaView className="bg-backgroundSecondary flex-1">
+      <KeyboardAvoidingView className="flex-1">
+
       <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
           <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
-          <LogOut size={20} color={"red"} onPress={() => {handleLogout()}}/>
+          <LogOut size={20} color={"red"} onPress={() => {setLogoutVisible(true)}}/>
         </View>
       </View>
 
-      {/*----------------------------------------------- EDITING PROFILE --------------------------------------*/}
+      <Modal animationIn={"slideInUp"} animationOut={"slideOutDown"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0, marginTop: Dimensions.get("window").height-80, }} 
+             onBackdropPress={() => setLogoutVisible(false)}
+             backdropOpacity={.5}
+             isVisible={isLogoutVisible}>
+              <View className="bg-background flex-1 rounded-t-3xl items-center justify-center">
+                <TouchableOpacity className="w-3/4 h-1/2 bg-red-500 flex-row rounded-full items-center justify-center"
+                                  onPress={() => {handleLogout()}}>
+                  <LogOut size={20} color={"white"}></LogOut>
+                  <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Log Out </Text>
+                </TouchableOpacity>
+              </View>
+      </Modal>
+
+{/*--------------------------------------------------------------- EDITING PROFILE -----------------------------------------------------------*/}
       <SafeAreaView className="flex-1">
-      <Modal animationIn={"slideInRight"} animationOut={"slideOutRight"} className="flex-1 bg-background" style={{marginHorizontal: 0, marginBottom: 0}} isVisible={isEditVisible}>
-        <View className="bg-background flex-1 p-4">
-        <ScrollView className="flex-1" automaticallyAdjustKeyboardInsets={true} stickyHeaderIndices={[0]}>
-          
-          <View className="w-full h-[40px] flex-row justify-between bg-background">
-            <Text style={{fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white'}}>Edit Profile</Text>
-            <X color={"white"} onPress={() => {setEditVisible(false)}}/>
-          </View>
-          
-          <View className="flex flex-col flex-1 items-start">
-            <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingBottom: 10}}>Avatar</Text>
-            <View className="pl-4 flex flex-row items-center justify-between">
-              <Avatar size={100} image={avatar}></Avatar>
-              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl ml-6"
-                                onPress={() => {pickImage()}}>
-                <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Edit Avatar </Text>
-              </TouchableOpacity>
-            </View>
-            <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-
-            <View className="flex flex-col items-center">
-              <View className="items-start">
-                <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pb-4">Username</Text>
-                <TextInput 
-                  className="bg-backgroundSecondary color-white h-[40px] w-[330px] rounded-xl px-2"
-                  placeholder = ""
-                  /> 
+      <Modal animationIn={"slideInRight"} animationOut={"slideOutRight"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0}} 
+             isVisible={isEditVisible}>
+        <View className="flex-1">
+          <Image
+            className="h-full w-full"
+            style={{ resizeMode: 'cover', position: 'absolute' }}
+            //source={require('assets/Homebg.png')}
+            />
+          <ScrollView className="flex-1 p-4 bg-background" automaticallyAdjustKeyboardInsets={true}>
+            <View className="flex-1 flex-row">
+              <Pen color={"white"}></Pen>
+              <View className="flex-1 h-[40px] flex-row justify-between bg-background pl-2">
+                <Text style={{fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white'}}>Edit Profile</Text>
+                <X color={"white"} onPress={() => {setEditVisible(false)}}/>
               </View>
-              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl mt-4">
-                <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Username </Text>
-              </TouchableOpacity>
+            </View>
+            <View className="flex flex-col flex-1">
+{/* -------------------------------------------------------------- AVATAR ------------------------------------------------------------------*/}
+            <View className="flex-1 flex flex-row">
+              <IdCard size={20} color={"white"} />
+              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Avatar</Text>
+            </View>
+            <View className="flex-1 flex flex-col items-center bg-backgroundSecondary rounded-xl py-6">
+              <View className="w-full h-1/3 bg-backgroundSecondary rounded-t-xl" style={{position:'absolute'}}></View>
+              <View className="w-full h-2/5 bg-primaryAccent rounded-t-xl" style={{position:'absolute'}}></View>
+                <View className="pb-4 items-center justify-center flex-1">
+                  <View className="bg-backgroundSecondary rounded-full w-[140px] h-[150px]" style={{position: 'absolute'}}></View>
+                  <Avatar size={120} image={avatar}></Avatar>
+                </View>
+                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl"
+                                  onPress={() => {pickImage()}}>
+                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Edit Avatar </Text>
+                </TouchableOpacity>
             </View>
             <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-
-            <View className="flex flex-col items-center">
-              <View className="items-start">
-                <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pb-4">Bio</Text>
+{/* -------------------------------------------------------------- USERNAME ------------------------------------------------------------------*/}
+            <View className="flex-1 flex flex-row">
+              <ALargeSmall size={20} color={"white"} />
+              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Username</Text>
+            </View>
+              <View className="flex flex-col items-center justify-center bg-backgroundSecondary rounded-xl p-6">
                 <TextInput 
-                  className="bg-backgroundSecondary color-white h-[100px] w-[330px] rounded-xl px-2"
-                  placeholder = ""
+                  className="bg-black color-white h-[40px] w-[330px] rounded-xl px-2"
+                  placeholder = {username}
+                  value={newName}
+                  onChangeText={setNewName}
                   /> 
+                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl mt-4"
+                                  onPress={() => {updateUsername(newName)}}>
+                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Username </Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity className="bg-primaryAccent w-[110px] h-[40px] justify-center items-center rounded-xl mt-4"
-                                onPress={() => {getItems()}}>
-                <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Username </Text>
-              </TouchableOpacity>
-            </View>
-            <View className="bg-secondaryText h-[1px] w-full my-6"></View>
+              <View className="bg-secondaryText h-[1px] w-full my-6"></View>
+  {/* -------------------------------------------------------------- BIO ------------------------------------------------------------------*/}
+            <View className="flex-1 flex flex-row">
+              <LetterText size={20} color={"white"} />
+              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Biography</Text>
+            </View>              
+            <View className="flex flex-col items-center justify-center bg-backgroundSecondary rounded-xl p-6">
+                <TextInput 
+                  className="bg-black color-white h-[100px] w-[330px] rounded-xl px-2"
+                  multiline={true}
+                  placeholder = {bio}
+                  value = {newBiography}
+                  onChangeText={setNewBiography}
+                  /> 
+                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl mt-4"
+                                  onPress={() => {updateBio(newBiography)}}>
+                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Bio </Text>
+                </TouchableOpacity>
+              </View>
+              <View className="bg-secondaryText h-[1px] w-full my-6"></View>
 
-          </View>
-        </ScrollView>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
       </SafeAreaView>
@@ -244,7 +362,7 @@ const DATA = data.reverse();
         ref={flatListRef}
         onScroll={handleScroll}
         className="bg-background"
-        data={searchQuery === "" ? DATA : filteredUsers}
+        data={searchQuery === "" ? otherUsers : filteredUsers}
         renderItem={({item, index}) => isStoryVisible ? <StoryCard              
                                                         key={index}
                                                         count={index}
@@ -254,16 +372,16 @@ const DATA = data.reverse();
                    isFollowingVisible && item.friends ? 
                                                         <UserCard 
                                                           key={index}
-                                                          name={item.name}
-                                                          image={item.image}
-                                                          friends={item.friends}/>
+                                                          name={item.Username}
+                                                          image={item.ProfilePicURL}
+                                                          friends={item.Friends}/>
                                                       : (
                      isSearchVisible && !item.friends ? 
                                                         <UserCard 
                                                           key={index}
-                                                          name={item.name}
-                                                          image={item.image}
-                                                          friends={item.friends}/> 
+                                                          name={item.Username}
+                                                          image={item.ProfilePicURL}
+                                                          friends={false}/> 
                                                       : <View />
                                                         )
         )}
@@ -276,9 +394,9 @@ const DATA = data.reverse();
             <View className="pt-[500px]">
               <View className="w-2/3 flex-2 pl-4 flex flex-row items-center">
                 <Avatar size={100} image={avatar}></Avatar>
-                <View className="h-[100px] px-2">
+                <View className="h-[100px] px-4">
                   <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">{username}</Text>
-                  <Text numberOfLines={4} style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{bio}</Text>
+                  <Text numberOfLines={4} style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{bio}</Text>
                 </View>
               </View>
 
@@ -346,7 +464,7 @@ const DATA = data.reverse();
       </FlatList>
 
     {/*--------------------------------------------- Scroll to Top Button ----------------------------------------*/}
-    <Animated.View style={{position: 'absolute', marginTop: 555, marginLeft: 320, transform: [{translateX: slideValue}]}}>
+    <Animated.View style={{position: 'absolute', marginTop: Dimensions.get("screen").height-140, marginLeft: Dimensions.get("screen").width-60, transform: [{translateX: slideValue}]}}>
       <TouchableOpacity className="bg-primaryAccent h-[45px] w-[45px] rounded-full items-end"   
                       onPress={() => {scrollToTop()}}>
         <View className="flex-1 items-center justify-center pr-2">
@@ -355,6 +473,7 @@ const DATA = data.reverse();
       </TouchableOpacity>
     </Animated.View>
     {/* ----------------------------------------------------------------------------------------------------------- */}
+    </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

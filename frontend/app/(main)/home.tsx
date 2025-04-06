@@ -37,6 +37,11 @@ const Home = () => {
           <Image
             source={require('assets/Logo 1.png')}
             style={[{ width: 300, height: 150 }, { resizeMode: 'contain' }]}></Image>
+          <Image
+            className="h-full w-full"
+            style={{ resizeMode: 'cover', position: 'absolute', opacity: 0.5 }}
+            source={require('assets/Homebg.png')}
+          />
         </View>
       </View>
     </SafeAreaView>
