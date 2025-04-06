@@ -14,7 +14,6 @@ const Write = () => {
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
-    if (prompt.trim() === '') return;
 
     socket.emit('submit_prompt', { room: lobbyCode, prompt });
 
@@ -45,6 +44,7 @@ const Write = () => {
         duration={10}
         initialRemainingTime={10}
         onUpdate={onUpdate}
+        isAbsolute={true}
       />
       <ScrollView
         className="flex-1 px-5 py-10"

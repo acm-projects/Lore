@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { signInUser } from './CognitoConfig'; // Adjust import path if needed
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { signInUser, getUserAttributes } from './CognitoConfig'; // Adjust import path if needed
 import { useFonts } from 'expo-font';
 import { socket } from '~/socket';
 
@@ -14,6 +25,7 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleSignIn = async () => {
+    router.push('/home');
     setError('');
     setSuccessMessage('');
 
@@ -26,8 +38,8 @@ const Login = () => {
     try {
       const result = await signInUser(email, password); // Use email for authentication
       setSuccessMessage('Login successful!');
-      socket.emit('login_success');
-      router.push('/home');  // Navigate to home screen after successful login
+      getUserAttributes();
+      router.push('/home'); // Navigate to home screen after successful login
     } catch (err) {
       setError((err as Error).message || 'Invalid email or password.');
     }
