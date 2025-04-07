@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
 import Modal from 'react-native-modal';
-import { ALargeSmall, ArrowUp, BookOpen, IdCard, LetterText, LogOut, Pen, Search, UserRoundPlus, UsersRound, X } from 'lucide-react-native';
+import { ALargeSmall, ArrowUp, BookOpen, IdCard, LogOut, Pen, Search, UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
@@ -25,39 +25,46 @@ import {View,
         } from 'react-native';
 import AWS, { DynamoDB } from 'aws-sdk';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-        
-const DATA = data.reverse();
-        
+                
   const Profile = () => {
     useFonts({
       'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
 
-
+    AWS.config.update({
+    });
 
     const s3 = new AWS.S3()
     const dynamodb = new AWS.DynamoDB.DocumentClient()
 
-    
     // ------------------------------------------- Logged On User Details --------------------------------------------------------
-
     const [username, setUsername] = useState("")
     const [cognitoSub, setCognitoSub] = useState("")
-    const [friends, setFriends] = useState([])
-    const [avatar, setAvatar] = useState("")
-    const [bio, setBio] = useState("")
-    const [stories, setStories] = useState([])
     const [primaryKey, setPrimaryKey] = useState(0)
+    const [avatar, setAvatar] = useState("")
+    const [stories, setStories] = useState([])
+    const [isGuest, setGuest] = useState(false)
+    //const [friends, setFriends] = useState([])
+    //const [bio, setBio] = useState("")
 
-    const getUsername = async () => { // Get username from Cognito Config in order to get primary key for secondary global index
+    const getCognitoSub = async () => { // Get username from Cognito Config in order to get primary key for secondary global index
       setCognitoSub(await getUserCognitoSub())
     }
 
     useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
-      getUsername()
+      getCognitoSub()
       getItems()
-      scanItems()
+      if(cognitoSub.length === 0) {
+        setGuest(true)
+      }
     }, []))
+
+    useEffect(() => {
+      if(cognitoSub.length != 0) {
+        setGuest(false)
+      }
+      getItems()
+    }, [cognitoSub])
 
     const queryParams = {
       TableName: 'Players',
@@ -77,9 +84,8 @@ const DATA = data.reverse();
           data.Items?.forEach(item => {
             setUsername(item.Username)
             setAvatar(item.ProfilePicURL)
-            setBio(item.Biography)
             setPrimaryKey(item.PlayerID)
-            console.log(item)
+            //setBio(item.Biography)
             //setStories(item.StoriesParticipated)
             //setFriends(item.Friends)
           })
@@ -171,8 +177,8 @@ const DATA = data.reverse();
       }
     } 
 
-    // ------------------------------------------------------------Updating Username --------------------------------------------------------------- */
-    const [newBiography, setNewBiography] = useState("")
+    // ------------------------------------------------------------Updating Bio --------------------------------------------------------------- */
+/*     const [newBiography, setNewBiography] = useState("")
 
     const updateBio = async (newBio: string) => {
 
@@ -193,7 +199,7 @@ const DATA = data.reverse();
       } catch (error) {
         console.error('Error updating Bio:', error);
       }
-    } 
+    }  */
 
   /* ----------------------------------------- Animation ----------------------------------------------------------------- */
   const slideValue = useRef(useAnimatedValue((Dimensions.get("window").width))).current
@@ -238,6 +244,7 @@ const DATA = data.reverse();
 
   let [searchQuery, setSearchQuery] = useState("")
   let [filteredUsers, setFilteredUsers] = useState<user[]>()
+  let [filteredStories, setFilteredStories] = useState()
 
   const handleSearch = (text: string) => {
     setSearchQuery(text)
@@ -247,6 +254,7 @@ const DATA = data.reverse();
 
   // Handle Logout functionality
   const handleLogout = () => {
+    setLogoutVisible(false)
     signOutUser(); // Call signOutUser function to log the user out
     router.push('/'); // Redirect to login page after logging out
   };
@@ -255,14 +263,16 @@ const DATA = data.reverse();
     <SafeAreaView className="bg-backgroundSecondary flex-1">
       <KeyboardAvoidingView className="flex-1">
 
+{/*--------------------------------------------------------------- EDIT -----------------------------------------------------------*/}
       <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
         <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
-          <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>
+          {isGuest ? <View/> : <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>}
           <LogOut size={20} color={"red"} onPress={() => {setLogoutVisible(true)}}/>
         </View>
       </View>
 
+{/*--------------------------------------------------------------- LOG OUT -----------------------------------------------------------*/}
       <Modal animationIn={"slideInUp"} animationOut={"slideOutDown"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0, marginTop: Dimensions.get("window").height-80, }} 
              onBackdropPress={() => setLogoutVisible(false)}
              backdropOpacity={.5}
@@ -271,7 +281,8 @@ const DATA = data.reverse();
                 <TouchableOpacity className="w-3/4 h-1/2 bg-red-500 flex-row rounded-full items-center justify-center"
                                   onPress={() => {handleLogout()}}>
                   <LogOut size={20} color={"white"}></LogOut>
-                  <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Log Out </Text>
+                  {isGuest ? <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Exit </Text> : 
+                             <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Log Out </Text>}
                 </TouchableOpacity>
               </View>
       </Modal>
@@ -295,7 +306,7 @@ const DATA = data.reverse();
               </View>
             </View>
             <View className="flex flex-col flex-1">
-{/* -------------------------------------------------------------- AVATAR ------------------------------------------------------------------*/}
+        {/* ------------------------------------------------------ AVATAR ---------------------------------------------------*/}
             <View className="flex-1 flex flex-row">
               <IdCard size={20} color={"white"} />
               <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Avatar</Text>
@@ -313,7 +324,7 @@ const DATA = data.reverse();
                 </TouchableOpacity>
             </View>
             <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-{/* -------------------------------------------------------------- USERNAME ------------------------------------------------------------------*/}
+        {/* -------------------------------------------------- USERNAME -------------------------------------------------*/}
             <View className="flex-1 flex flex-row">
               <ALargeSmall size={20} color={"white"} />
               <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Username</Text>
@@ -331,7 +342,8 @@ const DATA = data.reverse();
                 </TouchableOpacity>
               </View>
               <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-  {/* -------------------------------------------------------------- BIO ------------------------------------------------------------------*/}
+        {/* -------------------------------------------------- BIO ----------------------------------------------------*/}
+  { /* 
             <View className="flex-1 flex flex-row">
               <LetterText size={20} color={"white"} />
               <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Biography</Text>
@@ -350,117 +362,78 @@ const DATA = data.reverse();
                 </TouchableOpacity>
               </View>
               <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-
+  */}
+  {/*---------------------------------------------------------------------------------------------------------*/}
             </View>
           </ScrollView>
         </View>
       </Modal>
       </SafeAreaView>
-      {/*---------------------------------------------------------------------------------------------------------*/}
 
       <FlatList 
         ref={flatListRef}
         onScroll={handleScroll}
-        className="bg-background"
-        data={searchQuery === "" ? otherUsers : filteredUsers}
-        renderItem={({item, index}) => isStoryVisible ? <StoryCard              
-                                                        key={index}
-                                                        count={index}
-                                                        text={item.text}
-                                                        story={item.aiPrompt}/> 
-                                                      : (
-                   isFollowingVisible && item.friends ? 
-                                                        <UserCard 
-                                                          key={index}
-                                                          name={item.Username}
-                                                          image={item.ProfilePicURL}
-                                                          friends={item.Friends}/>
-                                                      : (
-                     isSearchVisible && !item.friends ? 
-                                                        <UserCard 
-                                                          key={index}
-                                                          name={item.Username}
-                                                          image={item.ProfilePicURL}
-                                                          friends={false}/> 
-                                                      : <View />
-                                                        )
-        )}
+        className="bg-backgroundSecondary"
+        data={searchQuery === "" ? stories : filteredStories}
+        renderItem={({item, index}) =>  <View className="flex-1 bg-background">
+                                        <StoryCard              
+                                        key={index}
+                                        count={index}
+                                        text={item.text}
+                                        story={item.aiPrompt}/>
+                                        </View>
+                                        }
+        ListEmptyComponent={() => <View style={{flex: 1, backgroundColor: "#313338", paddingBottom: 500, paddingTop: 10, alignItems: 'center'}}>  
+                                    {isGuest ? <Text 
+                                                className="color-secondaryText"
+                                                style={{fontFamily: 'JetBrainsMonoRegular'}}> Login to Save and See Past Stories! </Text> :
+                                                <Text className="color-secondaryText"
+                                                style={{fontFamily: 'JetBrainsMonoRegular'}}> No Stories Found! </Text>}
+                                  </View>}              
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         ListHeaderComponent={
   // ------------------------------------------------------   Header Component -----------------------------------------------
-          <View className="w-full bg-backgroundSecondary items-start flex flex-col" style={isFollowingVisible || isSearchVisible ? {marginTop: -500, height: 806} 
-                                                                                                                : {marginTop: -500, height: 720}}>
-            <View className="pt-[500px]">
-              <View className="w-2/3 flex-2 pl-4 flex flex-row items-center">
-                <Avatar size={100} image={avatar}></Avatar>
-                <View className="h-[100px] px-4">
-                  <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">{username}</Text>
-                  <Text numberOfLines={4} style={{fontSize: 12, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{bio}</Text>
-                </View>
-              </View>
+      <View className="flex-1 bg-backgroundSecondary items-center justify-center">
+        <View className="w-full items-center justify-center">
+          {/* ----------------------------------------------- Avatar -----------------------------------------------------*/}
+          <View className="w-2/3 flex-2 flex flex-col items-center">
+            <Avatar size={100} image={avatar}></Avatar>
+            <View className="h-[50px]">
+              <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">{username}</Text>
+            </View>
+          </View>
 
-              <View className="px-16 w-full flex-1 flex-row justify-between items-center">
-                <View className="mt-10 justify-center items-center">
-                  <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">Stories</Text>
-                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{stories.length}</Text>
-                </View>
-                <View className="mt-10 justify-center items-center">
-                  <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">Friends</Text>
-                  <Text style={{fontSize: 14, fontFamily: 'JetBrainsMonoRegular'}} className="pb-8 color-secondaryText">{friends.length}</Text>
-                </View>
-              </View>
+          {/* ----------------------------------------------- SEARCH BAR -------------------------------------------------- */}
+          {/* Note that this is just pretending to be apart of the header, it's actually apart of the darker section on top of it, so if there's any formatting issues change the height of that*/}
+          <View className="bg-backgroundSecondary w-full"> 
 
-              <View className="flex-1 px-10">
-                <View className="pt-6 w-full h-full justify-between flex flex-row">
-                  <BookOpen size={30} color={isStoryVisible ? '#06D6A1' : 'white'} onPress={() => {setSearchQuery(""); setStoryVisible(true); setFollowingVisible(false); setSearchVisible(false)}}/>
-                  <UsersRound size={30} color={isFollowingVisible ? '#06D6A1' : 'white'} onPress={() => {setSearchQuery(""); setStoryVisible(false); setFollowingVisible(true); setSearchVisible(false)}}/>
-                  <UserRoundPlus size={30} color={isSearchVisible ? '#06D6A1' : 'white'} onPress={() => {setSearchQuery(""); setStoryVisible(false); setFollowingVisible(false); setSearchVisible(true)}}/>
-                </View>
-              </View>
-              
-              <View className="w-full px-10 justify-between flex flex-row">
-                {isStoryVisible ? <View className="bg-primaryAccent w-[30px] h-[2px]"/> : <View />}
-                {isFollowingVisible ? <View className="bg-primaryAccent w-[30px] h-[2px]"/> : <View/>}
-                {isSearchVisible ? <View className="bg-primaryAccent w-[30px] h-[2px]"/>: <View/>}
-              </View> 
+            <View className="w-full justify-center items-center flex flex-row pb-3">
+                <BookOpen size={30} color={isStoryVisible ? '#06D6A1' : 'white'} onPress={() => {setSearchQuery(""); setStoryVisible(true); setFollowingVisible(false); setSearchVisible(false)}}/>
+            </View>
+            
+            <View className="w-full justify-center items-center flex flex-row">
+              {isStoryVisible ? <View className="bg-primaryAccent w-[30px] h-[2px]"/> : <View />}
+            </View> 
 
-              {/* Note that this is just pretending to be apart of the friends section, it's actually apart of the darker section on top of it, so if there's any formatting issues change the height of that*/}
-              <View className="bg-background items-center justify-center"> 
-              {isFollowingVisible ?   
-                                  <View>
-                                    <View className="flex flex-row mt-4 mb-4 items-center"> 
-                                      <TextInput 
-                                        className="bg-backgroundSecondary color-white h-[40px] w-[330px] rounded-xl px-10"
-                                        placeholder = "Search Users"
-                                        value={searchQuery}
-                                        onChangeText={handleSearch}/> 
-                                      <View className="pl-2" style={{position: 'absolute'}}>
-                                        <Search size={20} color='#313338' />
-                                      </View>
-                                    </View>
-                                    <Text className="color-secondaryText" style={{fontFamily: 'JetBrainsMonoRegular'}}>Friends</Text>
-                                  </View>
-                                  : <View />}
-              {isSearchVisible ?
-                                <View>
-                                  <View className="flex flex-row mt-4 mb-4 items-center"> 
-                                    <TextInput 
-                                      className="bg-backgroundSecondary color-white h-[40px] w-[330px] rounded-xl px-10"
-                                      placeholder = "Search Users"
-                                      value={searchQuery}
-                                      onChangeText={handleSearch}/> 
-                                    <View className="pl-2" style={{position: 'absolute'}}>
-                                      <Search size={20} color='#313338' />
-                                    </View>
-                                  </View>
-                                  <Text className="color-secondaryText" style={{fontFamily: 'JetBrainsMonoRegular'}}>Users</Text>
-                                </View>
-                                : <View />}
+            <Text className="pl-8 pt-4 bg-background color-secondaryText" style={{fontFamily: 'JetBrainsMonoRegular'}}>Stories</Text>
+            <View className="bg-background w-full items-center">
+              <View className="flex flex-row mt-4 mb-2 items-center"> 
+                <TextInput 
+                  className="bg-backgroundSecondary color-white h-[40px] w-[330px] rounded-xl px-10"
+                  placeholder = "Search Stories"
+                  value={searchQuery}
+                  onChangeText={handleSearch}/> 
+                <View className="pl-2" style={{position: 'absolute'}}>
+                  <Search size={20} color='#313338' />
+                </View>
               </View>
             </View>
-          </View>}>
-        {/* --------------------------------------------------------------------------------------------------- */}
+
+          </View>
+        </View>
+      </View>}>
+      {/* --------------------------------------------------------------------------------------------------- */}
       </FlatList>
 
     {/*--------------------------------------------- Scroll to Top Button ----------------------------------------*/}

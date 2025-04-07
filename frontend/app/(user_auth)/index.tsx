@@ -123,10 +123,10 @@ const Login = () => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"
-                      onPress={() => { router.push('/home') }}
+                      className="items-center justify-center mb-2 rounded-3xl bg-secondaryText color-white h-[40px] w-[285px]"
+                      onPress={() => { router.push('/(user_auth)/guestDetails') }}
                     >
-                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Login</Text>
+                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Continue as Guest</Text>
                     </TouchableOpacity>
 
                     <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
