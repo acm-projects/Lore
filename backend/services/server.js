@@ -5,6 +5,18 @@ import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
 import FormData from "form-data";
+import { v4 as uuidv4 } from 'uuid';
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+
+// Create a second DynamoDB client for the Cognito/Stories account
+const dynamoForStories = new DynamoDBClient({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: "ASIAQQABDJ7GUM375RYF",
+    secretAccessKey: "1bdWMckc5gBdpVqlQlTrppK5AzH3GOLns1uAvAUs",
+    sessionToken: "IQoJb3JpZ2luX2VjEMP//////////wEaCXVzLWVhc3QtMiJHMEUCIEqi7nfxuqarn5CK5pyTwBSfCe4bmdjjz+Hu6FleqbirAiEAhQmRYON63CWbLMQ82iSjpZl4MjsVnyfVMF3LWDGx/Bwq7wIIPRAAGgwwMzQzNjIwNTI1NTciDHbm/6jWB8Sn0IfgzyrMAvR95ymvzuFBDwdETKvkd3fF1ckelr4OblNOv4XOZwAsm25GaKO1m4iCJWQGmFxkZwp+CXtKPizHpDYCsa5rXAoTBXJK8rSq1/LvtGfxPYS7jaN1SGF45bey/BVcYKy3ZJMWc7MdsGs7np6+3xrs5F3pFfBkSjgLK91u1JSTSBeD3UNAs7bBk7fMuFKJ85fHjZpMoQI4m/gS1T9CMqrR7PKOxBCMeWPX1oP3QOWt+zmeI/lhR8zssCpk2KvnaD0UXXzx0qOU7qm1ZxmPqArdS5qmRelCt6y7Ytd5IeJuQRs2+xd6xswWcu0iFzfJtA/7Dp7zM7MwhMggH+v+Kdao+GVJ/miiaBqNz/P17KsxbqpQpTKa9EM2tMukyhe/RwpGLqZxWF5qkiHomIWnczR49OktwtCwGBC7OtlQvfxfRnPxHc+KQ6loEGLGa0M7MK/px78GOqcBPFWUwc0cjsSw7egJhxT+mjJ6+W9SUn+EMr17YBZDrQiz5tcvFlPrfMgV55Z92u2UvkXR9QprdUsuhQEhjheQfhsl9JYZIm3Tjf7rQrdWKXJhIfnh8MHEvzx+bJpUTagWEtFSfJzT912egB5YwvwfZRRpgmJMNnMhhvXrUHMJz6UuoexTTru57wOsEQnLi6WjsDNPgi3KzqMPfFEDVzy5SkhdTkufKIA="
+  }
+});
 
 dotenv.config({ path: "../.env" }); // load secret keys
 
@@ -12,13 +24,13 @@ dotenv.config({ path: "../.env" }); // load secret keys
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // or higher if needed
 
 const PORT = 3001; // Local WebSocket server port
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:8081", "*"],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -70,6 +82,8 @@ io.on("connection", (socket) => {
       continuePressedBy: new Set(),
       playerWins: {},
       imageAlreadyGenerated: false,
+      imgURL: null,
+      summary: null,
     };
 
     console.log(`Room created: ${room}`);
@@ -331,7 +345,16 @@ io.on("connection", (socket) => {
 
   socket.on("request_story_summary", async ({ room }) => {
     if (!rooms[room]) return;
-    if (rooms[room].imageAlreadyGenerated) return;
+  
+    // ✅ Return cached image/summary if already generated
+    if (rooms[room].imageAlreadyGenerated && rooms[room].imgURL) {
+      console.log("🖼 Returning cached image for room", room);
+      return io.to(room).emit("receive_story_image", {
+        summary: rooms[room].summary || "Previously generated summary",
+        image: rooms[room].imgURL
+      });
+    }
+  
     rooms[room].imageAlreadyGenerated = true;
   
     const full_story = rooms[room].storyHistory.join("\n\n");
@@ -345,11 +368,9 @@ io.on("connection", (socket) => {
       let rawSummary = summaryResponse.data.summary;
       console.log("🧠 Raw AI Summary Response:", rawSummary);
   
-      // ✅ Extract paragraph after "Summary:"
       const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
       const cleanSummary = summaryMatch ? summaryMatch[1].trim() : "No summary found.";
-  
-      console.log("📚 Cleaned Summary:", cleanSummary);
+      rooms[room].summary = cleanSummary; // ✅ Save summary for reuse
   
       // Step 2: Generate image using Stable Diffusion
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
@@ -374,6 +395,9 @@ io.on("connection", (socket) => {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
   
+        // ✅ Store in global room data
+        rooms[room].imgURL = imageDataUri;
+  
         io.to(room).emit("receive_story_image", {
           summary: cleanSummary,
           image: imageDataUri
@@ -388,7 +412,7 @@ io.on("connection", (socket) => {
         image: null
       });
     }
-  });
+  });  
   
   socket.on("request_full_story", (room) => {
     if (!rooms[room]) return;
@@ -418,6 +442,33 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+app.post("/save-story", async (req, res) => {
+  const { userId, title, winningPrompts, storyHistory } = req.body;
+
+  console.log("📦 Received save-story request:", req.body);
+
+  try {
+    const command = new PutItemCommand({
+      TableName: "Stories",
+      Item: {
+        userId: { S: userId },
+        storyId: { S: uuidv4() },
+        title: { S: title },
+        winningPrompts: { L: winningPrompts.flat().map(p => ({ S: p })) },
+        storyHistory: { L: storyHistory.map(p => ({ S: p })) },
+        createdAt: { S: new Date().toISOString() }
+      },
+    });
+
+    await dynamoForStories.send(command); // ✅ Using the custom credentials here
+    res.status(200).json({ message: "Story saved!" });
+  } catch (err) {
+    console.error("❌ Failed to save story:", err);
+    res.status(500).json({ error: "Failed to save story" });
+  }
+});
+
 
 server.listen(PORT, () => {
   console.log(`Server is running locally on port ${PORT}`);
