@@ -7,27 +7,31 @@ import dotenv from "dotenv";
 import FormData from "form-data";
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-
-// Create a second DynamoDB client for the Cognito/Stories account
-const dynamoForStories = new DynamoDBClient({
-  region: "us-east-2",
-  credentials: {
-    accessKeyId: "ASIAQQABDJ7GUM375RYF",
-    secretAccessKey: "1bdWMckc5gBdpVqlQlTrppK5AzH3GOLns1uAvAUs",
-    sessionToken: "IQoJb3JpZ2luX2VjEMP//////////wEaCXVzLWVhc3QtMiJHMEUCIEqi7nfxuqarn5CK5pyTwBSfCe4bmdjjz+Hu6FleqbirAiEAhQmRYON63CWbLMQ82iSjpZl4MjsVnyfVMF3LWDGx/Bwq7wIIPRAAGgwwMzQzNjIwNTI1NTciDHbm/6jWB8Sn0IfgzyrMAvR95ymvzuFBDwdETKvkd3fF1ckelr4OblNOv4XOZwAsm25GaKO1m4iCJWQGmFxkZwp+CXtKPizHpDYCsa5rXAoTBXJK8rSq1/LvtGfxPYS7jaN1SGF45bey/BVcYKy3ZJMWc7MdsGs7np6+3xrs5F3pFfBkSjgLK91u1JSTSBeD3UNAs7bBk7fMuFKJ85fHjZpMoQI4m/gS1T9CMqrR7PKOxBCMeWPX1oP3QOWt+zmeI/lhR8zssCpk2KvnaD0UXXzx0qOU7qm1ZxmPqArdS5qmRelCt6y7Ytd5IeJuQRs2+xd6xswWcu0iFzfJtA/7Dp7zM7MwhMggH+v+Kdao+GVJ/miiaBqNz/P17KsxbqpQpTKa9EM2tMukyhe/RwpGLqZxWF5qkiHomIWnczR49OktwtCwGBC7OtlQvfxfRnPxHc+KQ6loEGLGa0M7MK/px78GOqcBPFWUwc0cjsSw7egJhxT+mjJ6+W9SUn+EMr17YBZDrQiz5tcvFlPrfMgV55Z92u2UvkXR9QprdUsuhQEhjheQfhsl9JYZIm3Tjf7rQrdWKXJhIfnh8MHEvzx+bJpUTagWEtFSfJzT912egB5YwvwfZRRpgmJMNnMhhvXrUHMJz6UuoexTTru57wOsEQnLi6WjsDNPgi3KzqMPfFEDVzy5SkhdTkufKIA="
-  }
-});
+import { ScanCommand } from "@aws-sdk/client-dynamodb";
+import { QueryCommand } from "@aws-sdk/client-dynamodb";
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 dotenv.config({ path: "../.env" }); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
+const ACCESS_KEY = process.env.ACCESS_KEY;
+const SECRET_KEY = process.env.SECRET_KEY;
+
+// Create a second DynamoDB client for the Cognito/Stories account
+const dynamoForStories = new DynamoDBClient({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY,
+  },
+});
 
 const app = express();
 app.use(express.json({ limit: '10mb' })); // or higher if needed
 
 const PORT = 3001; // Local WebSocket server port
-
+                         
 app.use(
   cors({
     origin: ["http://localhost:3000", "http://localhost:8081", "*"],
@@ -469,6 +473,40 @@ app.post("/save-story", async (req, res) => {
   }
 });
 
+app.get("/get-stories", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const command = new QueryCommand({
+      TableName: "Stories",
+      KeyConditionExpression: "userId = :uid",
+      ExpressionAttributeValues: {
+        ":uid": { S: userId },
+      },
+    });
+
+    const response = await dynamoForStories.send(command);
+    const stories = (response.Items || []).map(item => {
+      const unmarshalled = unmarshall(item);
+      return {
+        title: unmarshalled.title,
+        plotPoints: unmarshalled.winningPrompts.map((prompt, index) => ({
+          winningPlotPoint: prompt,
+          story: unmarshalled.storyHistory[index] || "",
+        })),
+      };
+    });
+
+    res.json({ stories });
+  } catch (err) {
+    console.error("❌ Failed to fetch stories:", err);
+    res.status(500).json({ error: "Failed to retrieve stories" });
+  }
+});
 
 server.listen(PORT, () => {
   console.log(`Server is running locally on port ${PORT}`);
