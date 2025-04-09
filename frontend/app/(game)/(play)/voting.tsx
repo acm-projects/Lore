@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -8,29 +8,34 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 
 const Voting = () => {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const { votingDuration } = useLobby();
+  const [timeRemaining, setTimeRemaining] = useState(votingDuration.minutes * 60 + votingDuration.seconds);
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string }[]>([]);
 
   useEffect(() => {
     // Request prompts when screen loads
-    console.log('📡 Requesting prompts...');
-    socket.emit('request_prompts', { room: lobbyCode });
+    console.log("📡 Requesting prompts...");
+    socket.emit("request_prompts", { room: lobbyCode });
 
-    socket.on('receive_prompts', (receivedPrompts) => {
-      console.log('✅ Prompts received:', receivedPrompts);
+    socket.on("receive_prompts", (receivedPrompts) => {
+      console.log("✅ Prompts received:", receivedPrompts);
       if (Array.isArray(receivedPrompts)) {
-        setPrompts(receivedPrompts);
+        setPrompts(receivedPrompts.map(p => ({
+          prompt: p.prompt,
+          playerId: p.playerId,
+          name: p.name || p.playerId?.substring(0, 6) || "Unknown",
+        })));
       } else {
-        console.warn('❌ Invalid prompts received');
+        console.warn("❌ Invalid prompts received");
       }
-    });
+    });    
 
     // Navigation handlers
     socket.on('go_to_waiting', ({ phase }) => {
       router.replace({
-        pathname: '/(game)/(play)/new-waiting',
+        pathname: '/(game)/(play)/players-waiting',
         params: { timeRemaining, phase },
       });
     });
@@ -38,12 +43,12 @@ const Voting = () => {
     socket.on('go_to_ai_gen', ({ prompt }) => {
       router.replace({
         pathname: '/(game)/(play)/ai-gen',
-        params: { prompt, story: 'Loading...' },
+        params: { prompt, story: "Loading..." },
       });
     });
 
     return () => {
-      socket.off('receive_prompts');
+      socket.off("receive_prompts");
       socket.off('go_to_waiting');
       socket.off('go_to_ai_gen');
     };
@@ -55,6 +60,7 @@ const Voting = () => {
     const selectedPrompt = prompts[selectedId];
     console.log(`🗳 Submitting vote for: "${selectedPrompt.prompt}"`);
     socket.emit('submit_vote', { room: lobbyCode, votedPrompt: selectedPrompt.prompt });
+
   }, [selectedId]);
 
   const onUpdate = (remainingTime: number) => {
@@ -62,26 +68,16 @@ const Voting = () => {
   };
 
   const onTimerEnd = () => {
-    console.log('⏰ Voting timer ended. Forcing vote evaluation.');
-    socket.emit('force_end_voting', lobbyCode);
+    console.log("⏰ Voting timer ended. Forcing vote evaluation.");
+    socket.emit("force_end_voting", lobbyCode);
   };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Image
-        className="w-full"
-        style={{
-          resizeMode: 'cover',
-          position: 'absolute',
-          height: Dimensions.get('window').height,
-        }}
-        source={require('assets/bg3.gif')}
-      />
-
       <GameBar
         onComplete={onTimerEnd}
-        duration={10}
-        initialRemainingTime={10}
+        duration={votingDuration.minutes * 60 + votingDuration.seconds}
+        initialRemainingTime={votingDuration.minutes * 60 + votingDuration.seconds}
         isAbsolute={false}
         onUpdate={onUpdate}
       />
@@ -93,12 +89,13 @@ const Voting = () => {
         <View className="gap-3 p-4">
           {prompts.map((item, index) => (
             <PlotPointButton
-              key={index}
-              plotPoint={item.prompt}
-              votes={1}
-              isSelected={selectedId === index}
-              onPress={() => setSelectedId(index)}
-            />
+            key={index}
+            plotPoint={item.prompt}
+            username={item.name}
+            votes={1}
+            isSelected={selectedId === index}
+            onPress={() => setSelectedId(index)}
+          />          
           ))}
         </View>
       </ScrollView>

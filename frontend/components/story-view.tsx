@@ -6,6 +6,7 @@ import components from '~/data/data.json';
 import { BookOpen, Undo2, ChevronDown } from 'lucide-react-native';
 import { useLobby } from '~/context/LobbyContext';
 
+
 const StoryView = (props: { code: String }) => {
 
   const bounceValue = useRef(new Animated.Value(0)).current;

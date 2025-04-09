@@ -9,11 +9,27 @@ import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import { v4 as uuidv4 } from "uuid";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { ScanCommand } from "@aws-sdk/client-dynamodb";
+import { QueryCommand } from "@aws-sdk/client-dynamodb";
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 dotenv.config({ path: "../.env" }); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
+const ACCESS_KEY = process.env.ACCESS_KEY;
+const SECRET_KEY = process.env.SECRET_KEY;
+
+// Create a second DynamoDB client for the Cognito/Stories account
+const dynamoForStories = new DynamoDBClient({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY,
+  },
+});
 
 // Initialize Amazon Bedrock client
 const bedrock = new BedrockRuntimeClient();
@@ -121,13 +137,13 @@ async function summarizeStory(fullStory) {
 }
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // or higher if needed
 
 const PORT = 3001; // Local WebSocket server port
 
 app.use(
   cors({
-    origin: "https://lore-8hal.onrender.com",
+    origin: ["http://localhost:3000", "http://localhost:8081", "*"],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -150,7 +166,7 @@ const getRankings = (room) => {
   return Object.entries(rooms[room].playerWins || {})
     .map(([playerId, wins]) => {
       let player = rooms[room].users.find((user) => user.id === playerId);
-      return { id: player?.id || "Unknown", plotPoints: wins };
+      return { id: player?.name || "Unknown", plotPoints: wins };
     })
     .sort((a, b) => b.plotPoints - a.plotPoints); // Sort in descending order
 };
@@ -174,10 +190,13 @@ io.on("connection", (socket) => {
       storyHistory: [],
       round: 0,
       lastRound: 3,
+      maxPlayers: 4,
       continueCount: 0,
       continuePressedBy: new Set(),
       playerWins: {},
       imageAlreadyGenerated: false,
+      imgURL: null,
+      summary: null,
     };
 
     console.log(`Room created: ${room}`);
@@ -194,24 +213,45 @@ io.on("connection", (socket) => {
   });
 
   // Join an existing room
-  socket.on("join_room", ({ room }, callback) => {
-    if (!rooms[room]) return;
+  socket.on("join_room", ({ room, username }, callback) => {
+    if (!rooms[room]) {
+      return callback({ success: false, message: "Lobby does not exist" });
+    }
+
+    if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
+      return callback({ success: false, message: "Max Players Reached" });
+    }
 
     socket.join(room);
+
     const isAlreadyInRoom = rooms[room].users.some(
       (user) => user.id === socket.id
     );
-
     if (!isAlreadyInRoom) {
-      rooms[room].users.push({ id: socket.id, currentScreen: "lobby" }); // ✅ Default screen is lobby
+      rooms[room].users.push({
+        id: socket.id,
+        name: username,
+        currentScreen: "lobby",
+      });
     }
 
-    // ✅ Send creatorId to the client
-    if (typeof callback === "function") {
-      callback({ success: true, creatorId: rooms[room].creator });
-    }
+    callback({ success: true, creatorId: rooms[room].creator });
 
     io.to(room).emit("update_users", rooms[room].users);
+  });
+
+  socket.on("update_room_settings", ({ roomCode, settings }) => {
+    if (!rooms[roomCode]) return;
+
+    const { maxPlayers, maxRounds } = settings;
+    if (typeof maxPlayers === "number") {
+      rooms[roomCode].maxPlayers = maxPlayers;
+    }
+    if (typeof maxRounds === "number") {
+      rooms[roomCode].lastRound = maxRounds;
+    }
+
+    console.log(`⚙️ Settings updated for room ${roomCode}:`, settings);
   });
 
   socket.on("update_screen", ({ room, screen }) => {
@@ -239,9 +279,19 @@ io.on("connection", (socket) => {
   socket.on("submit_prompt", ({ room, prompt }) => {
     if (!rooms[room]) return;
 
-    rooms[room].prompts[socket.id] = { prompt, playerId: socket.id };
+    const user = rooms[room].users.find((u) => u.id === socket.id);
 
-    console.log(`📢 Prompt received from ${socket.id} in ${room}: "${prompt}"`);
+    rooms[room].prompts[socket.id] = {
+      prompt,
+      playerId: socket.id,
+      name: user?.name || "Unknown",
+    };
+
+    console.log(
+      `📢 Prompt received from ${
+        user?.name || socket.id
+      } in ${room}: "${prompt}"`
+    );
 
     if (Object.keys(rooms[room].prompts).length === rooms[room].users.length) {
       console.log(
@@ -254,10 +304,16 @@ io.on("connection", (socket) => {
   // Request prompts for voting screen
   socket.on("request_prompts", ({ room }) => {
     if (!rooms[room]) return;
-    io.to(socket.id).emit(
-      "receive_prompts",
-      Object.values(rooms[room].prompts)
-    );
+
+    const promptsWithNames = Object.values(rooms[room].prompts).map((entry) => {
+      const player = rooms[room].users.find((u) => u.id === entry.playerId);
+      return {
+        ...entry,
+        name: player?.name || entry.playerId,
+      };
+    });
+
+    io.to(socket.id).emit("receive_prompts", promptsWithNames);
   });
 
   socket.on("submit_vote", ({ room, votedPrompt }) => {
@@ -409,7 +465,16 @@ io.on("connection", (socket) => {
 
   socket.on("request_story_summary", async ({ room }) => {
     if (!rooms[room]) return;
-    if (rooms[room].imageAlreadyGenerated) return;
+
+    // ✅ Return cached image/summary if already generated
+    if (rooms[room].imageAlreadyGenerated && rooms[room].imgURL) {
+      console.log("🖼 Returning cached image for room", room);
+      return io.to(room).emit("receive_story_image", {
+        summary: rooms[room].summary || "Previously generated summary",
+        image: rooms[room].imgURL,
+      });
+    }
+
     rooms[room].imageAlreadyGenerated = true;
 
     const full_story = rooms[room].storyHistory.join("\n\n");
@@ -419,13 +484,11 @@ io.on("connection", (socket) => {
       const rawSummary = await summarizeStory(full_story);
       console.log("🧠 Raw AI Summary Response:", rawSummary);
 
-      // ✅ Extract paragraph after "Summary:"
       const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
       const cleanSummary = summaryMatch
         ? summaryMatch[1].trim()
         : "No summary found.";
-
-      console.log("📚 Cleaned Summary:", cleanSummary);
+      rooms[room].summary = cleanSummary; // ✅ Save summary for reuse
 
       // Step 2: Generate image using Stable Diffusion
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
@@ -449,6 +512,9 @@ io.on("connection", (socket) => {
       if (imageResponse.status === 200) {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
+
+        // ✅ Store in global room data
+        rooms[room].imgURL = imageDataUri;
 
         io.to(room).emit("receive_story_image", {
           summary: cleanSummary,
@@ -493,6 +559,67 @@ io.on("connection", (socket) => {
       }
     }
   });
+});
+
+app.post("/save-story", async (req, res) => {
+  const { userId, title, winningPrompts, storyHistory } = req.body;
+
+  console.log("📦 Received save-story request:", req.body);
+
+  try {
+    const command = new PutItemCommand({
+      TableName: "Stories",
+      Item: {
+        userId: { S: userId },
+        storyId: { S: uuidv4() },
+        title: { S: title },
+        winningPrompts: { L: winningPrompts.flat().map((p) => ({ S: p })) },
+        storyHistory: { L: storyHistory.map((p) => ({ S: p })) },
+        createdAt: { S: new Date().toISOString() },
+      },
+    });
+
+    await dynamoForStories.send(command); // ✅ Using the custom credentials here
+    res.status(200).json({ message: "Story saved!" });
+  } catch (err) {
+    console.error("❌ Failed to save story:", err);
+    res.status(500).json({ error: "Failed to save story" });
+  }
+});
+
+app.get("/get-stories", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const command = new QueryCommand({
+      TableName: "Stories",
+      KeyConditionExpression: "userId = :uid",
+      ExpressionAttributeValues: {
+        ":uid": { S: userId },
+      },
+    });
+
+    const response = await dynamoForStories.send(command);
+    const stories = (response.Items || []).map((item) => {
+      const unmarshalled = unmarshall(item);
+      return {
+        title: unmarshalled.title,
+        plotPoints: unmarshalled.winningPrompts.map((prompt, index) => ({
+          winningPlotPoint: prompt,
+          story: unmarshalled.storyHistory[index] || "",
+        })),
+      };
+    });
+
+    res.json({ stories });
+  } catch (err) {
+    console.error("❌ Failed to fetch stories:", err);
+    res.status(500).json({ error: "Failed to retrieve stories" });
+  }
 });
 
 server.listen(PORT, () => {

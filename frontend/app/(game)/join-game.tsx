@@ -5,18 +5,39 @@ import { OtpInput } from 'react-native-otp-entry';
 import Button from '~/components/Button';
 import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { socket } from '~/socket';
+import { getUserAttributes } from '../(user_auth)/CognitoConfig';
 
 const JoinGame = () => {
   const [code, setCode] = useState('');
 
-  const joinGameWithCode = () => {
-    router.replace({
-      pathname: '/(game)/lobby',
-      params: {
-        lobbyCode: code,
-      },
-    });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const joinGameWithCode = async () => {
+    setErrorMessage(null); // Clear previous error
+  
+    try {
+      const user = await getUserAttributes();
+      console.log("🔐 Username:", user.displayName);
+  
+      socket.emit('join_room', { room: code, username: user.displayName }, (response: any) => {
+        if (!response.success) {
+          setErrorMessage(response.message); // Set error message from backend
+        } else {
+          router.replace({
+            pathname: '/(game)/lobby',
+            params: {
+              lobbyCode: code,
+            },
+          });
+        }
+      });
+    } catch (err) {
+      console.error("❌ Failed to get user attributes:", err);
+      setErrorMessage("Authentication error.");
+    }
   };
+
 
   const goBack = () => {
     router.back();
@@ -37,6 +58,11 @@ const JoinGame = () => {
             onTextChange={(text) => setCode(text)}
             theme={{ pinCodeTextStyle: { color: '#FFFFFF' } }}
           />
+          {errorMessage && (
+          <Text className="mt-4 text-center text-red-500 text-lg font-semibold">
+            {errorMessage}
+          </Text>
+        )}
           <Button
             title="Join Game"
             bgVariant="primary"

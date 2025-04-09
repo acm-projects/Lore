@@ -77,7 +77,7 @@ def summarize_story():
 
     payload = {
         "prompt": instruction,
-        "temperature": 0.6
+        "temperature": 0.5
     }
 
     body = json.dumps(payload)

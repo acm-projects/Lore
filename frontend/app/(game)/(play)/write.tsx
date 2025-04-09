@@ -1,12 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Dimensions,
-} from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InputField from '~/components/InputField';
@@ -17,18 +9,22 @@ import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const { writingDuration } = useLobby();
+  const [timeRemaining, setTimeRemaining] = useState(writingDuration.minutes * 60 + writingDuration.seconds);
+
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
-    socket.emit('submit_prompt', { room: lobbyCode, prompt });
+    if (!prompt.trim()) return;
+
+    socket.emit('submit_prompt', { room: lobbyCode, prompt, username: socket.username });
 
     if (timeRemaining === 1) {
       router.replace('/(game)/(play)/voting');
     } else {
       router.replace({
-        pathname: '/(game)/(play)/new-waiting',
+        pathname: '/(game)/(play)/players-waiting',
         params: { timeRemaining: timeRemaining, phase: 'prompts' },
       });
     }
@@ -44,20 +40,10 @@ const Write = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Image
-        className="w-full"
-        style={{
-          resizeMode: 'cover',
-          position: 'absolute',
-          height: Dimensions.get('window').height,
-        }}
-        source={require('assets/bg1.gif')}
-      />
-
       <GameBar
         onComplete={onTimerEnd}
-        duration={10}
-        initialRemainingTime={10}
+        duration={writingDuration.minutes * 60 + writingDuration.seconds}
+        initialRemainingTime={writingDuration.minutes * 60 + writingDuration.seconds}
         onUpdate={onUpdate}
         isAbsolute={true}
       />
@@ -68,7 +54,7 @@ const Write = () => {
           className="flex flex-1 items-center justify-center"
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Text className="text-3xl font-bold text-backgroundText">Start Writing!</Text>
-          <Text className="text-xl font-bold color-secondaryText">
+          <Text className="text-xl font-bold text-gray-600">
             Create a plot point (Keep it short!)
           </Text>
           <View className="w-full">
