@@ -105,7 +105,7 @@ const AnimatedScoreboard = ({ data }) => {
         {players.map((player, index) => (
           <Animated.View
             key={player.username}
-            className="absolute mb-2 h-20 w-full flex-row items-center rounded-lg bg-backgroundAccent p-3"
+            className={`absolute mb-2 h-20 w-full flex-row items-center rounded-lg bg-backgroundAccent p-3 ${player.winner ? 'border-2 border-primary' : ''}`}
             style={{
               transform: [{ translateY: player.positionAnim }],
             }}>

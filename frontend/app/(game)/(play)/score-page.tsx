@@ -9,6 +9,7 @@ export type UserScore = {
   past_score: number;
   score_to_add: number;
   new_score: number;
+  winner: boolean;
 };
 
 const ScorePage = () => {
@@ -19,6 +20,7 @@ const ScorePage = () => {
       past_score: 1200,
       score_to_add: 300,
       new_score: 1500,
+      winner: false,
     },
     {
       username: 'Player2',
@@ -26,6 +28,7 @@ const ScorePage = () => {
       past_score: 1400,
       score_to_add: 50,
       new_score: 1450,
+      winner: false,
     },
     {
       username: 'Player3',
@@ -33,6 +36,7 @@ const ScorePage = () => {
       past_score: 900,
       score_to_add: 500,
       new_score: 1400,
+      winner: true,
     },
     {
       username: 'Player4',
@@ -40,6 +44,7 @@ const ScorePage = () => {
       past_score: 800,
       score_to_add: 200,
       new_score: 1000,
+      winner: false,
     },
     {
       username: 'Player5',
@@ -47,6 +52,7 @@ const ScorePage = () => {
       past_score: 1100,
       score_to_add: 100,
       new_score: 1200,
+      winner: false,
     },
   ]);
   return (

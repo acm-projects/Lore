@@ -52,7 +52,7 @@ const PlayerAvatarRow = ({
         {players.map((player, index) => (
           <View key={player.id || index} className="mx-1 items-center">
             <View
-              className={`${player.finished ? 'border-green-500' : 'border-gray-300'}`}
+              className={`${player.currentScreen ? 'border-green-500' : 'border-gray-300'}`}
               style={{
                 borderWidth: borderWidth,
                 borderRadius: avatarSize + borderWidth * 2,

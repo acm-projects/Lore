@@ -1,4 +1,12 @@
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Dimensions,
+} from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InputField from '~/components/InputField';
@@ -14,14 +22,13 @@ const Write = () => {
   const { lobbyCode } = useLobby();
 
   const onSubmit = () => {
-
     socket.emit('submit_prompt', { room: lobbyCode, prompt });
 
     if (timeRemaining === 1) {
       router.replace('/(game)/(play)/voting');
     } else {
       router.replace({
-        pathname: '/(game)/(play)/players-waiting',
+        pathname: '/(game)/(play)/new-waiting',
         params: { timeRemaining: timeRemaining, phase: 'prompts' },
       });
     }
@@ -37,8 +44,16 @@ const Write = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Image className="w-full" style={{resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg1.gif")}/> 
-      
+      <Image
+        className="w-full"
+        style={{
+          resizeMode: 'cover',
+          position: 'absolute',
+          height: Dimensions.get('window').height,
+        }}
+        source={require('assets/bg1.gif')}
+      />
+
       <GameBar
         onComplete={onTimerEnd}
         duration={10}
