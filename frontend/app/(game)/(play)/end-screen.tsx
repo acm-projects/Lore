@@ -19,9 +19,9 @@ const EndScreen = () => {
 
   // Fetch story history from the server
   useEffect(() => {
-    socket.emit("request_full_story", lobbyCode);
-    socket.emit("request_story_summary", { room: lobbyCode });
-    socket.on("receive_full_story", (story: string) => {
+    socket.emit('request_full_story', lobbyCode);
+    socket.emit('request_story_summary', { room: lobbyCode });
+    socket.on('receive_full_story', (story: string) => {
       // Split the story into chunks (3 paragraphs per round)
       const storyChunks = story
         .split(/\n\s*\n/) // split on empty lines
@@ -36,13 +36,13 @@ const EndScreen = () => {
       setStoryHistory(storyChunks);
     });
 
-    socket.on("receive_story_image", ({ image }) => {
+    socket.on('receive_story_image', ({ image }) => {
       setImageUrl(image || null);
     });
 
     return () => {
-      socket.off("receive_full_story");
-      socket.off("receive_story_image");
+      socket.off('receive_full_story');
+      socket.off('receive_story_image');
     };
   }, [lobbyCode]);
 
@@ -65,19 +65,19 @@ const EndScreen = () => {
 
   const handleSaveStory = async () => {
     if (!storyTitle.trim()) {
-      Alert.alert("Missing Title", "Please enter a title for your story.");
+      Alert.alert('Missing Title', 'Please enter a title for your story.');
       return;
     }
 
     try {
       const user = await getUserAttributes();
-      const response = await fetch("http://localhost:3001/save-story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('http://localhost:3001/save-story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.username,
           title: storyTitle,
-          winningPrompts: plotPoints.map(p => p.winningPlotPoint),
+          winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
           imageUrl,
         }),
@@ -85,14 +85,14 @@ const EndScreen = () => {
 
       const data = await response.json();
       if (response.ok) {
-        Alert.alert("✅ Story Saved!", "Your story was saved to your library.");
+        Alert.alert('✅ Story Saved!', 'Your story was saved to your library.');
         router.replace('/(main)/home');
       } else {
-        Alert.alert("❌ Error", data.error || "Failed to save story.");
+        Alert.alert('❌ Error', data.error || 'Failed to save story.');
       }
     } catch (err) {
-      console.error("Save error:", err);
-      Alert.alert("❌ Error", "Something went wrong while saving your story.");
+      console.error('Save error:', err);
+      Alert.alert('❌ Error', 'Something went wrong while saving your story.');
     }
   };
 
@@ -103,11 +103,7 @@ const EndScreen = () => {
           And so the story comes to a close...
         </Text>
 
-        <Button
-          title="View the Full Story"
-          onPress={toggleVisible}
-          className="mt-10 w-[80%]"
-        />
+        <Button title="View the Full Story" onPress={toggleVisible} className="mt-10 w-[80%]" />
 
         <Text className="mt-10 text-2xl font-bold text-backgroundText">
           Most Plot Points Chosen
@@ -116,31 +112,21 @@ const EndScreen = () => {
 
         {/* Show story title input when "Home" is pressed */}
         {showInput && (
-          <View className="w-[80%] mt-6">
-            <Text className="text-backgroundText font-semibold text-xl mb-2">
-              Name Your Story:
-            </Text>
+          <View className="mt-6 w-[80%]">
+            <Text className="mb-2 text-xl font-semibold text-backgroundText">Name Your Story:</Text>
             <TextInput
               placeholder="Enter a title..."
               placeholderTextColor="#999"
-              className="bg-white rounded-md p-3 text-lg"
+              className="rounded-md bg-white p-3 text-lg"
               value={storyTitle}
               onChangeText={setStoryTitle}
             />
-            <Button
-              title="Submit Story"
-              className="mt-4"
-              onPress={handleSaveStory}
-            />
+            <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
           </View>
         )}
 
         {!showInput && (
-          <Button
-            title="Home"
-            onPress={() => setShowInput(true)}
-            className="mt-10 w-[80%]"
-          />
+          <Button title="Home" onPress={() => setShowInput(true)} className="mt-10 w-[80%]" />
         )}
       </ScrollView>
     </SafeAreaView>

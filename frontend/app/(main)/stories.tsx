@@ -28,7 +28,9 @@ const Stories = () => {
   const fetchStories = async () => {
     try {
       const user = await getUserAttributes();
-      const res = await fetch(`http://localhost:3001/get-stories?userId=${user.username}`);
+      const res = await fetch(
+        `https://tasty-berries-live.loca.lt/get-stories?userId=${user.username}`
+      );
       const json = await res.json();
       setStories(json.stories || []);
     } catch (err) {
@@ -55,7 +57,7 @@ const Stories = () => {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="mx-3 flex flex-1 justify-between">
-        <Text className="text-2xl font-bold text-backgroundText mb-4">Story History</Text>
+        <Text className="mb-4 text-2xl font-bold text-backgroundText">Story History</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#ffffff" />
@@ -65,15 +67,14 @@ const Stories = () => {
               <TouchableOpacity
                 key={idx}
                 className="rounded-lg bg-secondary p-4"
-                onPress={() => openStory(story)}
-              >
+                onPress={() => openStory(story)}>
                 <Text className="text-lg font-semibold text-white">{story.title}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         )}
 
-        <View className="flex w-full flex-row gap-x-3 mt-6">
+        <View className="mt-6 flex w-full flex-row gap-x-3">
           <Button
             title="Create Story"
             bgVariant="secondary"

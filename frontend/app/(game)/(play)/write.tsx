@@ -10,7 +10,9 @@ import { useLobby } from '~/context/LobbyContext';
 
 const Write = () => {
   const { writingDuration } = useLobby();
-  const [timeRemaining, setTimeRemaining] = useState(writingDuration.minutes * 60 + writingDuration.seconds);
+  const [timeRemaining, setTimeRemaining] = useState(
+    writingDuration.minutes * 60 + writingDuration.seconds
+  );
 
   const [prompt, setPrompt] = useState('');
   const { lobbyCode } = useLobby();
@@ -24,7 +26,7 @@ const Write = () => {
       router.replace('/(game)/(play)/voting');
     } else {
       router.replace({
-        pathname: '/(game)/(play)/players-waiting',
+        pathname: '/(game)/(play)/new-waiting',
         params: { timeRemaining: timeRemaining, phase: 'prompts' },
       });
     }
