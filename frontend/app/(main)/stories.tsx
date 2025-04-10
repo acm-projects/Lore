@@ -29,7 +29,7 @@ const Stories = () => {
     try {
       const user = await getUserAttributes();
       const res = await fetch(
-        `https://tasty-berries-live.loca.lt/get-stories?userId=${user.username}`
+        `http://localhost:3001/get-stories?userId=${user.username}`
       );
       const json = await res.json();
       setStories(json.stories || []);

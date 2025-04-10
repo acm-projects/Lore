@@ -143,7 +143,7 @@ const PORT = 3001; // Local WebSocket server port
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:8081", "*"],
+    origin: ["http://localhost:3000", "http://localhost:8081", "https://lore-8hal.onrender.com", "*"],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -489,7 +489,7 @@ io.on("connection", (socket) => {
         ? summaryMatch[1].trim()
         : "No summary found.";
       rooms[room].summary = cleanSummary; // ✅ Save summary for reuse
-
+      console.log("clean summary: ", cleanSummary);
       // Step 2: Generate image using Stable Diffusion
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
       const form = new FormData();
