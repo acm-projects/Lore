@@ -53,12 +53,17 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
     useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
       getCognitoSub()
+      getItems()
+      if(cognitoSub.length === 0) {
+        setGuest(true)
+      }
     }, []))
 
     useEffect(() => {
       if(cognitoSub.length != 0) {
         setGuest(false)
       }
+      getItems()
     }, [cognitoSub])
 
     const queryParams = {
@@ -68,13 +73,6 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
       ProjectionExpression: "Username, Email, Friends, ProfilePicURL, Stories, PlayerID, Biography",
       ExpressionAttributeValues: {
         ':subValue': cognitoSub
-      }
-    } 
-
-    const getGuestProfile = async (playerid: string) => {
-      const guestQueryParams = {
-        TableName: 'Players',
-        Key: 'PlayerID',
       }
     }
   

@@ -14,31 +14,21 @@ import AWS from 'aws-sdk';
 
 const guestDetails = () => {
 
-    AWS.config.update({
-        accessKeyId: 'AKIAQQABDJ7GWG7CMXGN',
-        secretAccessKey: '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',
-        region: 'us-east-2',
-        credentials: new AWS.CognitoIdentityCredentials({
-            IdentityPoolId: 'us-east-2:c8b301b1-f48a-47c6-832f-73eeeb9e54cc',
-          }),
-    })
-
     useFonts({
     'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
 
     const s3 = new AWS.S3()
     const dynamodb = new AWS.DynamoDB.DocumentClient()
-
+  
     const [username, setUsername] = useState("")
     const [newName, setNewName] = useState("")
-    const [primaryKey, setPrimaryKey] = useState("")
+    const [primaryKey, setPrimaryKey] = useState(0)
     const [avatar, setAvatar] = useState("")
-    const [successMessage, setSuccessMessage] = useState('');
-    const [error, setError] = useState('');
-    
+
     useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
         setAvatar(defaultProfilePic()+"")
+        setPrimaryKey(Math.round((Math.random()*9000000000))+1000000000)
     }, []))
 
     const defaultProfilePic = () => { // Choose a random profile picture from 7
@@ -68,24 +58,6 @@ const guestDetails = () => {
         }
     }
 
-    const fetchIdentityID = async() => {
-        try {
-            // Wait for credentials to load using type assertion
-            await (AWS.config.credentials as AWS.CognitoIdentityCredentials).getPromise();
-        
-            // Access identityId only after the credentials are fully loaded
-            const credentials = AWS.config.credentials;
-            if (credentials instanceof AWS.CognitoIdentityCredentials) {
-              const identityId = credentials.identityId;
-              console.log('identityId:', identityId);  // Should be defined here
-            } else {
-              console.error('Failed to get Cognito Identity Credentials');
-            }
-          } catch (error) {
-            console.error('Error loading credentials:', error);
-          }
-        };
-
     const createGuestAccount = async (newUsername: string) => {
 
         try {
@@ -100,11 +72,12 @@ const guestDetails = () => {
             },
           }
           await dynamodb.put(dbParams).promise();
-          setSuccessMessage('Guest Profile created successfully!');
+          
+          console.log('Guest Profile created successfully!');
           router.push('/(main)/home')
   
         } catch (error) {
-          console.error('Error creating Guest:', error);
+          console.error('Error creating Guset:', error);
         }
     } 
 
@@ -145,7 +118,6 @@ const guestDetails = () => {
                             value={newName}
                             onChangeText={setNewName}
                         /> 
-                        {successMessage && <Text style={{ color: 'green', fontFamily: 'JetBrainsMonoRegular', paddingBottom: 6}}>{successMessage}</Text>}
                 </View>
             <View className="h-[1px] w-full my-6"></View>
     {/* -------------------------------------------------- Continue Button -------------------------------------------------*/}
