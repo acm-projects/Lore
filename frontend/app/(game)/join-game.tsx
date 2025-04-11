@@ -20,7 +20,7 @@ const JoinGame = () => {
       const user = await getUserAttributes();
       console.log("🔐 Username:", user.displayName);
   
-      socket.emit('join_room', { room: code, username: user.displayName }, (response: any) => {
+      socket.emit('join_room', { room: code, username: user.displayName, cognitoSub: user.sub }, (response: any) => {
         if (!response.success) {
           setErrorMessage(response.message); // Set error message from backend
         } else {

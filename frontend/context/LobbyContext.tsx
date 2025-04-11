@@ -12,10 +12,10 @@ type LobbyContextType = {
   plotPoints: PlotPoint[];
   isVisible: boolean;
   toggleVisible: () => void;
-  players: { id: string; name?: string }[];
+  players: { id: string; name?: string; avatar?: string }[];
   creatorId: string | null;
   setCreator: (id: string) => void;
-  setPlayers: React.Dispatch<React.SetStateAction<{ id: string }[]>>;
+  setPlayers: React.Dispatch<React.SetStateAction<{ id: string; name?: string; avatar?: string }[]>>;
   addPlayer: (player: string) => void;
   removePlayer: (player: string) => void;
   clearPlayers: () => void;

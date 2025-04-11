@@ -55,6 +55,7 @@ export const signOutUser = () => {
 
 
 // Fetch User Attributes
+// Fetch User Attributes
 export const getUserAttributes = () => {
   const user = userPool.getCurrentUser();
 
@@ -74,6 +75,7 @@ export const getUserAttributes = () => {
           return reject(err);
         }
 
+
         const attributeMap = {};
         attributes.forEach(attr => {
           attributeMap[attr.Name] = attr.Value;
@@ -83,11 +85,13 @@ export const getUserAttributes = () => {
           username: user.getUsername(),
           email: attributeMap.email || null,
           displayName: attributeMap["custom:display_name"] || attributeMap["Username"] || "Unknown",
-        });
+          sub: attributeMap["sub"], // ✅ Add this line
+        });        
       });
     });
   });
 };
+
 
 
 /*

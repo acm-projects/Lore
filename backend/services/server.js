@@ -212,34 +212,52 @@ io.on("connection", (socket) => {
     io.to(room).emit("receive_rankings", rankings);
   });
 
-  // Join an existing room
-  socket.on("join_room", ({ room, username }, callback) => {
+  socket.on("join_room", async ({ room, username, cognitoSub }, callback) => {
     if (!rooms[room]) {
       return callback({ success: false, message: "Lobby does not exist" });
     }
-
+  
     if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
       return callback({ success: false, message: "Max Players Reached" });
     }
-
+  
     socket.join(room);
-
-    const isAlreadyInRoom = rooms[room].users.some(
-      (user) => user.id === socket.id
-    );
+  
+    let avatarUrl = null;
+  
+    try {
+      const command = new ScanCommand({
+        TableName: "Players",
+        FilterExpression: "CognitoSub = :sub",
+        ExpressionAttributeValues: {
+          ":sub": { S: cognitoSub },
+        },
+        ProjectionExpression: "ProfilePicURL",
+      });
+  
+      const result = await dynamoForStories.send(command);
+      const player = result.Items?.[0];
+      avatarUrl = player?.ProfilePicURL?.S || null;
+  
+      console.log("✅ Avatar URL fetched from Players:", avatarUrl);
+    } catch (err) {
+      console.error("❌ Failed to fetch avatar from Players table:", err);
+    }
+  
+    const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
     if (!isAlreadyInRoom) {
       rooms[room].users.push({
         id: socket.id,
         name: username,
+        avatar: avatarUrl,
         currentScreen: "lobby",
       });
     }
-
+  
     callback({ success: true, creatorId: rooms[room].creator });
-
     io.to(room).emit("update_users", rooms[room].users);
   });
-
+  
   socket.on("update_room_settings", ({ roomCode, settings }) => {
     if (!rooms[roomCode]) return;
 

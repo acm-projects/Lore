@@ -28,7 +28,7 @@ const Lobby = () => {
         const user = await getUserAttributes();
         console.log("🔐 Logged-in user:", user.displayName);
     
-        socket.emit('join_room', { room: lobbyCode, username: user.displayName }, (response: any) => {
+        socket.emit('join_room', { room: lobbyCode, username: user.displayName, cognitoSub: user.sub }, (response: any) => {
           if (!response.success) {
             console.error('❌ Failed to join room:', response.message);
             router.replace('/');
@@ -92,7 +92,11 @@ const Lobby = () => {
       <ScrollView className="flex-1 px-5 py-10">
         {players.length > 0 ? (
           players.map((player, index) => (
-            <ProfileDisplay key={index} username={player.name || player.id.substring(0, 6)} />
+            <ProfileDisplay
+              key={index}
+              username={player.name || player.id.substring(0, 6)}
+              avatar={player.avatar}
+            />
           ))
         ) : (
           <Text className="text-center text-backgroundText">Waiting for players...</Text>
