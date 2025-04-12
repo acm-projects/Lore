@@ -8,6 +8,7 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 import * as Clipboard from 'expo-clipboard';
 import { useFonts } from 'expo-font';
+import { getUserAttributes } from '../(user_auth)/CognitoConfig';
 
 const Lobby = () => {
   const { lobbyCode } = useLocalSearchParams();
@@ -27,23 +28,27 @@ const Lobby = () => {
     }
   
     setLobbyCode(lobbyCode as string);
-  
-    const joinAfterConnect = () => {
-      console.log("✅ Connected with ID:", socket.id);
-  
-      socket.emit('join_room', { room: lobbyCode }, (response: any) => {
-        console.log("🏠 Room Creator ID:", response.creatorId);
-  
-        if (!response.success) {
-          console.error('❌ Failed to join room:', response.message);
-          router.replace('/');
-        } else {
-          setCreator(response.creatorId);
-          setIsCreator(response.creatorId === socket.id);
-          console.log("🧠 Is Creator?", response.creatorId === socket.id);
-        }
-      });
+
+    const joinAfterConnect = async () => {
+      try {
+        const user = await getUserAttributes();
+        console.log("🔐 Logged-in user:", user.displayName);
+    
+        socket.emit('join_room', { room: lobbyCode, username: user.displayName, cognitoSub: user.sub }, (response: any) => {
+          if (!response.success) {
+            console.error('❌ Failed to join room:', response.message);
+            router.replace('/');
+          } else {
+            setCreator(response.creatorId);
+            setIsCreator(response.creatorId === socket.id);
+          }
+        });
+      } catch (err) {
+        console.error("❌ Failed to get user attributes:", err);
+        router.replace('/');
+      }
     };
+
   
     if (socket.connected) {
       joinAfterConnect();
@@ -95,7 +100,11 @@ const Lobby = () => {
       <ScrollView className="flex-1 px-5 py-10">
         {players.length > 0 ? (
           players.map((player, index) => (
-            <ProfileDisplay key={index} username={player.id.substring(0, 6)} />
+            <ProfileDisplay
+              key={index}
+              username={player.name || player.id.substring(0, 6)}
+              avatar={player.avatar}
+            />
           ))
         ) : (
           <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="text-center text-backgroundText">Waiting for players...</Text>

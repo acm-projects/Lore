@@ -1,35 +1,44 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GameBar from '~/components/GameBar';
-import ProfileDisplay from '~/components/ProfileDisplay';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
+import PlayerAvatarRow from '~/components/PlayerAvatarRow';
+import GameBar from '~/components/GameBar';
 
-const PlayersWaiting = () => {
+export type PlayersWaiting = {
+  id: number | string;
+  currentScreen?: string;
+};
+
+const NewWaiting = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const phase = params.phase;
   const { lobbyCode, addPlotPoint } = useLobby();
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
   const round = params.round ? parseInt(params.round as string) : 1;
-  const [players, setPlayers] = useState<{ id: string; name: string; currentScreen?: string }[]>([]);
+  const [players, setPlayers] = useState<PlayersWaiting[]>([]);
 
   useEffect(() => {
     console.log(`🚀 Waiting Screen Loaded | Phase: ${phase}`);
 
     // ✅ Notify server that the player is now in "players-waiting"
-    socket.emit("update_screen", { room: lobbyCode, screen: "players-waiting" });
+    socket.emit('update_screen', { room: lobbyCode, screen: 'players-waiting' });
 
     // ✅ Listen for user updates
-    socket.on("update_users", (updatedUsers) => {
+    socket.on('update_users', (updatedUsers) => {
       console.log('👥 Updated Players List:', updatedUsers);
-      setPlayers(updatedUsers.map(user => ({
+
+      // Transform the user data to match the PlayersWaiting type
+      const transformedUsers = updatedUsers.map((user) => ({
         id: user.id,
-        name: user.name, // ✅ Make sure this is set
-        currentScreen: user.currentScreen || "unknown"
-      })));      
+        finished: user.currentScreen !== 'players-waiting', // Consider as finished if not in waiting screen
+        currentScreen: user.currentScreen || 'unknown',
+      }));
+
+      setPlayers(transformedUsers);
     });
 
     if (phase === 'prompts') {
@@ -41,7 +50,7 @@ const PlayersWaiting = () => {
       socket.on('story_ready', ({ prompt, story, round }) => {
         console.log(`✅ 'story_ready' received. Updating and navigating to ai-gen.tsx`);
         addPlotPoint({ winningPlotPoint: prompt, story });
-    
+
         router.replace({
           pathname: '/(game)/(play)/ai-gen',
           params: {
@@ -51,23 +60,22 @@ const PlayersWaiting = () => {
           },
         });
       });
-    
+
       // 👇 Optional: Handle early go_to_ai_gen if needed
       socket.on('go_to_ai_gen', ({ prompt }) => {
         router.replace({
           pathname: '/(game)/(play)/ai-gen',
           params: {
             prompt,
-            story: "Loading...",
+            story: 'Loading...',
           },
         });
       });
     }
-    
 
     return () => {
       console.log('🚪 Leaving Waiting Screen, updating server...');
-      socket.emit("update_screen", { room: lobbyCode, screen: "unknown" }); // ✅ Move this ABOVE cleanup
+      socket.emit('update_screen', { room: lobbyCode, screen: 'unknown' });
       console.log('🧹 Cleaning up event listeners');
       socket.off('update_users');
       socket.off('prompts_ready');
@@ -84,37 +92,18 @@ const PlayersWaiting = () => {
         initialRemainingTime={timeRemaining}
         isAbsolute={false}
       />
-      <ScrollView className="flex-1 px-5 py-10" contentContainerStyle={{ flexGrow: 1, gap: 10 }}>
-        {/* ✅ Display all players but change styles based on their screen */}
-        {players.length > 0 ? (
-          players.map((player) => {
-            const isWaiting = player.currentScreen === "players-waiting"; // ✅ Check if player is on the waiting screen
-
-            return isWaiting ? (
-              // ✅ Players on waiting screen use ProfileDisplay for correct primary colors
-              <ProfileDisplay 
-                key={player.id} 
-                username={player.name} 
-                isVariant={true} 
-              />
-            ) : (
-              // ✅ Players NOT on waiting screen get a black box with white text
-              <View
-                key={player.id}
-                className="w-full flex flex-row items-center justify-between rounded-lg bg-black p-4"
-              >
-                <Text className="text-lg font-bold text-white">
-                  {player.name}
-                </Text>
-              </View>
-            );
-          })
-        ) : (
-          <Text className="text-center text-xl font-bold text-backgroundText">Waiting for players...</Text>
-        )}
-      </ScrollView>
+      <View className="flex flex-1 items-center justify-center">
+        <Image
+          source={require('assets/waiting_animation.gif')}
+          className="h-auto w-full"
+          resizeMode="contain"
+        />
+      </View>
+      <View className="absolute left-1/2 top-2/3 flex -translate-x-1/2 -translate-y-1/2">
+        <PlayerAvatarRow players={players} maxAvatarSize={50} minAvatarSize={30} />
+      </View>
     </SafeAreaView>
   );
 };
 
-export default PlayersWaiting;
+export default NewWaiting;

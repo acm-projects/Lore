@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TimerPicker, TimerPickerModal } from 'react-native-timer-picker';
+import { TimerPickerModal } from 'react-native-timer-picker';
 import { LinearGradient } from 'expo-linear-gradient'; // or `import LinearGradient from "react-native-linear-gradient"`
 import { Audio } from 'expo-av'; // for audio feedback (click sound as you scroll)
 import * as Haptics from 'expo-haptics'; // for haptic feedback
@@ -9,22 +9,25 @@ import Button from '~/components/Button';
 import InputSpinner from 'react-native-input-spinner';
 import { useFonts } from 'expo-font';
 import { ChevronLeft } from 'lucide-react-native';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
+import { useLobby } from '~/context/LobbyContext';
+import { socket } from '~/socket';
 
 const Settings = () => {
+  const {
+    writingDuration,
+    setWritingDuration,
+    votingDuration,
+    setVotingDuration,
+    maxPlayers,
+    setMaxPlayers,
+    maxRounds,
+    setMaxRounds,
+  } = useLobby();  
+  const { lobbyCode } = useLobby();
+  const router = useRouter();
   const [showWritingPicker, setShowWritingPicker] = useState(false);
   const [showVotingPicker, setShowVotingPicker] = useState(false);
-  const [writingDuration, setWritingDuration] = useState<{ minutes: number; seconds: number }>({
-    minutes: 0,
-    seconds: 30,
-  });
-  const [votingDuration, setVotingDuration] = useState<{ minutes: number; seconds: number }>({
-    minutes: 0,
-    seconds: 30,
-  });
-
-  const [maxRounds, setMaxRounds] = useState(3);
-  const [maxPlayers, setMaxPlayers] = useState(4);
 
   useFonts({
     'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
@@ -53,6 +56,7 @@ const Settings = () => {
               className="text-center text-2xl font-bold text-backgroundText">Set Writing Duration</Text>
         </TouchableOpacity>
       </View>
+
       {/* Voting Duration */}
       <View className="mt-4 w-full px-3">
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
@@ -62,6 +66,7 @@ const Settings = () => {
               className="text-center text-2xl font-bold text-backgroundText">Set Voting Duration</Text>
         </TouchableOpacity>
       </View>
+
       {/* Max Rounds */}
       <View className="mt-10 flex w-full flex-row items-center gap-x-3 px-3">
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
@@ -77,6 +82,7 @@ const Settings = () => {
           style={{ flex: 1}}
         />
       </View>
+
       {/* Max Players */}
       <View className="mt-4 flex w-full flex-row items-center gap-x-3 px-3">
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
@@ -92,6 +98,7 @@ const Settings = () => {
           style={{ flex: 1 }}
         />
       </View>
+
       <TimerPickerModal
         visible={showWritingPicker}
         setIsVisible={setShowWritingPicker}
@@ -115,6 +122,7 @@ const Settings = () => {
           overlayOpacity: 0.2,
         }}
       />
+
       <TimerPickerModal
         visible={showVotingPicker}
         setIsVisible={setShowVotingPicker}
@@ -137,6 +145,22 @@ const Settings = () => {
           overlayOpacity: 0.2,
         }}
       />
+
+      {/* Save Button */}
+      <View className="mt-8 w-full px-3">
+        <Button
+          title="Save Settings"
+          onPress={() => {
+            socket.emit("update_room_settings", {
+              roomCode: lobbyCode,
+              settings: {
+                maxPlayers,
+                maxRounds,
+              },
+            });
+          }}
+        />
+      </View>
       </View>
     </SafeAreaView>
   );

@@ -25,7 +25,6 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleSignIn = async () => {
-    router.push('/home');
     setError('');
     setSuccessMessage('');
 
@@ -38,8 +37,8 @@ const Login = () => {
     try {
       const result = await signInUser(email, password); // Use email for authentication
       setSuccessMessage('Login successful!');
-      getUserAttributes();
-      router.push('/home'); // Navigate to home screen after successful login
+      socket.emit('login_success');
+      router.push('/home');  // Navigate to home screen after successful login
     } catch (err) {
       setError((err as Error).message || 'Invalid email or password.');
     }

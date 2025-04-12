@@ -32,6 +32,7 @@ const Home = () => {
     loadGifs();
 
   }, []);
+  const screenWidth = Dimensions.get('window').width;
 
   return (
     <SafeAreaView className="flex-1 bg-backgroundSecondary">

@@ -52,31 +52,46 @@ export const signOutUser = () => {
   if (user) user.signOut();
 };
 
+
 // Fetch User Attributes
-export const getUserAttributes = () => { // Currently only retrieves username
+// Fetch User Attributes
+export const getUserAttributes = () => {
+  const user = userPool.getCurrentUser();
+
   return new Promise((resolve, reject) => {
-    const user = userPool.getCurrentUser();
-  
-    if (user) {
-      user.getSession((err, session) => { // Make sure session is valid
-        if (err || !session.isValid()) {
-          console.log('Session error:', err || 'Session invalid');
-          return reject('Session error or invalid');
-        }
-  
-        user.getUserAttributes((err, attributes) => {
-          if (err) {
-            console.log(err)
-            return reject(err)
-          } else {
-            const displayName = attributes.find(attr => attr.Name === 'custom:display_name');
-            //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
-            resolve(displayName ? displayName.Value : null);
-          }
-        })
-      })
+    if (!user) {
+      return reject("No user is currently signed in.");
     }
-  })
+
+    // Make sure the session is still valid
+    user.getSession((err, session) => {
+      if (err || !session.isValid()) {
+        return reject("User is not authenticated");
+      }
+
+      user.getUserAttributes((err, attributes) => {
+        if (err) {
+          return reject(err);
+        }
+
+
+        const attributeMap = {};
+        attributes.forEach(attr => {
+          attributeMap[attr.Name] = attr.Value;
+        });
+
+        resolve({
+          username: user.getUsername(),
+          email: attributeMap.email || null,
+          displayName: attributeMap["custom:display_name"] || attributeMap["Username"] || "Unknown",
+          sub: attributeMap["sub"], // ✅ Add this line
+        });        
+      });
+    });
+  });
+};
+
+export const getUserCognitoSub = () => {
 }
 
 export const getUserCognitoSub = () => {

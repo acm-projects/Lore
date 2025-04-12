@@ -8,6 +8,9 @@ import Animated, { BounceInDown, BounceInUp, Easing, useSharedValue, withSpring 
 import { useFonts } from 'expo-font';
 
 const Stories = () => {
+  const [stories, setStories] = useState<SavedStory[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const createGameRoom = () => {
     socket.emit('create_room', (response: any) => {
       if (response.success) {
