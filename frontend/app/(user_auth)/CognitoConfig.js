@@ -92,7 +92,8 @@ export const getUserAttributes = () => {
   });
 };
 
-
+export const getUserCognitoSub = () => {
+}
 
 /*
 // Handle Google Sign-Up (Commented Out)

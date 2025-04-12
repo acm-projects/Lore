@@ -383,7 +383,12 @@ io.on("connection", (socket) => {
 
     roomData.winner = winnerName;
     roomData.winningPrompts.push(winningPrompt);
-    roomData.playerWins[winnerId] = (roomData.playerWins[winnerId] || 0) + 1;
+    Object.keys(roomData.votes).forEach((playerId) => {
+      const votesReceived = roomData.votes[playerId] || 0;
+      const scoreToAdd = playerId === winnerId ? votesReceived * 200 : votesReceived;
+    
+      roomData.playerWins[playerId] = (roomData.playerWins[playerId] || 0) + scoreToAdd;
+    });
 
     roomData.round++;
     const isFinalRound = roomData.round >= roomData.lastRound;

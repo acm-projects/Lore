@@ -16,9 +16,8 @@ function Avatar (props: {size: number, image: string})
     
     return( 
         <View>
-            <Image style={{width: props.size, height: props.size}} className="rounded-full"
+            <Image style={{width: props.size, height: props.size, shadowOpacity: .5, shadowRadius: 10, shadowColor: 'black'}} className="rounded-full"
                     source={{uri : props.image}}>
-
             </Image>
         </View>
     )

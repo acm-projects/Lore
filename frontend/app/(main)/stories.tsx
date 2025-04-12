@@ -29,7 +29,7 @@ const Stories = () => {
     try {
       const user = await getUserAttributes();
       const res = await fetch(
-        `http://localhost:3001/get-stories?userId=${user.username}`
+        ` https://b7b0-129-110-242-224.ngrok-free.app/get-stories?userId=${user.username}`
       );
       const json = await res.json();
       setStories(json.stories || []);
