@@ -40,7 +40,7 @@ const Voting = () => {
     // Navigation handlers
     socket.on('go_to_waiting', ({ phase }) => {
       router.replace({
-        pathname: '/(game)/(play)/new-waiting',
+        pathname: '/(game)/(play)/players-waiting',
         params: { timeRemaining, phase },
       });
     });
@@ -100,7 +100,7 @@ const Voting = () => {
             <PlotPointButton
               key={index}
               plotPoint={item.prompt}
-              username={item.name}
+              //username={item.name}
               votes={1}
               isSelected={selectedId === index}
               onPress={() => setSelectedId(index)}

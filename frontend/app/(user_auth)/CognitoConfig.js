@@ -92,9 +92,6 @@ export const getUserAttributes = () => {
 };
 
 export const getUserCognitoSub = () => {
-}
-
-export const getUserCognitoSub = () => {
   return new Promise((resolve, reject) => {
     const user = userPool.getCurrentUser();
   
