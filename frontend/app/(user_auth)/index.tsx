@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { signInUser } from './CognitoConfig'; // Adjust import path if needed
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { signInUser, getUserAttributes } from './CognitoConfig'; // Adjust import path if needed
 import { useFonts } from 'expo-font';
 import { socket } from '~/socket';
 
@@ -14,6 +25,7 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleSignIn = async () => {
+    router.push('/home');
     setError('');
     setSuccessMessage('');
 
@@ -26,8 +38,8 @@ const Login = () => {
     try {
       const result = await signInUser(email, password); // Use email for authentication
       setSuccessMessage('Login successful!');
-      socket.emit('login_success');
-      router.push('/home');  // Navigate to home screen after successful login
+      getUserAttributes();
+      router.push('/home'); // Navigate to home screen after successful login
     } catch (err) {
       setError((err as Error).message || 'Invalid email or password.');
     }
@@ -78,7 +90,7 @@ const Login = () => {
                       value={email}
                       onChangeText={setEmail}
                       placeholder="Enter your email"
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#2d2e33"
                     />
                   </View>
 
@@ -91,16 +103,16 @@ const Login = () => {
                       value={password}
                       onChangeText={setPassword}
                       placeholder="Enter your password"
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#2d2e33"
                     />
                     <Text className="color-linkText pb-4" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>Forgot Password?</Text>
                   </View>
 
                   {/* Show error message if any */}
-                  {error && <Text style={{ color: 'red' }}>{error}</Text>}
+                  {error && <Text style={{ color: 'red', fontFamily: 'JetBrainsMonoRegular', paddingBottom: 6 }}>{error}</Text>}
 
                   {/* Show success message if login is successful */}
-                  {successMessage && <Text style={{ color: 'green' }}>{successMessage}</Text>}
+                  {successMessage && <Text style={{ color: 'green', fontFamily: 'JetBrainsMonoRegular', paddingBottom: 6}}>{successMessage}</Text>}
 
                   <View className="mb-4">
                     <TouchableOpacity
@@ -111,10 +123,10 @@ const Login = () => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      className="items-center justify-center mb-2 rounded-3xl bg-primaryAccent color-white h-[40px] w-[285px]"
-                      onPress={() => { router.push('/home') }}
+                      className="items-center justify-center mb-2 rounded-3xl bg-secondaryText color-white h-[40px] w-[285px]"
+                      onPress={() => { router.push('/(user_auth)/guestDetails') }}
                     >
-                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Login</Text>
+                      <Text className="color-white" style={{ fontFamily: 'JetBrainsMonoBold' }}>Continue as Guest</Text>
                     </TouchableOpacity>
 
                     <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>

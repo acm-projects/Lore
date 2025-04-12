@@ -33,7 +33,7 @@ const SignUp = () => {
   });
 
   // Validate email format
-  const validateEmail = (email) => {
+  const validateEmail = (email: string) => {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email);
   };
@@ -84,7 +84,7 @@ const SignUp = () => {
     try {
       await confirmUser(email, confirmationCode);
       Alert.alert('Success', 'Your account has been confirmed! You can now log in.');
-      router.push('(user_auth)'); 
+      router.push('/'); 
     } catch (error) {
       Alert.alert('Confirmation Failed', (error as Error).message || 'Invalid code.');
     } finally {
@@ -118,7 +118,7 @@ const SignUp = () => {
                     <View className="mb-4">
                       <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Name</Text>
                       <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
-                        value={displayName} 
+                        value={displayName}   
                         onChangeText={setDisplayName} 
                       />
                     </View>
