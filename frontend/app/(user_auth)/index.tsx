@@ -130,7 +130,7 @@ const Login = () => {
                     </TouchableOpacity>
 
                     <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
-                      Don't Have an account?
+                      Don't have an account?{" "}
                       <Text
                         className="color-linkText pb-4"
                         style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}
@@ -139,7 +139,7 @@ const Login = () => {
                         Register
                       </Text>
                       <Text className="color-secondaryText pb-2" style={{ fontSize: 12, fontFamily: 'JetBrainsMonoRegular' }}>
-                        here.
+                        {" "}here.
                       </Text>
                     </Text>
 

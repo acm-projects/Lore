@@ -3,6 +3,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { ChevronLeft} from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AWS from 'aws-sdk';
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useNavigation } from '@react-navigation/native';
 import {View, 
         Text, 
         TextInput,
@@ -10,25 +14,61 @@ import {View,
         ScrollView,
         Image,
         } from 'react-native';
-import AWS from 'aws-sdk';
 
 const guestDetails = () => {
+
+    const navigation = useNavigation()
 
     useFonts({
     'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
 
-    const s3 = new AWS.S3()
+    AWS.config.update({
+        region: 'us-east-2',
+    });
+
     const dynamodb = new AWS.DynamoDB.DocumentClient()
   
     const [username, setUsername] = useState("")
     const [newName, setNewName] = useState("")
     const [primaryKey, setPrimaryKey] = useState(0)
     const [avatar, setAvatar] = useState("")
+    const [expirationTime, setExpirationTime] = useState(0)
+
+/* 
+    const [guestKey, setGuestKey] = useState("")
+    const getGuestId = () => {
+        console.log("Role ARN:", (AWS.config.credentials as any)?.roleArn);
+        (AWS.config.credentials as AWS.CognitoIdentityCredentials).get((err) => {
+          if (err) {
+            console.error('Error getting credentials:', err);
+            return;
+          }
+          const credentials = AWS.config.credentials;
+          if (credentials instanceof AWS.CognitoIdentityCredentials) {
+            const identityId = credentials.identityId;
+            console.log('identityId:', identityId);
+            setGuestKey(identityId)
+            storeIdentityId(identityId)
+          } else {
+            console.error('Failed to get Cognito Identity Credentials');
+          }
+        });
+      };
+       */
+    const storePrimaryKey = async (playerId: number) => {
+    try {
+        await AsyncStorage.setItem('playerId', playerId+"");
+    } catch (error) {
+        console.error('Error storing playerId:', error);
+        }
+    };
 
     useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
+        const expireTime = Math.floor(new Date().getTime() + 86400)
         setAvatar(defaultProfilePic()+"")
         setPrimaryKey(Math.round((Math.random()*9000000000))+1000000000)
+        setExpirationTime(expireTime)
     }, []))
 
     const defaultProfilePic = () => { // Choose a random profile picture from 7
@@ -59,7 +99,7 @@ const guestDetails = () => {
     }
 
     const createGuestAccount = async (newUsername: string) => {
-
+        storePrimaryKey(primaryKey)
         try {
           setUsername(newUsername) // Set the original username to function username parameter
           setNewName("")
@@ -68,16 +108,15 @@ const guestDetails = () => {
             Item: {
                 PlayerID: primaryKey,
                 Username: newUsername,
-                ProfilePicURL: avatar
+                ProfilePicURL: avatar,
+                ExpiresAt: expirationTime
             },
           }
           await dynamodb.put(dbParams).promise();
-          
-          console.log('Guest Profile created successfully!');
           router.push('/(main)/home')
   
         } catch (error) {
-          console.error('Error creating Guset:', error);
+          console.error('Error creating Guest:', error);
         }
     } 
 
@@ -85,10 +124,11 @@ const guestDetails = () => {
     <SafeAreaView className="flex-1 bg-background justify-center">
         <Image className="w-full h-full" style={{ resizeMode: 'cover', position: 'absolute', opacity: .5 }} source={require('assets/Homebg.png')} />
         
+        <View className="h-[40px] flex-row p-4">
+            <ChevronLeft size={25} color={"white"} onPress={() => {navigation.goBack()}}/>
+        </View>
+
         <ScrollView className="flex-1" automaticallyAdjustKeyboardInsets={true}>
-            <View className="h-[40px] flex-row p-4">
-                <ChevronLeft size={25} color={"white"} onPress={() => {router.push('/')}}/>
-            </View>
             <View className="w-full h-auto items-center pb-4">
                 <Image 
                     source={require("assets/Logo 1.png")}
@@ -124,7 +164,7 @@ const guestDetails = () => {
                 <View className="flex flex-col w-[350px] items-center justify-center bg-backgroundSecondary rounded-xl p-6">
                     <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl"
                                         onPress={() => {createGuestAccount(newName)}}>
-                        <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Continue </Text>
+                        <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Continue as Guest </Text>
                     </TouchableOpacity>
                 </View>
           </View>

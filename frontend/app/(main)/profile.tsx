@@ -1,5 +1,5 @@
 import React, { createRef, useCallback, useEffect, useRef, useState } from 'react';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
@@ -10,6 +10,9 @@ import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
 import * as ImagePicker from 'expo-image-picker';
 import { signOutUser, getUserAttributes, getUserCognitoSub } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
+import AWS, { DynamoDB } from 'aws-sdk';
+import { DynamoDBClient, ListBackupsCommand } from "@aws-sdk/client-dynamodb";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View, 
         Text, 
         FlatList,
@@ -23,27 +26,64 @@ import {View,
         Keyboard,
         KeyboardAvoidingView
         } from 'react-native';
-import AWS, { DynamoDB } from 'aws-sdk';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-                
+        
   const Profile = () => {
+
     useFonts({
       'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
 
     AWS.config.update({
+      region: 'us-east-2',
     });
 
     const s3 = new AWS.S3()
     const dynamodb = new AWS.DynamoDB.DocumentClient()
+    
+    // ------------------------------------------- Guest User Details --------------------------------------------------------
+    const [isGuest, setGuest] = useState(false)
+    const [primaryKey, setPrimaryKey] = useState(0)
+
+    const fetchGuestId = async () => {
+      try {
+        const guestId = await AsyncStorage.getItem('playerId');
+        if (guestId !== null) {
+          setPrimaryKey(parseInt(guestId))
+         }
+      } catch (error) {
+        console.error('Error fetching identityId:', error);
+      }
+    };
+
+    const guestParams = {
+      TableName: 'Players',
+      KeyConditionExpression: 'PlayerID = :subValue',
+      ProjectionExpression: "Username, ProfilePicURL, PlayerID",
+      ExpressionAttributeValues: {
+        ':subValue': primaryKey
+      }
+    }
+
+    const getGuestItems = async () => {
+      dynamodb.query(guestParams, (err, data) => {
+        if (err) {
+          console.log('' + err)
+        } else {
+          data.Items?.forEach(item => {
+            console.log(item)
+            setUsername(item.Username)
+            setAvatar(item.ProfilePicURL)
+            setPrimaryKey(item.PlayerID)
+          })
+        }
+      })
+    }
 
     // ------------------------------------------- Logged On User Details --------------------------------------------------------
     const [username, setUsername] = useState("")
     const [cognitoSub, setCognitoSub] = useState("")
-    const [primaryKey, setPrimaryKey] = useState(0)
     const [avatar, setAvatar] = useState("")
     const [stories, setStories] = useState([])
-    const [isGuest, setGuest] = useState(false)
     //const [friends, setFriends] = useState([])
     //const [bio, setBio] = useState("")
 
@@ -53,18 +93,18 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
     useFocusEffect(useCallback(() => { // Run these functions whenever profile page is loaded
       getCognitoSub()
-      getItems()
-      if(cognitoSub.length === 0) {
-        setGuest(true)
-      }
     }, []))
 
     useEffect(() => {
-      if(cognitoSub.length != 0) {
+      if(cognitoSub.length === 0) {
+        setGuest(true)
+        fetchGuestId()
+        getGuestItems()
+      } else {
         setGuest(false)
+        getItems()
       }
-      getItems()
-    }, [cognitoSub])
+    }, [cognitoSub || primaryKey])
 
     const queryParams = {
       TableName: 'Players',
@@ -85,14 +125,36 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
             setUsername(item.Username)
             setAvatar(item.ProfilePicURL)
             setPrimaryKey(item.PlayerID)
-            //setBio(item.Biography)
-            //setStories(item.StoriesParticipated)
-            //setFriends(item.Friends)
           })
-
         }
       })
     }
+
+  // ---------------------------------------------- Log Out / Exit ------------------------------------------------------------
+    
+    const deleteGuestParams = {
+      TableName: 'Players',
+      Key: {
+        PlayerID: primaryKey
+      }
+    }
+
+    // Handle Logout functionality
+    const handleLogout = async () => {
+      setLogoutVisible(false)
+      if(isGuest) { // If the user is a guest, delete the dynamoDb table and asyncStorage
+        await AsyncStorage.removeItem('playerId')
+        dynamodb.delete(deleteGuestParams, (err, data) => {
+          if (err) {
+            console.log("Error", err);
+          } else {
+            console.log("Success", data);
+          }
+        })
+      }
+      signOutUser(); // Call signOutUser function to log the user out
+      router.push('/'); // Redirect to login page after logging out
+    };
 
     // ------------------------------------------- Get other Users --------------------------------------------------------
     type user = {Biography: string, CognitoSub: string, CreatedAt: string, Email: string, Friends: {}, PlayerID: number, Stories: number, StoriesParticipated: {}, Username: string}
@@ -237,14 +299,15 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 // ------------------------------------------------------------------------------------------------------------------------
 
   let [isStoryVisible, setStoryVisible] = useState(true)
+  let [isEditVisible, setEditVisible] = useState(false)
+  let [isLogoutVisible, setLogoutVisible] = useState(false)  
+  let [searchQuery, setSearchQuery] = useState("")
+  let [filteredStories, setFilteredStories] = useState()
+  
+  // Scrapped State Variables for Friends Feature
   let [isFollowingVisible, setFollowingVisible] = useState(false)
   let [isSearchVisible, setSearchVisible] = useState(false)
-  let [isEditVisible, setEditVisible] = useState(false)
-  let [isLogoutVisible, setLogoutVisible] = useState(false)
-
-  let [searchQuery, setSearchQuery] = useState("")
   let [filteredUsers, setFilteredUsers] = useState<user[]>()
-  let [filteredStories, setFilteredStories] = useState()
 
   const handleSearch = (text: string) => {
     setSearchQuery(text)
@@ -252,17 +315,9 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
     setFilteredUsers(filteredData)
   }
 
-  // Handle Logout functionality
-  const handleLogout = () => {
-    setLogoutVisible(false)
-    signOutUser(); // Call signOutUser function to log the user out
-    router.push('/'); // Redirect to login page after logging out
-  };
-
   return (
     <SafeAreaView className="bg-backgroundSecondary flex-1">
       <KeyboardAvoidingView className="flex-1">
-
 {/*--------------------------------------------------------------- EDIT -----------------------------------------------------------*/}
       <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
