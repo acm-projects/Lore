@@ -14,7 +14,7 @@ const PlayersWaiting = () => {
   const { lobbyCode, addPlotPoint } = useLobby();
   const timeRemaining = params.timeRemaining ? parseInt(params.timeRemaining as string) : 30;
   const round = params.round ? parseInt(params.round as string) : 1;
-  const [players, setPlayers] = useState<{ id: string, currentScreen?: string }[]>([]);
+  const [players, setPlayers] = useState<{ id: string; name: string; currentScreen?: string }[]>([]);
 
   useEffect(() => {
     console.log(`🚀 Waiting Screen Loaded | Phase: ${phase}`);
@@ -25,7 +25,11 @@ const PlayersWaiting = () => {
     // ✅ Listen for user updates
     socket.on("update_users", (updatedUsers) => {
       console.log('👥 Updated Players List:', updatedUsers);
-      setPlayers(updatedUsers.map(user => ({ ...user, currentScreen: user.currentScreen || "unknown" }))); // ✅ Ensure currentScreen exists
+      setPlayers(updatedUsers.map(user => ({
+        id: user.id,
+        name: user.name, // ✅ Make sure this is set
+        currentScreen: user.currentScreen || "unknown"
+      })));      
     });
 
     if (phase === 'prompts') {
@@ -90,7 +94,7 @@ const PlayersWaiting = () => {
               // ✅ Players on waiting screen use ProfileDisplay for correct primary colors
               <ProfileDisplay 
                 key={player.id} 
-                username={player.id} 
+                username={player.name} 
                 isVariant={true} 
               />
             ) : (
@@ -100,7 +104,7 @@ const PlayersWaiting = () => {
                 className="w-full flex flex-row items-center justify-between rounded-lg bg-black p-4"
               >
                 <Text className="text-lg font-bold text-white">
-                  {player.id}
+                  {player.name}
                 </Text>
               </View>
             );

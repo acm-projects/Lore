@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {   View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, 
   ScrollView, TouchableOpacity, Alert,  
   StatusBar} from 'react-native';
-  import { signUpUser, confirmUser } from './CognitoConfig'; // Import authentication functions
+import { signUpUser, confirmUser } from './CognitoConfig'; // Import authentication functions
 import { useFonts } from 'expo-font';
 
 const SignUp = () => {  
@@ -22,8 +22,33 @@ const SignUp = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Error states
+  const [errors, setErrors] = useState({
+    displayName: '',
+    emailFormat: '',
+    passwordMismatch: '',
+    passwordRequirements: '',
+    confirmationCode: '',
+    successMessage: '' // New state for success message
+  });
+
+  // Validate email format
+  const validateEmail = (email: string) => {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
+  };
+
   // Handle sign-up
   const handleSignUp = async () => {
+    setErrors({
+      displayName: '',
+      emailFormat: '',
+      passwordMismatch: '',
+      passwordRequirements: '',
+      confirmationCode: '',
+      successMessage: '' // Reset success message
+    });
+    
     if (!displayName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'All fields are required.');
       return;
@@ -59,7 +84,7 @@ const SignUp = () => {
     try {
       await confirmUser(email, confirmationCode);
       Alert.alert('Success', 'Your account has been confirmed! You can now log in.');
-      router.push('/'); // Navigate to login page
+      router.push('/'); 
     } catch (error) {
       Alert.alert('Confirmation Failed', (error as Error).message || 'Invalid code.');
     } finally {
@@ -93,7 +118,7 @@ const SignUp = () => {
                     <View className="mb-4">
                       <Text className="color-secondaryText pb-2" style={{fontSize: 15, fontFamily: 'JetBrainsMonoRegular'}}>Name</Text>
                       <TextInput className="pl-2 rounded-xl bg-black color-white h-[40px] w-[285px]" style={{fontSize:15}}
-                        value={displayName} 
+                        value={displayName}   
                         onChangeText={setDisplayName} 
                       />
                     </View>

@@ -1,5 +1,4 @@
 import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribute } from 'amazon-cognito-identity-js';
-
 /*
 import AWS from 'aws-sdk/global';
 // Import Google Sign-In (Commented Out)
@@ -53,8 +52,48 @@ export const signOutUser = () => {
   if (user) user.signOut();
 };
 
+
 // Fetch User Attributes
-export const getUserAttributes = () => { // Currently only retrieves username
+// Fetch User Attributes
+export const getUserAttributes = () => {
+  const user = userPool.getCurrentUser();
+
+  return new Promise((resolve, reject) => {
+    if (!user) {
+      return reject("No user is currently signed in.");
+    }
+
+    // Make sure the session is still valid
+    user.getSession((err, session) => {
+      if (err || !session.isValid()) {
+        return reject("User is not authenticated");
+      }
+
+      user.getUserAttributes((err, attributes) => {
+        if (err) {
+          return reject(err);
+        }
+
+
+        const attributeMap = {};
+        attributes.forEach(attr => {
+          attributeMap[attr.Name] = attr.Value;
+        });
+
+        resolve({
+          username: user.getUsername(),
+          email: attributeMap.email || null,
+          displayName: attributeMap["custom:display_name"] || attributeMap["Username"] || "Unknown",
+          sub: attributeMap["sub"], // ✅ Add this line
+        });        
+      });
+    });
+  });
+};
+
+
+
+export const getUserCognitoSub = () => {
   return new Promise((resolve, reject) => {
     const user = userPool.getCurrentUser();
   
@@ -70,9 +109,9 @@ export const getUserAttributes = () => { // Currently only retrieves username
             console.log(err)
             return reject(err)
           } else {
-            const displayName = attributes.find(attr => attr.Name === 'custom:display_name');
+            const sub = attributes.find(attr => attr.Name === 'sub');
             //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
-            resolve(displayName ? displayName.Value : null);
+            resolve(sub ? sub.Value : null);
           }
         })
       })
