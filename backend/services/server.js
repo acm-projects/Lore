@@ -15,12 +15,15 @@ import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
-dotenv.config({ path: "../.env" }); // load secret keys
+dotenv.config(); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
 const ACCESS_KEY = process.env.ACCESS_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
+
+console.log(ACCESS_KEY);
+console.log(SECRET_KEY);
 
 // Create a second DynamoDB client for the Cognito/Stories account
 const dynamoForStories = new DynamoDBClient({
@@ -362,13 +365,14 @@ io.on("connection", (socket) => {
   });
 
   async function determineWinnerAndStartAI(room) {
+    io.to(room).emit("go_score");
     const roomData = rooms[room];
     if (!roomData) return;
-
+  
     const votes = roomData.votes;
     const prompts = roomData.prompts;
     const users = roomData.users;
-
+  
     let maxVotes = Math.max(...Object.values(votes));
     let tiedPlayers = Object.keys(votes).filter(
       (playerId) => votes[playerId] === maxVotes
@@ -377,59 +381,83 @@ io.on("connection", (socket) => {
       tiedPlayers.length > 1
         ? tiedPlayers[Math.floor(Math.random() * tiedPlayers.length)]
         : tiedPlayers[0];
-
+  
     let winningPrompt = prompts[winnerId].prompt;
     let winnerName = users.find((u) => u.id === winnerId)?.name || "Unknown";
-
+  
     roomData.winner = winnerName;
     roomData.winningPrompts.push(winningPrompt);
-    Object.keys(roomData.votes).forEach((playerId) => {
-      const votesReceived = roomData.votes[playerId] || 0;
-      const scoreToAdd = playerId === winnerId ? votesReceived * 200 : votesReceived;
-    
-      roomData.playerWins[playerId] = (roomData.playerWins[playerId] || 0) + scoreToAdd;
-    });
-
     roomData.round++;
+  
     const isFinalRound = roomData.round >= roomData.lastRound;
-
-    // Send players to ai-gen with loading text
-    io.to(room).emit("go_to_ai_gen", { prompt: winningPrompt });
-
-    try {
-      // Use our generateStory function instead of axios call to Python backend
-      const aiResponse = await generateStory(
-        winningPrompt,
-        roomData.storyHistory.join("\n\n"),
-        roomData.round,
-        isFinalRound
-      );
-
-      // Process the response to extract numbered paragraphs
-      let numberedParagraphs = aiResponse
-        .split("\n")
-        .filter((line) => /^\d+\.\s/.test(line))
-        .map((line) => line.replace(/^\d+\.\s/, ""))
-        .slice(0, 3)
-        .join("\n\n");
-
-      roomData.story = numberedParagraphs;
-      roomData.storyHistory.push(numberedParagraphs);
-
-      io.to(room).emit("story_ready", {
-        story: numberedParagraphs,
-        round: roomData.round,
-        lastRound: roomData.lastRound,
-        creatorId: roomData.creator,
-        playerWins: roomData.playerWins,
-        prompt: roomData.winningPrompts,
-      });
-    } catch (err) {
-      console.error("❌ AI error:", err);
-      roomData.story = "Error generating story.";
-      io.to(room).emit("story_ready", { story: "Error generating story." });
-    }
-  }
+  
+    // 🧠 Score calculation (based on votes, with bonus for round winner)
+    const scoreSummary = users.map((user) => {
+      const id = user.id;
+      const name = user.name;
+      const avatar = user.avatar || null;
+  
+      const voteCount = votes[id] || 0;
+      const isWinner = id === winnerId;
+      const pointsEarned = isWinner ? voteCount * 2 : voteCount;
+  
+      const pastScore = roomData.playerWins[id] || 0;
+      const newScore = pastScore + pointsEarned;
+  
+      // Update the stored score
+      roomData.playerWins[id] = newScore;
+  
+      return {
+        id,
+        username: name,
+        avatar_url: avatar,
+        past_score: pastScore,
+        score_to_add: pointsEarned,
+        new_score: newScore,
+        winner: isWinner,
+      };
+    });
+  
+    // ✅ Send score breakdown to all players
+    io.to(room).emit("score_summary", scoreSummary);
+  
+    // ✅ Wait 6 seconds before moving to AI gen screen
+    setTimeout(async () => {
+      io.to(room).emit("go_to_ai_gen", { prompt: winningPrompt });
+  
+      try {
+        const aiResponse = await generateStory(
+          winningPrompt,
+          roomData.storyHistory.join("\n\n"),
+          roomData.round,
+          isFinalRound
+        );
+  
+        const numberedParagraphs = aiResponse
+          .split("\n")
+          .filter((line) => /^\d+\.\s/.test(line))
+          .map((line) => line.replace(/^\d+\.\s/, ""))
+          .slice(0, 3)
+          .join("\n\n");
+  
+        roomData.story = numberedParagraphs;
+        roomData.storyHistory.push(numberedParagraphs);
+  
+        io.to(room).emit("story_ready", {
+          story: numberedParagraphs,
+          round: roomData.round,
+          lastRound: roomData.lastRound,
+          creatorId: roomData.creator,
+          playerWins: roomData.playerWins,
+          prompt: roomData.winningPrompts,
+        });
+      } catch (err) {
+        console.error("❌ AI error:", err);
+        roomData.story = "Error generating story.";
+        io.to(room).emit("story_ready", { story: "Error generating story." });
+      }
+    }, 6000);
+  }  
 
   // Send current continue count when a player enters the story screen
   socket.on("request_continue_count", (room) => {

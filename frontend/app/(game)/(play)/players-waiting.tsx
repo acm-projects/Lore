@@ -55,7 +55,7 @@ const PlayersWaiting = () => {
       // 👇 Optional: Handle early go_to_ai_gen if needed
       socket.on('go_to_ai_gen', ({ prompt }) => {
         router.replace({
-          pathname: '/(game)/(play)/ai-gen',
+          pathname: '/(game)/(play)/score-page.tsx',
           params: {
             prompt,
             story: "Loading...",

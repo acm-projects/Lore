@@ -28,7 +28,7 @@ import {View,
 import AWS, { DynamoDB } from 'aws-sdk';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-const Stories = () => {
+  const Profile = () => {
   const [stories, setStories] = useState<SavedStory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,31 +60,6 @@ const Stories = () => {
       },
     });
   };
-
-  return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className="mx-3 flex flex-1 justify-between">
-        <Text className="mb-4 text-2xl font-bold text-backgroundText">Story History</Text>
-
-        {loading ? (
-          <ActivityIndicator size="large" color="#ffffff" />
-        ) : (
-          <ScrollView className="flex-1 space-y-3">
-            {stories.map((story, idx) => (
-              <TouchableOpacity
-                key={idx}
-                className="rounded-lg bg-secondary p-4"
-                onPress={() => openStory(story)}>
-                <Text className="text-lg font-semibold text-white">{story.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-    </SafeAreaView>
-  );
-};
-  const Profile = () => {
     useFonts({
       'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     });
@@ -100,7 +75,6 @@ const Stories = () => {
     const [cognitoSub, setCognitoSub] = useState("")
     const [primaryKey, setPrimaryKey] = useState(0)
     const [avatar, setAvatar] = useState("")
-    const [stories, setStories] = useState([])
     const [isGuest, setGuest] = useState(false)
     //const [friends, setFriends] = useState([])
     //const [bio, setBio] = useState("")
@@ -325,212 +299,149 @@ const Stories = () => {
   return (
     <SafeAreaView className="bg-backgroundSecondary flex-1">
       <KeyboardAvoidingView className="flex-1">
-
-{/*--------------------------------------------------------------- EDIT -----------------------------------------------------------*/}
-      <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
-        <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
-        <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
-          {isGuest ? <View/> : <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>}
-          <LogOut size={20} color={"red"} onPress={() => {setLogoutVisible(true)}}/>
-        </View>
-      </View>
-
-{/*--------------------------------------------------------------- LOG OUT -----------------------------------------------------------*/}
-      <Modal animationIn={"slideInUp"} animationOut={"slideOutDown"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0, marginTop: Dimensions.get("window").height-80, }} 
-             onBackdropPress={() => setLogoutVisible(false)}
-             backdropOpacity={.5}
-             isVisible={isLogoutVisible}>
-              <View className="bg-background flex-1 rounded-t-3xl items-center justify-center">
-                <TouchableOpacity className="w-3/4 h-1/2 bg-red-500 flex-row rounded-full items-center justify-center"
-                                  onPress={() => {handleLogout()}}>
-                  <LogOut size={20} color={"white"}></LogOut>
-                  {isGuest ? <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Exit </Text> : 
-                             <Text className="color-white" style={{fontSize: 18, fontFamily: 'JetBrainsMonoBold'}}> Log Out </Text>}
-                </TouchableOpacity>
-              </View>
-      </Modal>
-
-{/*--------------------------------------------------------------- EDITING PROFILE -----------------------------------------------------------*/}
-      <SafeAreaView className="flex-1">
-      <Modal animationIn={"slideInRight"} animationOut={"slideOutRight"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0}} 
-             isVisible={isEditVisible}>
-        <View className="flex-1">
-          <Image
-            className="h-full w-full"
-            style={{ resizeMode: 'cover', position: 'absolute' }}
-            //source={require('assets/Homebg.png')}
-            />
-          <ScrollView className="flex-1 p-4 bg-background" automaticallyAdjustKeyboardInsets={true}>
-            <View className="flex-1 flex-row">
-              <Pen color={"white"}></Pen>
-              <View className="flex-1 h-[40px] flex-row justify-between bg-background pl-2">
-                <Text style={{fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white'}}>Edit Profile</Text>
-                <X color={"white"} onPress={() => {setEditVisible(false)}}/>
-              </View>
-            </View>
-            <View className="flex flex-col flex-1">
-        {/* ------------------------------------------------------ AVATAR ---------------------------------------------------*/}
-            <View className="flex-1 flex flex-row">
-              <IdCard size={20} color={"white"} />
-              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Avatar</Text>
-            </View>
-            <View className="flex-1 flex flex-col items-center bg-backgroundSecondary rounded-xl py-6">
-              <View className="w-full h-1/3 bg-backgroundSecondary rounded-t-xl" style={{position:'absolute'}}></View>
-              <View className="w-full h-2/5 bg-primaryAccent rounded-t-xl" style={{position:'absolute'}}></View>
-                <View className="pb-4 items-center justify-center flex-1">
-                  <View className="bg-backgroundSecondary rounded-full w-[140px] h-[150px]" style={{position: 'absolute'}}></View>
-                  <Avatar size={120} image={avatar}></Avatar>
-                </View>
-                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl"
-                                  onPress={() => {pickImage()}}>
-                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Edit Avatar </Text>
-                </TouchableOpacity>
-            </View>
-            <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-        {/* -------------------------------------------------- USERNAME -------------------------------------------------*/}
-            <View className="flex-1 flex flex-row">
-              <ALargeSmall size={20} color={"white"} />
-              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Username</Text>
-            </View>
-              <View className="flex flex-col items-center justify-center bg-backgroundSecondary rounded-xl p-6">
-                <TextInput 
-                  className="bg-black color-white h-[40px] w-[330px] rounded-xl px-2"
-                  placeholder = {username}
-                  value={newName}
-                  onChangeText={setNewName}
-                  /> 
-                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl mt-4"
-                                  onPress={() => {updateUsername(newName)}}>
-                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Username </Text>
-                </TouchableOpacity>
-              </View>
-              <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-        {/* -------------------------------------------------- BIO ----------------------------------------------------*/}
-  { /* 
-            <View className="flex-1 flex flex-row">
-              <LetterText size={20} color={"white"} />
-              <Text style={{color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10}}>Biography</Text>
-            </View>              
-            <View className="flex flex-col items-center justify-center bg-backgroundSecondary rounded-xl p-6">
-                <TextInput 
-                  className="bg-black color-white h-[100px] w-[330px] rounded-xl px-2"
-                  multiline={true}
-                  placeholder = {bio}
-                  value = {newBiography}
-                  onChangeText={setNewBiography}
-                  /> 
-                <TouchableOpacity className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl mt-4"
-                                  onPress={() => {updateBio(newBiography)}}>
-                  <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white"}}> Change Bio </Text>
-                </TouchableOpacity>
-              </View>
-              <View className="bg-secondaryText h-[1px] w-full my-6"></View>
-  */}
-  {/*---------------------------------------------------------------------------------------------------------*/}
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-      </SafeAreaView>
-
-      <FlatList 
-        ref={flatListRef}
-        onScroll={handleScroll}
-        className="bg-backgroundSecondary"
-        data={searchQuery === "" ? stories : filteredStories}
-        renderItem={({item, index}) =>  <View className="flex-1 bg-background">
-                                        <StoryCard              
-                                        key={index}
-                                        count={index}
-                                        text={item.text}
-                                        story={item.aiPrompt}/>
-                                        </View>
-                                        }
-        ListEmptyComponent={() => <View style={{flex: 1, backgroundColor: "#313338", paddingBottom: 500, paddingTop: 10, alignItems: 'center'}}>  
-                                    {isGuest ? <Text 
-                                                className="color-secondaryText"
-                                                style={{fontFamily: 'JetBrainsMonoRegular'}}> Login to Save and See Past Stories! </Text> :
-                                                <Text className="color-secondaryText"
-                                                style={{fontFamily: 'JetBrainsMonoRegular'}}> No Stories Found! </Text>}
-                                  </View>}              
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        ListHeaderComponent={
-  // ------------------------------------------------------   Header Component -----------------------------------------------
-      <View className="flex-1 bg-backgroundSecondary items-center justify-center">
-        <View className="w-full items-center justify-center">
-          {/* ----------------------------------------------- Avatar -----------------------------------------------------*/}
-          <View className="w-2/3 flex-2 flex flex-col items-center">
-            <Avatar size={100} image={avatar}></Avatar>
-            <View className="h-[50px]">
-              <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white">{username}</Text>
-            </View>
-          </View>
-
-          {/* ----------------------------------------------- SEARCH BAR -------------------------------------------------- */}
-          {/* Note that this is just pretending to be apart of the header, it's actually apart of the darker section on top of it, so if there's any formatting issues change the height of that*/}
-          <View className="bg-backgroundSecondary w-full"> 
-
-            <View className="w-full justify-center items-center flex flex-row pb-3">
-                <BookOpen size={30} color={isStoryVisible ? '#06D6A1' : 'white'} onPress={() => {setSearchQuery(""); setStoryVisible(true); setFollowingVisible(false); setSearchVisible(false)}}/>
-            </View>
-            
-            <View className="w-full justify-center items-center flex flex-row">
-              {isStoryVisible ? <View className="bg-primaryAccent w-[30px] h-[2px]"/> : <View />}
-            </View> 
-
-            <Text className="pl-8 pt-4 bg-background color-secondaryText" style={{fontFamily: 'JetBrainsMonoRegular'}}>Stories</Text>
-            <View className="bg-background w-full items-center">
-              <View className="flex flex-row mt-4 mb-2 items-center"> 
-                <TextInput 
-                  className="bg-backgroundSecondary color-white h-[40px] w-[330px] rounded-xl px-10"
-                  placeholder = "Search Stories"
-                  value={searchQuery}
-                  onChangeText={handleSearch}/> 
-                <View className="pl-2" style={{position: 'absolute'}}>
-                  <Search size={20} color='#313338' />
-                </View>
-              </View>
-            </View>
-
+  
+        {/*--------------------------------------------------------------- EDIT -----------------------------------------------------------*/}
+        <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
+          <Text style={{ fontSize: 18, fontFamily: 'JetBrainsMonoRegular' }} className="color-white pt-6"> Profile </Text>
+          <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
+            {isGuest ? <View /> : <Pen size={20} color={"white"} onPress={() => { setEditVisible(true) }} />}
+            <LogOut size={20} color={"red"} onPress={() => { setLogoutVisible(true) }} />
           </View>
         </View>
-      </View>}>
-      {/* --------------------------------------------------------------------------------------------------- */}
-      </FlatList>
-
-    {/*--------------------------------------------- Scroll to Top Button ----------------------------------------*/}
-    <Animated.View style={{position: 'absolute', marginTop: Dimensions.get("screen").height-140, marginLeft: Dimensions.get("screen").width-60, transform: [{translateX: slideValue}]}}>
-      <TouchableOpacity className="bg-primaryAccent h-[45px] w-[45px] rounded-full items-end"   
-                      onPress={() => {scrollToTop()}}>
-        <View className="flex-1 items-center justify-center pr-2">
-          <ArrowUp size={30} color={'white'}></ArrowUp>
-        </View> 
-      </TouchableOpacity>
-    </Animated.View>
-    {/* ----------------------------------------------------------------------------------------------------------- */}
-    </KeyboardAvoidingView>
-    </SafeAreaView>
-    <SafeAreaView className="flex-1 bg-background">
-    <View className="mx-3 flex flex-1 justify-between">
-      <Text className="mb-4 text-2xl font-bold text-backgroundText">Story History</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#ffffff" />
-      ) : (
-        <ScrollView className="flex-1 space-y-3">
-          {stories.map((story, idx) => (
+  
+        {/*--------------------------------------------------------------- LOG OUT -----------------------------------------------------------*/}
+        <Modal
+          animationIn={"slideInUp"}
+          animationOut={"slideOutDown"}
+          className="flex-1"
+          style={{ marginHorizontal: 0, marginBottom: 0, marginTop: Dimensions.get("window").height - 80 }}
+          onBackdropPress={() => setLogoutVisible(false)}
+          backdropOpacity={.5}
+          isVisible={isLogoutVisible}>
+          <View className="bg-background flex-1 rounded-t-3xl items-center justify-center">
             <TouchableOpacity
-              key={idx}
-              className="rounded-lg bg-secondary p-4"
-              onPress={() => openStory(story)}>
-              <Text className="text-lg font-semibold text-white">{story.title}</Text>
+              className="w-3/4 h-1/2 bg-red-500 flex-row rounded-full items-center justify-center"
+              onPress={() => { handleLogout() }}>
+              <LogOut size={20} color={"white"} />
+              {isGuest ? (
+                <Text className="color-white" style={{ fontSize: 18, fontFamily: 'JetBrainsMonoBold' }}> Exit </Text>
+              ) : (
+                <Text className="color-white" style={{ fontSize: 18, fontFamily: 'JetBrainsMonoBold' }}> Log Out </Text>
+              )}
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-    </View>
-  </SafeAreaView>
-  );
+          </View>
+        </Modal>
+  
+        {/*--------------------------------------------------------------- EDITING PROFILE -----------------------------------------------------------*/}
+        <SafeAreaView className="flex-1">
+          <Modal
+            animationIn={"slideInRight"}
+            animationOut={"slideOutRight"}
+            className="flex-1"
+            style={{ marginHorizontal: 0, marginBottom: 0 }}
+            isVisible={isEditVisible}>
+            <View className="flex-1">
+              <Image
+                className="h-full w-full"
+                style={{ resizeMode: 'cover', position: 'absolute' }}
+              //source={require('assets/Homebg.png')}
+              />
+              <ScrollView className="flex-1 p-4 bg-background" automaticallyAdjustKeyboardInsets={true}>
+                <View className="flex-1 flex-row">
+                  <Pen color={"white"} />
+                  <View className="flex-1 h-[40px] flex-row justify-between bg-background pl-2">
+                    <Text style={{ fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white' }}>Edit Profile</Text>
+                    <X color={"white"} onPress={() => { setEditVisible(false) }} />
+                  </View>
+                </View>
+  
+                <View className="flex flex-col flex-1">
+                  {/* ------------------------------------------------------ AVATAR ---------------------------------------------------*/}
+                  <View className="flex-1 flex flex-row">
+                    <IdCard size={20} color={"white"} />
+                    <Text style={{ color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10 }}>Avatar</Text>
+                  </View>
+                  <View className="flex-1 flex flex-col items-center bg-backgroundSecondary rounded-xl py-6">
+                    <View className="w-full h-1/3 bg-backgroundSecondary rounded-t-xl" style={{ position: 'absolute' }}></View>
+                    <View className="w-full h-2/5 bg-primaryAccent rounded-t-xl" style={{ position: 'absolute' }}></View>
+                    <View className="pb-4 items-center justify-center flex-1">
+                      <View className="bg-backgroundSecondary rounded-full w-[140px] h-[150px]" style={{ position: 'absolute' }}></View>
+                      <Avatar size={120} image={avatar}></Avatar>
+                    </View>
+                    <TouchableOpacity
+                      className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl"
+                      onPress={() => { pickImage() }}>
+                      <Text style={{ fontFamily: 'JetBrainsMonoBold', color: "white" }}> Edit Avatar </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View className="bg-secondaryText h-[1px] w-full my-6"></View>
+  
+                  {/* -------------------------------------------------- USERNAME -------------------------------------------------*/}
+                  <View className="flex-1 flex flex-row">
+                    <ALargeSmall size={20} color={"white"} />
+                    <Text style={{ color: 'white', fontFamily: 'JetBrainsMonoRegular', fontSize: 16, paddingLeft: 4, paddingBottom: 10 }}>Username</Text>
+                  </View>
+                  <View className="flex flex-col items-center justify-center bg-backgroundSecondary rounded-xl p-6">
+                    <TextInput
+                      className="bg-black color-white h-[40px] w-[330px] rounded-xl px-2"
+                      placeholder={username}
+                      value={newName}
+                      onChangeText={setNewName}
+                    />
+                    <TouchableOpacity
+                      className="bg-primaryAccent w-[330px] h-[40px] justify-center items-center rounded-xl mt-4"
+                      onPress={() => { updateUsername(newName) }}>
+                      <Text style={{ fontFamily: 'JetBrainsMonoBold', color: "white" }}> Change Username </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View className="bg-secondaryText h-[1px] w-full my-6"></View>
+  
+                  {/* -------------------------------------------------- BIO ----------------------------------------------------*/}
+                  {/* (kept as-is, commented out) */}
+                </View>
+              </ScrollView>
+            </View>
+          </Modal>
+        </SafeAreaView>
+  
+        {/*--------------------------------------------------------------- STORY HISTORY -----------------------------------------------------------*/}
+        <SafeAreaView className="flex-1 bg-background">
+          <View className="mx-3 flex flex-1 justify-between">
+            <Text className="mb-4 text-2xl font-bold text-backgroundText">Story History</Text>
+            {loading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <ScrollView className="flex-1 space-y-3">
+                {stories.map((story, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    className="rounded-lg bg-secondary p-4"
+                    onPress={() => openStory(story)}>
+                    <Text className="text-lg font-semibold text-white">{story.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </SafeAreaView>
+  
+        {/*--------------------------------------------- Scroll to Top Button ----------------------------------------*/}
+        <Animated.View style={{
+          position: 'absolute',
+          marginTop: Dimensions.get("screen").height - 140,
+          marginLeft: Dimensions.get("screen").width - 60,
+          transform: [{ translateX: slideValue }]
+        }}>
+          <TouchableOpacity
+            className="bg-primaryAccent h-[45px] w-[45px] rounded-full items-end"
+            onPress={() => { scrollToTop() }}>
+            <View className="flex-1 items-center justify-center pr-2">
+              <ArrowUp size={30} color={'white'}></ArrowUp>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );  
 };
 export default Profile;
