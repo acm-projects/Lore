@@ -26,7 +26,7 @@ import {View,
         Keyboard,
         KeyboardAvoidingView
         } from 'react-native';
-        
+
   const Profile = () => {
 
     useFonts({

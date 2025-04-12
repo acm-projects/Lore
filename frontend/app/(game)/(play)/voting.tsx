@@ -6,6 +6,7 @@ import PlotPointButton from '~/components/PlotPointButton';
 import { router } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
+import { useFonts } from 'expo-font';
 
 const Voting = () => {
   const [timeRemaining, setTimeRemaining] = useState(10);
@@ -67,6 +68,11 @@ const Voting = () => {
     socket.emit("force_end_voting", lobbyCode);
   };
 
+  useFonts({
+    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg3.gif")}/> 
@@ -78,8 +84,8 @@ const Voting = () => {
         isAbsolute={false}
         onUpdate={onUpdate}
       />
-      <Text className="mt-6 text-center text-5xl font-bold text-backgroundText">Vote Now</Text>
-      <Text className="mt-3 text-center text-3xl font-bold text-backgroundAccentText">
+      <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="mt-6 text-center text-5xl font-bold text-backgroundText">Vote Now</Text>
+      <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} className="mt-3 mx-3 text-center text-3xl font-bold text-backgroundAccentText">
         Choose a Player’s Plot Point
       </Text>
       <ScrollView className="flex-1 px-5 py-10" contentContainerStyle={{ flexGrow: 1, gap: 10 }}>

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Image, Dimensions, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InputField from '~/components/InputField';
@@ -7,6 +7,7 @@ import GameBar from '~/components/GameBar';
 import { router } from 'expo-router';
 import { socket } from '~/socket';
 import { useLobby } from '~/context/LobbyContext';
+import { useFonts } from 'expo-font';
 
 const Write = () => {
   const [timeRemaining, setTimeRemaining] = useState(10);
@@ -35,6 +36,11 @@ const Write = () => {
     setTimeRemaining(remainingTime);
   };
 
+  useFonts({
+    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <Image className="w-full" style={{resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg1.gif")}/> 
@@ -52,8 +58,10 @@ const Write = () => {
         <KeyboardAvoidingView
           className="flex flex-1 items-center justify-center"
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <Text className="text-3xl font-bold text-backgroundText">Start Writing!</Text>
-          <Text className="text-xl font-bold color-secondaryText">
+          <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
+                className="text-3xl font-bold text-backgroundText">Start Writing!</Text>
+          <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
+                className="text-xl font-bold color-secondaryText">
             Create a plot point (Keep it short!)
           </Text>
           <View className="w-full">
@@ -63,13 +71,10 @@ const Write = () => {
               value={prompt}
               onChangeText={setPrompt}
             />
-            <Button
-              title="Submit"
-              bgVariant="primary"
-              textVariant="primary"
-              className="mt-5"
-              onPress={onSubmit}
-            />
+          <TouchableOpacity className="bg-primaryAccent w-full h-[50px] justify-center items-center rounded-xl"
+                                          onPress={() => {onSubmit()}}>
+            <Text style={{fontFamily: 'JetBrainsMonoBold', color: "white", fontSize: 25}}>Submit</Text>
+          </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </ScrollView>

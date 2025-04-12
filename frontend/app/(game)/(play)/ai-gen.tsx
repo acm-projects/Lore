@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -68,6 +68,8 @@ const AIGen = () => {
 
   return (
     <SafeAreaView className="max-h-full flex-1 bg-background">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg4.gif")}/> 
+      
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
         {/* Plot Point Winner */}
@@ -76,7 +78,9 @@ const AIGen = () => {
             <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
           </View>
           <View className="flex-1 px-3">
-            <Text className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
+            
+            <Text style={{fontFamily: 'JetBrainsMonoBold'}}
+                  className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
               {prompt}
             </Text>
           </View>
@@ -89,10 +93,11 @@ const AIGen = () => {
           {isLoading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#ffffff" />
-              <Text className="mt-4 text-lg text-white">Loading story...</Text>
+              <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="mt-4 text-lg text-white">Loading story...</Text>
             </View>
           ) : (
-            <Text className="whitespace-pre-line text-center text-2xl font-bold text-backgroundText">
+            <Text style={{fontFamily: 'JetBrainsMonoBold'}}
+                  className="whitespace-pre-line text-center text-2xl font-bold text-backgroundText">
               {story}
             </Text>
           )}
