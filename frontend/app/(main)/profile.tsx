@@ -48,8 +48,8 @@ const Profile = () => {
   });
 
   AWS.config.update({
-    accessKeyId: 'AKIAQQABDJ7G5WVE2FTB',
-    secretAccessKey: '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',
+    accessKeyId: process.env.EXPO_PUBLIC_ACCESS_KEY,
+    secretAccessKey: process.env.EXPO_PUBLIC_SECRET_KEY,
     region: 'us-east-2',
   });
 
