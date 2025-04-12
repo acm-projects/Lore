@@ -15,7 +15,7 @@ import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
-dotenv.config({ path: "../.env" }); // load secret keys
+dotenv.config({ path: "./.env" }); // load secret keys. This should not work, but it works...
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
@@ -26,9 +26,10 @@ const SECRET_KEY = process.env.SECRET_KEY;
 const dynamoForStories = new DynamoDBClient({
   region: "us-east-2",
   credentials: {
-    accessKeyId: process.env.ACCESS_KEY,
-    secretAccessKey: process.env.SECRET_KEY,
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY,
   },
+  logger: console,
 });
 
 // Initialize Amazon Bedrock client
@@ -143,7 +144,12 @@ const PORT = 3001; // Local WebSocket server port
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:8081", "https://lore-8hal.onrender.com", "*"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:8081",
+      "https://lore-8hal.onrender.com",
+      "*",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -200,6 +206,9 @@ io.on("connection", (socket) => {
     };
 
     console.log(`Room created: ${room}`);
+    console.log("All of them", process.env);
+    console.log("ACCESS KEY: ", ACCESS_KEY);
+    console.log("SECRET KEY: ", process.env.SECRET_KEY);
     callback({ success: true, roomCode: room });
   });
 
@@ -213,18 +222,26 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_room", async ({ room, username, cognitoSub }, callback) => {
+    try {
+      // This assumes dynamoForStories is an instance of a DynamoDB client
+      const credentials = await dynamoForStories.config.credentials();
+      console.log("✅ DynamoDB Client Credentials:", credentials);
+    } catch (credErr) {
+      console.error("❌ Failed to fetch credentials:", credErr);
+    }
+
     if (!rooms[room]) {
       return callback({ success: false, message: "Lobby does not exist" });
     }
-  
+
     if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
       return callback({ success: false, message: "Max Players Reached" });
     }
-  
+
     socket.join(room);
-  
+
     let avatarUrl = null;
-  
+
     try {
       const command = new ScanCommand({
         TableName: "Players",
@@ -234,17 +251,20 @@ io.on("connection", (socket) => {
         },
         ProjectionExpression: "ProfilePicURL",
       });
-  
+
       const result = await dynamoForStories.send(command);
+      console.log("✅ Players Table Result:", result);
       const player = result.Items?.[0];
       avatarUrl = player?.ProfilePicURL?.S || null;
-  
+
       console.log("✅ Avatar URL fetched from Players:", avatarUrl);
     } catch (err) {
       console.error("❌ Failed to fetch avatar from Players table:", err);
     }
-  
-    const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
+
+    const isAlreadyInRoom = rooms[room].users.some(
+      (user) => user.id === socket.id
+    );
     if (!isAlreadyInRoom) {
       rooms[room].users.push({
         id: socket.id,
@@ -253,11 +273,11 @@ io.on("connection", (socket) => {
         currentScreen: "lobby",
       });
     }
-  
+
     callback({ success: true, creatorId: rooms[room].creator });
     io.to(room).emit("update_users", rooms[room].users);
   });
-  
+
   socket.on("update_room_settings", ({ roomCode, settings }) => {
     if (!rooms[roomCode]) return;
 
