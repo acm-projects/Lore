@@ -10,7 +10,13 @@ import { View,
        } from 'react-native'
 import Avatar from './Avatar';
        
-  function PlotPoint(props: {count: any, image: string, text: string, story: string}) 
+function PlotPoint(props: { 
+    count: number; 
+    image: string;         // winner's avatar URL
+    username: string;      // winner's username
+    text: string;          // winning prompt
+    story: string;         // AI-generated story
+})   
   {
     let [isCollapsed, setCollapsed] = useState(true);
     let [isArrayAtEnd, setEnd] = useState(false);
@@ -42,8 +48,10 @@ import Avatar from './Avatar';
                                         /*style={isArrayAtEnd ? 
                                         {borderColor: "#06D6A1", borderWidth: 2, shadowColor: "#06D6A1", shadowOpacity: 3, shadowRadius: 3, shadowOffset: {width:0, height: 4}} : {}}*/                                                
                                         onPress={() => {toggleCollapsed()}}>
-              <Avatar size={40} image="https://picsum.photos/200/200" />
-              <Text className="color-white ml-2" style={{flex: 1, flexWrap: 'wrap'}}>{props.text}</Text> 
+              <Avatar size={40} image={props.image} />
+              <Text className="color-white ml-2" style={{flex: 1, flexWrap: 'wrap'}}> 
+                {props.username}: {props.text}
+              </Text>
             </TouchableOpacity>
 
             <Collapsible collapsed={isCollapsed} style={{width: '83.33333%' }}>

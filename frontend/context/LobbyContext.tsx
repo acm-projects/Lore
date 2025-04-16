@@ -4,6 +4,8 @@ import { Animated, Dimensions } from 'react-native';
 type PlotPoint = {
   winningPlotPoint: string;
   story: string;
+  username: string;       // Winner's username
+  avatar_url: string;     // Winner's avatar
 };
 
 // Define the shape of our context state
@@ -46,7 +48,7 @@ type LobbyProviderProps = {
 export const LobbyProvider = ({ children }: LobbyProviderProps) => {
   const [lobbyCode, setLobbyCode] = useState<string>('');
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
-  const [players, setPlayers] = useState<{ id: string; name?: string }[]>([]);
+  const [players, setPlayers] = useState<{ id: string; name?: string; avatar?: string }[]>([]);
   const [creatorId, setCreatorId] = useState<string | null>(null);
 
   const [writingDuration, setWritingDuration] = useState({ minutes: 0, seconds: 30 });
@@ -88,8 +90,12 @@ export const LobbyProvider = ({ children }: LobbyProviderProps) => {
 
   // Helper function to add a single plot point
   const addPlotPoint = (plotPoint: PlotPoint) => {
+    if (!plotPoint.winningPlotPoint || !plotPoint.story || !plotPoint.username) {
+      console.warn("⚠️ Incomplete plot point:", plotPoint);
+    }
     setPlotPoints((prevPoints) => [...prevPoints, plotPoint]);
   };
+  
 
   // Helper function to remove a plot point
   const removePlotPoint = (index: number) => {

@@ -8,6 +8,7 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 import * as Clipboard from 'expo-clipboard';
 import { getUserAttributes } from '../(user_auth)/CognitoConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // only client-side
 
 const Lobby = () => {
   const { lobbyCode } = useLocalSearchParams();
@@ -24,11 +25,27 @@ const Lobby = () => {
     setLobbyCode(lobbyCode as string);
 
     const joinAfterConnect = async () => {
-      try {
-        const user = await getUserAttributes();
-        console.log("🔐 Logged-in user:", user.displayName);
-    
-        socket.emit('join_room', { room: lobbyCode, username: user.displayName, cognitoSub: user.sub }, (response: any) => {
+      try{
+        const user = await getUserAttributes(); // from CognitoConfig
+        let playerId = null;
+
+        try {
+          playerId = await AsyncStorage.getItem('playerId');
+        } catch (err) {
+          console.warn('⚠️ Failed to fetch playerId from AsyncStorage:', err);
+        }
+
+        // Build payload
+        const joinPayload = {
+          room: lobbyCode,
+          cognitoSub: user.sub, // always include this
+        };
+
+        if (playerId) {
+          joinPayload.playerId = playerId; // only include if available
+        }
+
+        socket.emit('join_room', joinPayload, (response: any) => {
           if (!response.success) {
             console.error('❌ Failed to join room:', response.message);
             router.replace('/');

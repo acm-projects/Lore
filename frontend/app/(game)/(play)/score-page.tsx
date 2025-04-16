@@ -30,16 +30,6 @@ const ScorePage = () => {
 
     socket.on('go_to_ai_gen', ({ prompt }) => {
       setPrompt(prompt);
-    });
-
-    return () => {
-      socket.off('score_summary');
-      socket.off('go_to_ai_gen');
-    };
-  }, [lobbyCode]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
       router.replace({
         pathname: '/(game)/(play)/ai-gen',
         params: {
@@ -47,10 +37,13 @@ const ScorePage = () => {
           story: 'Loading...',
         },
       });
-    }, 6000);
+    });
 
-    return () => clearTimeout(timer);
-  }, [prompt]);
+    return () => {
+      socket.off('score_summary');
+      socket.off('go_to_ai_gen');
+    };
+  }, [lobbyCode]);
 
   if (loading) {
     return (

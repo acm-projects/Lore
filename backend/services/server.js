@@ -14,6 +14,7 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
+import { GetCommand } from "@aws-sdk/lib-dynamodb";
 
 dotenv.config(); // load secret keys
 
@@ -200,11 +201,84 @@ io.on("connection", (socket) => {
       imageAlreadyGenerated: false,
       imgURL: null,
       summary: null,
+      winners: [],
     };
 
     console.log(`Room created: ${room}`);
     callback({ success: true, roomCode: room });
   });
+
+socket.on("join_room", async ({ room, cognitoSub, playerId }, callback) => {
+  if (!rooms[room]) {
+    return callback({ success: false, message: "Lobby does not exist" });
+  }
+
+  if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
+    return callback({ success: false, message: "Max Players Reached" });
+  }
+
+  socket.join(room);
+
+  let avatarUrl = null;
+  let username = null;
+
+  try {
+    // 1️⃣ Try CognitoSub first
+    const scanCommand = new ScanCommand({
+      TableName: "Players",
+      FilterExpression: "CognitoSub = :sub",
+      ExpressionAttributeValues: {
+        ":sub": { S: cognitoSub },
+      },
+      ProjectionExpression: "Username, ProfilePicURL",
+    });
+
+    const result = await dynamoForStories.send(scanCommand);
+    const player = result.Items?.[0];
+
+    if (player) {
+      avatarUrl = player?.ProfilePicURL?.S || null;
+      username = player?.Username?.S || null;
+    }
+
+    // 2️⃣ If null, fallback to PlayerID (guest mode)
+    if (!username || !avatarUrl) {
+      const fallbackCommand = new GetCommand({
+        TableName: "Players",
+        Key: {
+          PlayerID: { N: playerId?.toString() },
+        },
+        ProjectionExpression: "Username, ProfilePicURL",
+      });
+
+      const fallbackResult = await dynamoForStories.send(fallbackCommand);
+      const fallbackPlayer = fallbackResult.Item;
+
+      if (fallbackPlayer) {
+        username = fallbackPlayer?.Username?.S || username;
+        avatarUrl = fallbackPlayer?.ProfilePicURL?.S || avatarUrl;
+      }
+    }
+
+    console.log("✅ Final Username:", username);
+    console.log("✅ Final Avatar:", avatarUrl);
+  } catch (err) {
+    console.error("❌ Error fetching player data:", err);
+  }
+
+  const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
+  if (!isAlreadyInRoom) {
+    rooms[room].users.push({
+      id: socket.id,
+      name: username || "Guest",
+      avatar: avatarUrl,
+      currentScreen: "lobby",
+    });
+  }
+
+  callback({ success: true, creatorId: rooms[room].creator });
+  io.to(room).emit("update_users", rooms[room].users);
+});
 
   // ✅ Listen for rankings request
   socket.on("request_rankings", (room) => {
@@ -213,52 +287,6 @@ io.on("connection", (socket) => {
     const rankings = getRankings(room);
     console.log(`🏆 Sending Rankings for Room ${room}:`, rankings);
     io.to(room).emit("receive_rankings", rankings);
-  });
-
-  socket.on("join_room", async ({ room, username, cognitoSub }, callback) => {
-    if (!rooms[room]) {
-      return callback({ success: false, message: "Lobby does not exist" });
-    }
-  
-    if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
-      return callback({ success: false, message: "Max Players Reached" });
-    }
-  
-    socket.join(room);
-  
-    let avatarUrl = null;
-  
-    try {
-      const command = new ScanCommand({
-        TableName: "Players",
-        FilterExpression: "CognitoSub = :sub",
-        ExpressionAttributeValues: {
-          ":sub": { S: cognitoSub },
-        },
-        ProjectionExpression: "ProfilePicURL",
-      });
-  
-      const result = await dynamoForStories.send(command);
-      const player = result.Items?.[0];
-      avatarUrl = player?.ProfilePicURL?.S || null;
-  
-      console.log("✅ Avatar URL fetched from Players:", avatarUrl);
-    } catch (err) {
-      console.error("❌ Failed to fetch avatar from Players table:", err);
-    }
-  
-    const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
-    if (!isAlreadyInRoom) {
-      rooms[room].users.push({
-        id: socket.id,
-        name: username,
-        avatar: avatarUrl,
-        currentScreen: "lobby",
-      });
-    }
-  
-    callback({ success: true, creatorId: rooms[room].creator });
-    io.to(room).emit("update_users", rooms[room].users);
   });
   
   socket.on("update_room_settings", ({ roomCode, settings }) => {
@@ -365,6 +393,7 @@ io.on("connection", (socket) => {
   });
 
   async function determineWinnerAndStartAI(room) {
+    socket.emit("go_to_waiting", { phase: "story" });
     io.to(room).emit("go_score");
     const roomData = rooms[room];
     if (!roomData) return;
@@ -383,10 +412,18 @@ io.on("connection", (socket) => {
         : tiedPlayers[0];
   
     let winningPrompt = prompts[winnerId].prompt;
-    let winnerName = users.find((u) => u.id === winnerId)?.name || "Unknown";
+    let winnerUser = users.find((u) => u.id === winnerId);
+    let winnerName = winnerUser?.name || "Unknown";
+    let winnerAvatar = winnerUser?.avatar || "";
   
     roomData.winner = winnerName;
     roomData.winningPrompts.push(winningPrompt);
+
+    roomData.winners.push({
+      username: winnerName,
+      avatar: winnerAvatar,
+    });
+
     roomData.round++;
   
     const isFinalRound = roomData.round >= roomData.lastRound;
@@ -399,7 +436,7 @@ io.on("connection", (socket) => {
   
       const voteCount = votes[id] || 0;
       const isWinner = id === winnerId;
-      const pointsEarned = isWinner ? voteCount * 2 : voteCount;
+      const pointsEarned = isWinner ? voteCount * 200 : voteCount*100;
   
       const pastScore = roomData.playerWins[id] || 0;
       const newScore = pastScore + pointsEarned;
@@ -450,13 +487,15 @@ io.on("connection", (socket) => {
           creatorId: roomData.creator,
           playerWins: roomData.playerWins,
           prompt: roomData.winningPrompts,
-        });
+          winnerUsername: winnerName,
+          winnerAvatar: winnerAvatar,
+        });               
       } catch (err) {
         console.error("❌ AI error:", err);
         roomData.story = "Error generating story.";
         io.to(room).emit("story_ready", { story: "Error generating story." });
       }
-    }, 6000);
+    }, 10000);
   }  
 
   // Send current continue count when a player enters the story screen
@@ -613,9 +652,18 @@ io.on("connection", (socket) => {
 });
 
 app.post("/save-story", async (req, res) => {
-  const { userId, title, winningPrompts, storyHistory } = req.body;
+  const { userId, title, winningPrompts, storyHistory, winners } = req.body;
 
-  console.log("📦 Received save-story request:", req.body);
+  console.log("📦 Received save-story request:", {
+    userId,
+    title,
+    winningPrompts,
+    storyHistory,
+    winners,
+  });
+
+  // 🔥 FIX: Flatten nested prompt list if needed
+  const flatPrompts = winningPrompts.flat(); // This removes one level of nesting
 
   try {
     const command = new PutItemCommand({
@@ -624,13 +672,15 @@ app.post("/save-story", async (req, res) => {
         userId: { S: userId },
         storyId: { S: uuidv4() },
         title: { S: title },
-        winningPrompts: { L: winningPrompts.flat().map((p) => ({ S: p })) },
-        storyHistory: { L: storyHistory.map((p) => ({ S: p })) },
+        winningPrompts: { L: flatPrompts.map((p) => ({ S: p })) }, // ✅ flattened
+        storyHistory: { L: storyHistory.map((s) => ({ S: s })) },
+        winnerNames: { L: winners.map((w) => ({ S: w.username })) },
+        winnerAvatars: { L: winners.map((w) => ({ S: w.avatar })) },
         createdAt: { S: new Date().toISOString() },
       },
     });
 
-    await dynamoForStories.send(command); // ✅ Using the custom credentials here
+    await dynamoForStories.send(command);
     res.status(200).json({ message: "Story saved!" });
   } catch (err) {
     console.error("❌ Failed to save story:", err);
@@ -657,13 +707,24 @@ app.get("/get-stories", async (req, res) => {
     const response = await dynamoForStories.send(command);
     const stories = (response.Items || []).map((item) => {
       const unmarshalled = unmarshall(item);
-      return {
-        title: unmarshalled.title,
-        plotPoints: unmarshalled.winningPrompts.map((prompt, index) => ({
-          winningPlotPoint: prompt,
-          story: unmarshalled.storyHistory[index] || "",
-        })),
-      };
+      const {
+        title,
+        winningPrompts,
+        storyHistory,
+        winnerNames,
+        winnerAvatars,
+      } = unmarshalled;
+      
+      const plotPoints = winningPrompts.map((prompt, index) => ({
+        winningPlotPoint: prompt,
+        story: storyHistory[index] || "",
+        winner: {
+          username: winnerNames?.[index] || "Unknown",
+          avatar: winnerAvatars?.[index] || "",
+        },
+      }));      
+
+      return { title, plotPoints };
     });
 
     res.json({ stories });

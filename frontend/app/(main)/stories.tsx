@@ -6,9 +6,20 @@ import { router } from 'expo-router';
 import { socket } from '~/socket';
 import { getUserAttributes } from '../(user_auth)/CognitoConfig';
 
+type WinnerInfo = {
+  username: string;
+  avatar: string;
+};
+
+type PlotPoint = {
+  winningPlotPoint: string;
+  story: string;
+  winner?: WinnerInfo | null;
+};
+
 type SavedStory = {
   title: string;
-  plotPoints: { winningPlotPoint: string; story: string }[];
+  plotPoints: PlotPoint[];
 };
 
 const Stories = () => {
@@ -43,17 +54,25 @@ const Stories = () => {
   useEffect(() => {
     fetchStories();
   }, []);
-
   const openStory = (story: SavedStory) => {
+    const serializedPlotPoints = story.plotPoints.map((point) => ({
+      winningPlotPoint: point.winningPlotPoint,
+      story: point.story,
+      winner: point.winner || {
+        username: "Unknown",
+        avatar: "",
+      },
+    }));
+  
     router.push({
       pathname: '../(game)/StoryView',
       params: {
         title: story.title,
-        plotPoints: JSON.stringify(story.plotPoints),
+        plotPoints: JSON.stringify(serializedPlotPoints),
       },
     });
   };
-
+  
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="mx-3 flex flex-1 justify-between">
