@@ -8,6 +8,19 @@ import { useRouter } from 'expo-router';
 import { socket } from '~/socket';
 import { getUserAttributes } from '../../(user_auth)/CognitoConfig';
 
+const DebugWinners = () => {
+  const { plotPoints } = useLobby();
+
+  useEffect(() => {
+    const winners = plotPoints.map(p => ({
+      username: p.username,
+      avatar: p.avatar_url,
+    }));
+    console.log("🧠 Winners array from context:", winners);
+  }, [plotPoints]);
+
+  return null; // Or render something if needed
+};
 const EndScreen = () => {
   const router = useRouter();
   const { toggleVisible, lobbyCode, plotPoints } = useLobby();
@@ -68,7 +81,7 @@ const EndScreen = () => {
       Alert.alert('Missing Title', 'Please enter a title for your story.');
       return;
     }
-
+  
     try {
       const user = await getUserAttributes();
       const response = await fetch('http://localhost:3001/save-story', {
@@ -79,10 +92,13 @@ const EndScreen = () => {
           title: storyTitle,
           winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
-          imageUrl,
+          winners: plotPoints.map((p) => ({
+            username: p.username || "Unknown",
+            avatar: p.avatar_url || "",
+          })),
         }),
       });
-
+  
       const data = await response.json();
       if (response.ok) {
         Alert.alert('✅ Story Saved!', 'Your story was saved to your library.');
@@ -94,7 +110,7 @@ const EndScreen = () => {
       console.error('Save error:', err);
       Alert.alert('❌ Error', 'Something went wrong while saving your story.');
     }
-  };
+  };  
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -109,26 +125,39 @@ const EndScreen = () => {
           Most Plot Points Chosen
         </Text>
         <LeaderboardComponent players={players} />
-
-        {/* Show story title input when "Home" is pressed */}
-        {showInput && (
-          <View className="mt-6 w-[80%]">
-            <Text className="mb-2 text-xl font-semibold text-backgroundText">Name Your Story:</Text>
-            <TextInput
-              placeholder="Enter a title..."
-              placeholderTextColor="#999"
-              className="rounded-md bg-white p-3 text-lg"
-              value={storyTitle}
-              onChangeText={setStoryTitle}
-            />
-            <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
-          </View>
-        )}
-
         {!showInput && (
           <Button title="Home" onPress={() => setShowInput(true)} className="mt-10 w-[80%]" />
         )}
       </ScrollView>
+      {showInput && (
+        <View
+          style={{
+            position: 'absolute',
+            top: '30%',
+            left: '10%',
+            width: '80%',
+            backgroundColor: '#2D2D2D',
+            padding: 20,
+            borderRadius: 12,
+            shadowColor: '#000',
+            shadowOpacity: 0.4,
+            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: 10,
+            zIndex: 1000,
+          }}
+        >
+          <Text className="mb-2 text-xl font-semibold text-white">Name Your Story:</Text>
+          <TextInput
+            placeholder="Enter a title..."
+            placeholderTextColor="#999"
+            className="rounded-md bg-white p-3 text-lg"
+            value={storyTitle}
+            onChangeText={setStoryTitle}
+          />
+          <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
+        </View>
+      )}
+    <DebugWinners />
     </SafeAreaView>
   );
 };

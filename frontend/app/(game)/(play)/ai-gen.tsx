@@ -13,9 +13,8 @@ const AIGen = () => {
   const { prompt, story: initialStory, round, lastRound } = useLocalSearchParams();
   const router = useRouter();
 
-  const [story, setStory] = useState<string>(
-    initialStory === 'Loading...' ? 'Loading...' : (initialStory as string)
-  );
+  const [story, setStory] = useState<string>('');              // Displayed with typing effect
+  const [fullStory, setFullStory] = useState<string>('');      // Full text to type out
   const [continueCount, setContinueCount] = useState(0);
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [hasPressedContinue, setHasPressedContinue] = useState(false);
@@ -43,13 +42,41 @@ const AIGen = () => {
       router.replace('/(game)/(play)/summary');
     });
 
-    socket.on('story_ready', ({ prompt: finalPrompt, story: finalStory }) => {
+    socket.on('story_ready', ({ prompt: finalPrompt, story: finalStory, winnerUsername, winnerAvatar }) => {
       console.log('✅ AI story received');
-      setStory(finalStory);
+      setFullStory(finalStory);
+      setStory('');
       setIsLoading(false);
-      console.log(finalPrompt, finalStory);
-      addPlotPoint({ winningPlotPoint: finalPrompt, story: finalStory });
-    });
+    
+      let index = 0;
+      const typingSpeed = 20; // Milliseconds between characters
+    
+      const typeInterval = setInterval(() => {
+        setStory((prev) => {
+          const nextChar = finalStory[index];
+          index++;
+    
+          if (index >= finalStory.length) {
+            clearInterval(typeInterval);
+          }
+    
+          return prev + nextChar;
+        });
+      }, typingSpeed);
+    
+      addPlotPoint({
+        winningPlotPoint: finalPrompt,
+        story: finalStory,
+        username: winnerUsername,
+        avatar_url: winnerAvatar,
+      });
+      console.log("✅ Added Plot Point:", {
+        prompt: finalPrompt,
+        story: finalStory,
+        username: winnerUsername,
+        avatar_url: winnerAvatar,
+      });
+    });        
 
     return () => {
       socket.off('update_continue_count');

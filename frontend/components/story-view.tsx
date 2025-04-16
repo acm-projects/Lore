@@ -53,11 +53,12 @@ const StoryView = (props: { code: String }) => {
           <View className="mb-12 flex-col-reverse">
             {plotPoints.map((component, index) => (
               <PlotPoint
-              key={index}
-              count={index}
-              image={'assets/avatar1.png'}
-              text={component.winningPlotPoint}
-              story={component.story}
+                key={index}
+                count={index}
+                image={component.avatar_url}
+                username={component.username}
+                text={component.winningPlotPoint}
+                story={component.story}
               />
             ))}
           </View>

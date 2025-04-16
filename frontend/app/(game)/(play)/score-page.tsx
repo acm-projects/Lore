@@ -1,9 +1,12 @@
-import { View, Text } from 'react-native';
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, Text, ActivityIndicator } from 'react-native';
 import AnimatedScoreboard from '~/components/AnimatedScoreboard';
+import { useLobby } from '~/context/LobbyContext';
+import { socket } from '~/socket';
+import { useRouter } from 'expo-router';
 
-export type UserScore = {
+type ScoreData = {
+  id: string;
   username: string;
   avatar_url: string;
   past_score: number;
@@ -13,51 +16,48 @@ export type UserScore = {
 };
 
 const ScorePage = () => {
-  const [sampleData, setSampleData] = useState([
-    {
-      username: 'Player1',
-      avatar_url: 'https://avatar.iran.liara.run/public',
-      past_score: 1200,
-      score_to_add: 300,
-      new_score: 1500,
-      winner: false,
-    },
-    {
-      username: 'Player2',
-      avatar_url: 'https://avatar.iran.liara.run/public',
-      past_score: 1400,
-      score_to_add: 50,
-      new_score: 1450,
-      winner: false,
-    },
-    {
-      username: 'Player3',
-      avatar_url: 'https://avatar.iran.liara.run/public',
-      past_score: 900,
-      score_to_add: 500,
-      new_score: 1400,
-      winner: true,
-    },
-    {
-      username: 'Player4',
-      avatar_url: 'https://avatar.iran.liara.run/public',
-      past_score: 800,
-      score_to_add: 200,
-      new_score: 1000,
-      winner: false,
-    },
-    {
-      username: 'Player5',
-      avatar_url: 'https://avatar.iran.liara.run/public',
-      past_score: 1100,
-      score_to_add: 100,
-      new_score: 1200,
-      winner: false,
-    },
-  ]);
+  const { lobbyCode } = useLobby();
+  const [sampleData, setSampleData] = useState<ScoreData[]>([]);
+  const [prompt, setPrompt] = useState<string>('Loading...');
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    socket.on('score_summary', (data: ScoreData[]) => {
+      setSampleData(data);
+      setLoading(false);
+    });
+
+    socket.on('go_to_ai_gen', ({ prompt }) => {
+      setPrompt(prompt);
+      router.replace({
+        pathname: '/(game)/(play)/ai-gen',
+        params: {
+          prompt,
+          story: 'Loading...',
+        },
+      });
+    });
+
+    return () => {
+      socket.off('score_summary');
+      socket.off('go_to_ai_gen');
+    };
+  }, [lobbyCode]);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" color="#fff" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Text className="mt-5 text-center text-3xl font-bold text-backgroundText">Leaderboard</Text>
+      <Text className="mt-5 text-center text-3xl font-bold text-backgroundText">
+        Leaderboard
+      </Text>
       <AnimatedScoreboard data={sampleData} />
     </SafeAreaView>
   );

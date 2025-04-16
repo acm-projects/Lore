@@ -91,7 +91,8 @@ export const getUserAttributes = () => {
   });
 };
 
-
+export const getUserCognitoSub = () => {
+}
 
 export const getUserCognitoSub = () => {
   return new Promise((resolve, reject) => {

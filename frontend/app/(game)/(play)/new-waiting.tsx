@@ -47,19 +47,10 @@ const NewWaiting = () => {
         router.replace('/(game)/(play)/voting');
       });
     } else if (phase === 'story') {
-      socket.on('story_ready', ({ prompt, story, round }) => {
-        console.log(`✅ 'story_ready' received. Updating and navigating to ai-gen.tsx`);
-        addPlotPoint({ winningPlotPoint: prompt, story });
-
-        router.replace({
-          pathname: '/(game)/(play)/ai-gen',
-          params: {
-            prompt,
-            story,
-            round: round.toString(),
-          },
-        });
-      });
+      socket.on('go_score', () => {
+        console.log("🏁 go_score received — navigating to score-page");
+        router.replace('/(game)/(play)/score-page');
+      });      
 
       // 👇 Optional: Handle early go_to_ai_gen if needed
       socket.on('go_to_ai_gen', ({ prompt }) => {
