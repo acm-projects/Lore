@@ -1,4 +1,9 @@
-import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import {
+  CognitoUserPool,
+  CognitoUser,
+  AuthenticationDetails,
+  CognitoUserAttribute,
+} from 'amazon-cognito-identity-js';
 /*
 import AWS from 'aws-sdk/global';
 // Import Google Sign-In (Commented Out)
@@ -52,7 +57,6 @@ export const signOutUser = () => {
   if (user) user.signOut();
 };
 
-
 // Fetch User Attributes
 // Fetch User Attributes
 export const getUserAttributes = () => {
@@ -60,13 +64,13 @@ export const getUserAttributes = () => {
 
   return new Promise((resolve, reject) => {
     if (!user) {
-      return reject("No user is currently signed in.");
+      return reject('No user is currently signed in.');
     }
 
     // Make sure the session is still valid
     user.getSession((err, session) => {
       if (err || !session.isValid()) {
-        return reject("User is not authenticated");
+        return reject('User is not authenticated');
       }
 
       user.getUserAttributes((err, attributes) => {
@@ -74,50 +78,48 @@ export const getUserAttributes = () => {
           return reject(err);
         }
 
-
         const attributeMap = {};
-        attributes.forEach(attr => {
+        attributes.forEach((attr) => {
           attributeMap[attr.Name] = attr.Value;
         });
 
         resolve({
           username: user.getUsername(),
           email: attributeMap.email || null,
-          displayName: attributeMap["custom:display_name"] || attributeMap["Username"] || "Unknown",
-          sub: attributeMap["sub"], // ✅ Add this line
-        });        
+          displayName: attributeMap['custom:display_name'] || attributeMap['Username'] || 'Unknown',
+          sub: attributeMap['sub'], // ✅ Add this line
+        });
       });
     });
   });
 };
 
-
-
 export const getUserCognitoSub = () => {
   return new Promise((resolve, reject) => {
     const user = userPool.getCurrentUser();
-  
+
     if (user) {
-      user.getSession((err, session) => { // Make sure session is valid
+      user.getSession((err, session) => {
+        // Make sure session is valid
         if (err || !session.isValid()) {
           console.log('Session error:', err || 'Session invalid');
           return reject('Session error or invalid');
         }
-  
+
         user.getUserAttributes((err, attributes) => {
           if (err) {
-            console.log(err)
-            return reject(err)
+            console.log(err);
+            return reject(err);
           } else {
-            const sub = attributes.find(attr => attr.Name === 'sub');
+            const sub = attributes.find((attr) => attr.Name === 'sub');
             //console.log('Display Name:', displayName ? displayName.Value : 'No display name set');
             resolve(sub ? sub.Value : null);
           }
-        })
-      })
+        });
+      });
     }
-  })
-}
+  });
+};
 
 /*
 // Handle Google Sign-Up (Commented Out)

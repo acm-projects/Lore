@@ -1,5 +1,5 @@
 import React, { createRef, useCallback, useEffect, useRef, useState } from 'react';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json';
 import { useFonts } from 'expo-font';
@@ -9,6 +9,7 @@ import {
   ArrowUp,
   BookOpen,
   IdCard,
+  Info,
   LogOut,
   Pen,
   Search,
@@ -25,6 +26,10 @@ import {
   getUserAttributes,
   getUserCognitoSub,
 } from 'app/(user_auth)/CognitoConfig.js'; // Import signOutUser from CognitoConfig.js
+import AWS, { DynamoDB } from 'aws-sdk';
+import { DynamoDBClient, ListBackupsCommand } from '@aws-sdk/client-dynamodb';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Audio } from 'expo-av';
 import {
   View,
   Text,
@@ -39,10 +44,16 @@ import {
   Keyboard,
   KeyboardAvoidingView,
 } from 'react-native';
-import AWS, { DynamoDB } from 'aws-sdk';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 const Profile = () => {
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const clickSFX = async () => {
+    const { sound } = await Audio.Sound.createAsync(require('assets/click.mp3'));
+    soundRef.current = sound;
+    await sound.playAsync();
+  };
+
   useFonts({
     JetBrainsMonoRegular: require('assets/fonts/JetBrainsMonoRegular.ttf'),
   });
@@ -56,13 +67,50 @@ const Profile = () => {
   const s3 = new AWS.S3();
   const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+  // ------------------------------------------- Guest User Details --------------------------------------------------------
+  const [isGuest, setGuest] = useState(false);
+  const [primaryKey, setPrimaryKey] = useState(0);
+
+  const fetchGuestId = async () => {
+    try {
+      const guestId = await AsyncStorage.getItem('playerId');
+      if (guestId !== null) {
+        setPrimaryKey(parseInt(guestId));
+      }
+    } catch (error) {
+      console.error('Error fetching identityId:', error);
+    }
+  };
+
+  const guestParams = {
+    TableName: 'Players',
+    KeyConditionExpression: 'PlayerID = :subValue',
+    ProjectionExpression: 'Username, ProfilePicURL, PlayerID',
+    ExpressionAttributeValues: {
+      ':subValue': primaryKey,
+    },
+  };
+
+  const getGuestItems = async () => {
+    dynamodb.query(guestParams, (err, data) => {
+      if (err) {
+        console.log('' + err);
+      } else {
+        data.Items?.forEach((item) => {
+          console.log(item);
+          setUsername(item.Username);
+          setAvatar(item.ProfilePicURL);
+          setPrimaryKey(item.PlayerID);
+        });
+      }
+    });
+  };
+
   // ------------------------------------------- Logged On User Details --------------------------------------------------------
   const [username, setUsername] = useState('');
   const [cognitoSub, setCognitoSub] = useState('');
-  const [primaryKey, setPrimaryKey] = useState(0);
   const [avatar, setAvatar] = useState('');
   const [stories, setStories] = useState([]);
-  const [isGuest, setGuest] = useState(false);
   //const [friends, setFriends] = useState([])
   //const [bio, setBio] = useState("")
 
@@ -75,19 +123,19 @@ const Profile = () => {
     useCallback(() => {
       // Run these functions whenever profile page is loaded
       getCognitoSub();
-      getItems();
-      if (cognitoSub.length === 0) {
-        setGuest(true);
-      }
     }, [])
   );
 
   useEffect(() => {
-    if (cognitoSub.length != 0) {
+    if (cognitoSub.length === 0) {
+      setGuest(true);
+      fetchGuestId();
+      getGuestItems();
+    } else {
       setGuest(false);
+      getItems();
     }
-    getItems();
-  }, [cognitoSub]);
+  }, [cognitoSub || primaryKey]);
 
   const queryParams = {
     TableName: 'Players',
@@ -100,7 +148,6 @@ const Profile = () => {
   };
 
   const getItems = async () => {
-    console.log(queryParams);
     dynamodb.query(queryParams, (err, data) => {
       if (err) {
         console.log('' + err);
@@ -109,12 +156,36 @@ const Profile = () => {
           setUsername(item.Username);
           setAvatar(item.ProfilePicURL);
           setPrimaryKey(item.PlayerID);
-          //setBio(item.Biography)
-          //setStories(item.StoriesParticipated)
-          //setFriends(item.Friends)
         });
       }
     });
+  };
+
+  // ---------------------------------------------- Log Out / Exit ------------------------------------------------------------
+
+  const deleteGuestParams = {
+    TableName: 'Players',
+    Key: {
+      PlayerID: primaryKey,
+    },
+  };
+
+  // Handle Logout functionality
+  const handleLogout = async () => {
+    setLogoutVisible(false);
+    if (isGuest) {
+      // If the user is a guest, delete the dynamoDb table and asyncStorage
+      await AsyncStorage.removeItem('playerId');
+      dynamodb.delete(deleteGuestParams, (err, data) => {
+        if (err) {
+          console.log('Error', err);
+        } else {
+          console.log('Success', data);
+        }
+      });
+    }
+    signOutUser(); // Call signOutUser function to log the user out
+    router.push('/'); // Redirect to login page after logging out
   };
 
   // ------------------------------------------- Get other Users --------------------------------------------------------
@@ -151,6 +222,7 @@ const Profile = () => {
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
+    console.log('Ran');
     uploadImageToS3(image, '' + primaryKey);
   };
 
@@ -165,6 +237,7 @@ const Profile = () => {
     };
 
     try {
+      console.log('Uploading...');
       const uploadResult = await s3.upload(params).promise();
       setAvatar(imageUri);
       const dbParams = {
@@ -175,6 +248,8 @@ const Profile = () => {
           ':url': uploadResult.Location,
         },
       };
+      console.log('Uploaded!');
+
       await dynamodb.update(dbParams).promise();
       console.log('Profile picture updated successfully!');
     } catch (error) {
@@ -265,14 +340,16 @@ const Profile = () => {
   // ------------------------------------------------------------------------------------------------------------------------
 
   let [isStoryVisible, setStoryVisible] = useState(true);
-  let [isFollowingVisible, setFollowingVisible] = useState(false);
-  let [isSearchVisible, setSearchVisible] = useState(false);
   let [isEditVisible, setEditVisible] = useState(false);
   let [isLogoutVisible, setLogoutVisible] = useState(false);
-
+  let [isInfoVisible, setInfoVisible] = useState(false);
   let [searchQuery, setSearchQuery] = useState('');
-  let [filteredUsers, setFilteredUsers] = useState<user[]>();
   let [filteredStories, setFilteredStories] = useState();
+
+  // Scrapped State Variables for Friends Feature
+  let [isFollowingVisible, setFollowingVisible] = useState(false);
+  let [isSearchVisible, setSearchVisible] = useState(false);
+  let [filteredUsers, setFilteredUsers] = useState<user[]>();
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -280,13 +357,6 @@ const Profile = () => {
       name.Username.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredUsers(filteredData);
-  };
-
-  // Handle Logout functionality
-  const handleLogout = () => {
-    setLogoutVisible(false);
-    signOutUser(); // Call signOutUser function to log the user out
-    router.push('/'); // Redirect to login page after logging out
   };
 
   return (
@@ -300,7 +370,14 @@ const Profile = () => {
             {' '}
             Profile{' '}
           </Text>
-          <View className="flex w-[80px] flex-row justify-between pr-6 pt-6">
+          <View className="flex w-[100px] flex-row justify-between pr-6 pt-6">
+            <Info
+              size={20}
+              color={'white'}
+              onPress={() => {
+                setInfoVisible(true);
+              }}
+            />
             {isGuest ? (
               <View />
             ) : (
@@ -362,13 +439,13 @@ const Profile = () => {
         </Modal>
 
         {/*--------------------------------------------------------------- EDITING PROFILE -----------------------------------------------------------*/}
-        <SafeAreaView className="flex-1">
-          <Modal
-            animationIn={'slideInRight'}
-            animationOut={'slideOutRight'}
-            className="flex-1"
-            style={{ marginHorizontal: 0, marginBottom: 0 }}
-            isVisible={isEditVisible}>
+        <Modal
+          animationIn={'slideInRight'}
+          animationOut={'slideOutRight'}
+          className="flex-1"
+          style={{ marginHorizontal: 0, marginBottom: 0 }}
+          isVisible={isEditVisible}>
+          <SafeAreaView className="flex-1">
             <View className="flex-1">
               <Image
                 className="h-full w-full"
@@ -491,8 +568,27 @@ const Profile = () => {
                 </View>
               </ScrollView>
             </View>
-          </Modal>
-        </SafeAreaView>
+          </SafeAreaView>
+        </Modal>
+        {/*--------------------------------------------------------------- LOG OUT -----------------------------------------------------------*/}
+        <Modal
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}
+          className="flex-1"
+          style={{ marginHorizontal: 50, marginVertical: 250 }}
+          onBackdropPress={() => setInfoVisible(false)}
+          backdropOpacity={0.5}
+          isVisible={isInfoVisible}>
+          <View className="flex-1 items-center justify-center rounded-3xl bg-background">
+            <Text
+              style={{ fontFamily: 'JetBrainsMonoRegular', color: 'white', textAlign: 'center' }}>
+              Music by Eric Matyas{'\n'}
+              "Quirky-Rhythm-2", "Puzzle-dreams", "Video-Game-brain-drain", "do-it", "Light Puzzles
+              3" {'\n'}
+              www.soundimage.org
+            </Text>
+          </View>
+        </Modal>
 
         <FlatList
           ref={flatListRef}

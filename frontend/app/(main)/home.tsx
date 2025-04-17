@@ -12,9 +12,8 @@ import {
   Dimensions,
 } from 'react-native'
 import { useFocusEffect, useNavigation } from 'expo-router';
-
 const Home = () => {
-  
+
   useEffect(() => {
     async function loadGifs() {
       await Asset.loadAsync(require('assets/bg1.gif'));
@@ -22,10 +21,17 @@ const Home = () => {
       await Asset.loadAsync(require('assets/bg3.gif'));
       await Asset.loadAsync(require('assets/bg4.gif'));
       await Asset.loadAsync(require('assets/bg5.gif'));
+      await Asset.loadAsync(require('assets/createStoryVector1.png'));
+      await Asset.loadAsync(require('assets/createStoryVector2.png'));
+      await Asset.loadAsync(require('assets/createStoryVector3.png'));
+      await Asset.loadAsync(require('assets/createStoryVector4.png'));
+      await Asset.loadAsync(require('assets/createStoryVector5.png'));
+      await Asset.loadAsync(require('assets/createStoryVector6.png'));
     }
     loadGifs();
 
   }, []);
+  const screenWidth = Dimensions.get('window').width;
 
   return (
     <SafeAreaView className="flex-1 bg-backgroundSecondary">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, ScrollView, Modal, Pressable, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -6,6 +6,7 @@ import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
 
 const Summary = () => {
   const { lobbyCode } = useLobby();
@@ -17,6 +18,17 @@ const Summary = () => {
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [hasPressedContinue, setHasPressedContinue] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+
+  //SFX
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
 
   useEffect(() => {
     socket.emit("request_story_summary", { room: lobbyCode });
@@ -50,6 +62,7 @@ const Summary = () => {
   }, [lobbyCode]);
 
   const handleContinue = () => {
+    clickSFX();
     if (!hasPressedContinue) {
       setHasPressedContinue(true);
       socket.emit("continue_pressed", lobbyCode);
@@ -64,7 +77,7 @@ const Summary = () => {
         {/* 📕 Book Cover (Tap to Expand) */}
         {bookCover && (
           <>
-            <Pressable className="items-center" onPress={() => setModalVisible(true)}>
+            <Pressable className="items-center" onPress={() => {clickSFX(); setModalVisible(true)}}>
               <Image
                 source={{ uri: bookCover }}
                 style={{ width: 200, height: 300, borderRadius: 16 }}

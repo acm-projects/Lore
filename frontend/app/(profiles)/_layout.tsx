@@ -1,11 +1,11 @@
 import { Stack } from 'expo-router';
 
-const userAuthLayout = () => {
+const profilesLayout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="sign-in" />
+      <Stack.Screen name="editing" />
     </Stack>
   );
 };
 
-export default userAuthLayout;
+export default profilesLayout;

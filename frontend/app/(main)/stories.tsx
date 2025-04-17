@@ -1,13 +1,26 @@
 import { View, Text, Alert, Dimensions, Image, TouchableOpacity } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { socket } from '~/socket';
 import Animated, { BounceInDown, BounceInUp, Easing, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useFonts } from 'expo-font';
+import { Audio } from 'expo-av';
+import { useAudio } from '~/context/AudioContext';
 
 const Stories = () => {
+  const [loading, setLoading] = useState(true);
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
+
   const createGameRoom = () => {
     socket.emit('create_room', (response: any) => {
       if (response.success) {
@@ -145,14 +158,14 @@ const Stories = () => {
         <View className="flex w-full flex-row gap-x-3 py-4 px-8 items-center justify-between">
 
           <TouchableOpacity className="bg-primary w-[150px] h-[50px] justify-center items-center rounded-xl"  
-                            onPress={() => {createGameRoom()}}>
+                            onPress={() => {clickSFX(); createGameRoom()}}>
               <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
                 Create Story
               </Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-secondaryText w-[150px] h-[50px] justify-center items-center rounded-xl"  
-                            onPress={() => {router.push('/(game)/join-game')}}>
+                            onPress={() => {clickSFX(); router.push('/(game)/join-game')}}>
               <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
                 Join Story
               </Text>
