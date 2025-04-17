@@ -17,7 +17,7 @@
     "@aws-sdk/client-dynamodb": "^3.788.0",
     "@aws-sdk/lib-dynamodb": "^3.788.0",
     "@expo/vector-icons": "^14.0.0",
-    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/audio-toolkit": "^2.0.3",
     "@react-native-community/slider": "4.5.5",
     "@react-navigation/native": "^7.0.3",
@@ -63,7 +63,8 @@
     "react-native-timer-picker": "^2.1.0",
     "react-native-track-player": "^4.1.1",
     "react-native-web": "~0.19.10",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "expo-dev-client": "~5.0.20"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

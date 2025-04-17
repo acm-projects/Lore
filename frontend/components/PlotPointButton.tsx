@@ -65,7 +65,7 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center rounded-full p-2 ${isSelected ? 'bg-primary' : 'bg-secondary'} ${style}`}
+      className={`flex-row items-center rounded-full p-2 ${isSelected ? 'bg-secondary' : 'bg-primary'} ${style}`}
       activeOpacity={0.7}>
       {/* Avatar */}
       <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
@@ -80,22 +80,22 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
       {/* Plot Point */}
       <View className="flex-1 px-3">
         <Text
-          style={{fontFamily: 'JetBrainsMonoBold'}}
-          className={`${isSelected ? 'text-primaryText' : 'text-secondaryText'} text-lg`}
+          style={{ fontFamily: 'JetBrainsMonoBold' }}
+          className={`text-lg text-primaryText`}
           numberOfLines={0}>
           {plotPoint}
         </Text>
       </View>
 
       {/* Votes */}
-      <View className="items-center justify-center mr-2">
+      <View className="mr-2 items-center justify-center">
         <Text
-          style={{fontFamily: 'JetBrainsMonoBold'}}
+          style={{ fontFamily: 'JetBrainsMonoBold' }}
           className={`text-sm font-bold ${isSelected ? 'text-primaryText' : 'text-secondaryText'}`}>
           Votes
         </Text>
         <Text
-          style={{fontFamily: 'JetBrainsMonoBold'}}
+          style={{ fontFamily: 'JetBrainsMonoBold' }}
           className={`${isSelected ? 'text-primaryText' : 'text-secondaryText'} text-lg font-bold`}>
           {votes}
         </Text>
