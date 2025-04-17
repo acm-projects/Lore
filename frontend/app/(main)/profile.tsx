@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import data from '~/data/data.json'
 import { useFonts } from 'expo-font';
 import Modal from 'react-native-modal';
-import { ALargeSmall, ArrowUp, BookOpen, IdCard, LogOut, Pen, Search, UserRoundPlus, UsersRound, X } from 'lucide-react-native';
+import { ALargeSmall, ArrowUp, BookOpen, IdCard, Info, LogOut, Pen, Search, UserRoundPlus, UsersRound, X } from 'lucide-react-native';
 import StoryCard from '~/components/StoryCard';
 import UserCard from '~/components/UserCard';
 import Avatar from '~/components/Avatar';
@@ -13,6 +13,7 @@ import { signOutUser, getUserAttributes, getUserCognitoSub } from 'app/(user_aut
 import AWS, { DynamoDB } from 'aws-sdk';
 import { DynamoDBClient, ListBackupsCommand } from "@aws-sdk/client-dynamodb";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Audio } from 'expo-av'
 import {View, 
         Text, 
         FlatList,
@@ -26,9 +27,18 @@ import {View,
         Keyboard,
         KeyboardAvoidingView
         } from 'react-native';
-        
 
-  const Profile = () => {
+const Profile = () => {
+
+    const soundRef = useRef<Audio.Sound | null>(null);
+
+    const clickSFX = async () => {
+      const { sound } = await Audio. Sound.createAsync(
+        require('assets/click.mp3'),
+      );
+      soundRef.current = sound;
+      await sound.playAsync();
+    }
 
     useFonts({
       'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
@@ -182,6 +192,7 @@ import {View,
       if(!result.canceled) {
         setImage(result.assets[0].uri)
       } 
+      console.log("Ran")
       uploadImageToS3(image, ""+primaryKey)
     }
 
@@ -197,6 +208,7 @@ import {View,
       }
 
       try {
+        console.log('Uploading...')
         const uploadResult = await s3.upload(params).promise();
         setAvatar(imageUri)
         const dbParams = {
@@ -207,6 +219,8 @@ import {View,
             ':url': uploadResult.Location
           }
         };
+        console.log('Uploaded!')
+
         await dynamodb.update(dbParams).promise();
         console.log('Profile picture updated successfully!');
 
@@ -302,6 +316,7 @@ import {View,
   let [isStoryVisible, setStoryVisible] = useState(true)
   let [isEditVisible, setEditVisible] = useState(false)
   let [isLogoutVisible, setLogoutVisible] = useState(false)  
+  let [isInfoVisible, setInfoVisible] = useState(false)
   let [searchQuery, setSearchQuery] = useState("")
   let [filteredStories, setFilteredStories] = useState()
   
@@ -322,7 +337,8 @@ import {View,
 {/*--------------------------------------------------------------- EDIT -----------------------------------------------------------*/}
       <View className="w-full h-[60px] pl-4 justify-between flex flex-row">
         <Text style={{fontSize: 18, fontFamily: 'JetBrainsMonoRegular'}} className="color-white pt-6"> Profile </Text>
-        <View className="flex flex-row justify-between w-[80px] pr-6 pt-6">
+        <View className="flex flex-row justify-between w-[100px] pr-6 pt-6">
+          <Info size={20} color={"white"} onPress={() => {setInfoVisible(true)}}/>
           {isGuest ? <View/> : <Pen size={20} color={"white"} onPress={() => {setEditVisible(true)}}/>}
           <LogOut size={20} color={"red"} onPress={() => {setLogoutVisible(true)}}/>
         </View>
@@ -344,9 +360,9 @@ import {View,
       </Modal>
 
 {/*--------------------------------------------------------------- EDITING PROFILE -----------------------------------------------------------*/}
-      <SafeAreaView className="flex-1">
       <Modal animationIn={"slideInRight"} animationOut={"slideOutRight"} className="flex-1" style={{marginHorizontal: 0, marginBottom: 0}} 
              isVisible={isEditVisible}>
+      <SafeAreaView className="flex-1">
         <View className="flex-1">
           <Image
             className="h-full w-full"
@@ -423,8 +439,21 @@ import {View,
             </View>
           </ScrollView>
         </View>
-      </Modal>
       </SafeAreaView>
+      </Modal>
+{/*--------------------------------------------------------------- LOG OUT -----------------------------------------------------------*/}
+      <Modal animationIn={"slideInUp"} animationOut={"slideOutDown"} className="flex-1" style={{marginHorizontal: 50, marginVertical: 250}} 
+             onBackdropPress={() => setInfoVisible(false)}
+             backdropOpacity={.5}
+             isVisible={isInfoVisible}>
+              <View className="bg-background flex-1 rounded-3xl items-center justify-center">
+                  <Text style={{fontFamily: 'JetBrainsMonoRegular', color: 'white', textAlign: 'center'}}>
+                    Music by Eric Matyas{"\n"}
+                    "Quirky-Rhythm-2", "Puzzle-dreams", "Video-Game-brain-drain", "do-it", "Light Puzzles 3" {"\n"}
+                    www.soundimage.org
+                  </Text>
+              </View>
+      </Modal>
 
       <FlatList 
         ref={flatListRef}

@@ -74,7 +74,6 @@ export const getUserAttributes = () => {
           return reject(err);
         }
 
-
         const attributeMap = {};
         attributes.forEach(attr => {
           attributeMap[attr.Name] = attr.Value;

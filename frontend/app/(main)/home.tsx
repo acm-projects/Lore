@@ -12,9 +12,8 @@ import {
   Dimensions,
 } from 'react-native'
 import { useFocusEffect, useNavigation } from 'expo-router';
-
 const Home = () => {
-  
+
   useEffect(() => {
     async function loadGifs() {
       await Asset.loadAsync(require('assets/bg1.gif'));

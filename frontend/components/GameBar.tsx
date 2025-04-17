@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import React from 'react';
+import React, { useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from './Button';
 import { BookOpen } from 'lucide-react-native';
@@ -8,6 +8,8 @@ import { useLobby } from '~/context/LobbyContext';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useFonts } from 'expo-font';
+import MuteButton from './MuteButton';
+import { Audio } from 'expo-av';
 
 interface GameBarProps {
   onComplete?: () => void;
@@ -44,13 +46,22 @@ const GameBar = ({
     'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
   });
 
+    const soundRef = useRef<Audio.Sound | null>(null);
+    const clickSFX = async () => {
+      const { sound } = await Audio. Sound.createAsync(
+        require('assets/click.mp3'),
+      );
+      soundRef.current = sound;
+      await sound.playAsync()
+    }
+
   return (
     <ContentWrapper
       style={isAbsolute ? { zIndex: 9999 } : {}}
       className={`${isAbsolute ? 'absolute left-0 right-0 top-5' : 'mt-5'} flex w-full max-w-full flex-row items-center justify-between`}>
       <TouchableOpacity
         className="ml-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"
-        onPress={onStoryPress}>
+        onPress={() => {clickSFX(); onStoryPress()}}>
         <BookOpen size={24} color="white" />
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} className="text-white">View story</Text>
       </TouchableOpacity>
@@ -79,7 +90,7 @@ const GameBar = ({
       )}
       <TouchableOpacity
         className="mr-2 flex w-24 items-center justify-center rounded-xl bg-primary p-2"
-        onPress={onCodePress}>
+        onPress={() => {clickSFX(); onCodePress()}}>
         <Text style={{fontFamily: 'JetBrainsMonoBold'}} numberOfLines={1} adjustsFontSizeToFit={true} className="font-semibold text-white">Join Code</Text>
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} className="text-white">{lobbyCode}</Text>
       </TouchableOpacity>

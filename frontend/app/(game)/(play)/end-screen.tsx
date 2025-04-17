@@ -1,12 +1,14 @@
 import { View, Text, ScrollView, TextInput, Alert } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
 import LeaderboardComponent, { Players } from '~/components/Leaderboard';
 import { useLobby } from '~/context/LobbyContext';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { socket } from '~/socket';
 import { getUserAttributes } from '../../(user_auth)/CognitoConfig';
+import { Audio } from 'expo-av';
+import { useAudio } from '~/context/AudioContext';
 
 const EndScreen = () => {
   const router = useRouter();
@@ -16,6 +18,28 @@ const EndScreen = () => {
   const [storyTitle, setStoryTitle] = useState('');
   const [storyHistory, setStoryHistory] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  //SFX
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        playSound(require('assets/end-screen-track.mp3'));
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
 
   // Fetch story history from the server
   useEffect(() => {
@@ -103,7 +127,7 @@ const EndScreen = () => {
           And so the story comes to a close...
         </Text>
 
-        <Button title="View the Full Story" onPress={toggleVisible} className="mt-10 w-[80%]" />
+        <Button title="View the Full Story" onPress={() => {clickSFX(); toggleVisible()}} className="mt-10 w-[80%]" />
 
         <Text className="mt-10 text-2xl font-bold text-backgroundText">
           Most Plot Points Chosen
@@ -121,7 +145,7 @@ const EndScreen = () => {
               value={storyTitle}
               onChangeText={setStoryTitle}
             />
-            <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
+            <Button title="Submit Story" className="mt-4" onPress={() => {clickSFX(); handleSaveStory()}} />
           </View>
         )}
 

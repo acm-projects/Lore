@@ -35,7 +35,7 @@ const StoryView = () => {
       </View>
 
       {/* Plot Points */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="px-5">
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="px-5 pb-5">
         {plotPoints.map((point, index) => (
           <PlotPoint
             key={index}

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TimerPickerModal } from 'react-native-timer-picker';
 import { LinearGradient } from 'expo-linear-gradient'; // or `import LinearGradient from "react-native-linear-gradient"`
@@ -9,9 +9,10 @@ import Button from '~/components/Button';
 import InputSpinner from 'react-native-input-spinner';
 import { useFonts } from 'expo-font';
 import { ChevronLeft } from 'lucide-react-native';
-import { useNavigation, useRouter } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
+import { useNavigationState } from '@react-navigation/native';
 
 const Settings = () => {
   const {
@@ -28,7 +29,7 @@ const Settings = () => {
   const router = useRouter();
   const [showWritingPicker, setShowWritingPicker] = useState(false);
   const [showVotingPicker, setShowVotingPicker] = useState(false);
-
+  
   useFonts({
     'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
     'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
@@ -51,7 +52,7 @@ const Settings = () => {
       <View className="w-full px-3">
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
               className="text-center text-2xl font-bold text-backgroundText">{`Writing Duration: ${writingDuration.minutes ? `${writingDuration.minutes} minutes` : ``} ${writingDuration.seconds} seconds`}</Text>
-        <TouchableOpacity className="bg-primaryAccent w-full h-[50px] justify-center items-center rounded-xl" onPress={() => setShowWritingPicker(true)}>
+        <TouchableOpacity className="bg-secondaryText w-full h-[50px] justify-center items-center rounded-xl" onPress={() => setShowWritingPicker(true)}>
           <Text style={{fontFamily: 'JetBrainsMonoRegular', fontSize: 18}} numberOfLines={1} adjustsFontSizeToFit={true} 
               className="text-center text-2xl font-bold text-backgroundText">Set Writing Duration</Text>
         </TouchableOpacity>
@@ -61,7 +62,7 @@ const Settings = () => {
       <View className="mt-4 w-full px-3">
         <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true} 
               className="text-center text-2xl font-bold text-backgroundText">{`Voting Duration: ${votingDuration.minutes ? `${votingDuration.minutes} minutes` : ``} ${votingDuration.seconds} seconds`}</Text>
-        <TouchableOpacity className="bg-primaryAccent w-full h-[50px] justify-center items-center rounded-xl" onPress={() => setShowVotingPicker(true)}>
+        <TouchableOpacity className="bg-secondaryText w-full h-[50px] justify-center items-center rounded-xl" onPress={() => setShowVotingPicker(true)}>
           <Text style={{fontFamily: 'JetBrainsMonoRegular', fontSize: 18}} numberOfLines={1} adjustsFontSizeToFit={true} 
               className="text-center text-2xl font-bold text-backgroundText">Set Voting Duration</Text>
         </TouchableOpacity>
@@ -148,8 +149,7 @@ const Settings = () => {
 
       {/* Save Button */}
       <View className="mt-8 w-full px-3">
-        <Button
-          title="Save Settings"
+      <TouchableOpacity className="bg-primary w-full h-[50px] justify-center items-center rounded-xl"
           onPress={() => {
             socket.emit("update_room_settings", {
               roomCode: lobbyCode,
@@ -158,8 +158,13 @@ const Settings = () => {
                 maxRounds,
               },
             });
-          }}
-        />
+          }}>
+        <Text style={{fontFamily: 'JetBrainsMonoRegular'}} numberOfLines={1} adjustsFontSizeToFit={true}
+              className="text-center text-2xl font-bold text-backgroundText">
+          Save Settings
+        </Text>
+
+      </TouchableOpacity>
       </View>
       </View>
     </SafeAreaView>

@@ -1,14 +1,36 @@
 import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
 import { useLocalSearchParams } from 'expo-router';
 import { socket } from '~/socket';
+import { Audio } from 'expo-av';
+import { useAudio } from '~/context/AudioContext';
 
 const AIGen = () => {
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        playSound(require('assets/ai-track.mp3'));
+      }
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
   const { lobbyCode, addPlotPoint } = useLobby();
   const { prompt, story: initialStory, round, lastRound } = useLocalSearchParams();
   const router = useRouter();
@@ -60,6 +82,7 @@ const AIGen = () => {
   }, [lobbyCode]);
 
   const handleContinue = () => {
+    clickSFX();
     if (!hasPressedContinue) {
       setHasPressedContinue(true);
       socket.emit('continue_pressed', lobbyCode);
