@@ -9,7 +9,10 @@ import GameBar from '~/components/GameBar';
 
 export type PlayersWaiting = {
   id: number | string;
-  currentScreen?: string;
+  //currentScreen?: string;
+  finished: boolean;
+  avatar_url?: string;
+  name: string;
 };
 
 const NewWaiting = () => {
@@ -35,7 +38,9 @@ const NewWaiting = () => {
       const transformedUsers = updatedUsers.map((user) => ({
         id: user.id,
         finished: user.currentScreen !== 'players-waiting', // Consider as finished if not in waiting screen
-        currentScreen: user.currentScreen || 'unknown',
+        //currentScreen: user.currentScreen || 'unknown',
+        avatar_url: user.avatar,
+        name: user.name,
       }));
 
       setPlayers(transformedUsers);
@@ -48,9 +53,9 @@ const NewWaiting = () => {
       });
     } else if (phase === 'story') {
       socket.on('go_score', () => {
-        console.log("🏁 go_score received — navigating to score-page");
+        console.log('🏁 go_score received — navigating to score-page');
         router.replace('/(game)/(play)/score-page');
-      });      
+      });
 
       // 👇 Optional: Handle early go_to_ai_gen if needed
       socket.on('go_to_ai_gen', ({ prompt }) => {

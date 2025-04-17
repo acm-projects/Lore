@@ -12,11 +12,11 @@ const DebugWinners = () => {
   const { plotPoints } = useLobby();
 
   useEffect(() => {
-    const winners = plotPoints.map(p => ({
+    const winners = plotPoints.map((p) => ({
       username: p.username,
       avatar: p.avatar_url,
     }));
-    console.log("🧠 Winners array from context:", winners);
+    console.log('🧠 Winners array from context:', winners);
   }, [plotPoints]);
 
   return null; // Or render something if needed
@@ -66,7 +66,7 @@ const EndScreen = () => {
       const formattedPlayers = rankings.map((player, index) => ({
         avatar: '',
         plotPoints: player.plotPoints,
-        username: `Player ${index + 1}: ${player.id}`,
+        username: `${player.id}`,
       }));
       setPlayers(formattedPlayers);
     });
@@ -81,7 +81,7 @@ const EndScreen = () => {
       Alert.alert('Missing Title', 'Please enter a title for your story.');
       return;
     }
-  
+
     try {
       const user = await getUserAttributes();
       const response = await fetch('http://localhost:3001/save-story', {
@@ -93,12 +93,12 @@ const EndScreen = () => {
           winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
           winners: plotPoints.map((p) => ({
-            username: p.username || "Unknown",
-            avatar: p.avatar_url || "",
+            username: p.username || 'Unknown',
+            avatar: p.avatar_url || '',
           })),
         }),
       });
-  
+
       const data = await response.json();
       if (response.ok) {
         Alert.alert('✅ Story Saved!', 'Your story was saved to your library.');
@@ -110,7 +110,7 @@ const EndScreen = () => {
       console.error('Save error:', err);
       Alert.alert('❌ Error', 'Something went wrong while saving your story.');
     }
-  };  
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -144,8 +144,7 @@ const EndScreen = () => {
             shadowOffset: { width: 0, height: 4 },
             shadowRadius: 10,
             zIndex: 1000,
-          }}
-        >
+          }}>
           <Text className="mb-2 text-xl font-semibold text-white">Name Your Story:</Text>
           <TextInput
             placeholder="Enter a title..."
@@ -157,7 +156,7 @@ const EndScreen = () => {
           <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
         </View>
       )}
-    <DebugWinners />
+      <DebugWinners />
     </SafeAreaView>
   );
 };

@@ -79,9 +79,7 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
 
       {/* Plot Point */}
       <View className="flex-1 px-3">
-        <Text
-          className={`${isSelected ? 'text-primaryText' : 'text-secondaryText'} text-lg`}
-          numberOfLines={0}>
+        <Text className={`'text-primaryText' text-lg`} numberOfLines={0}>
           {plotPoint}
         </Text>
       </View>

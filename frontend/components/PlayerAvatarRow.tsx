@@ -52,14 +52,14 @@ const PlayerAvatarRow = ({
         {players.map((player, index) => (
           <View key={player.id || index} className="mx-1 items-center">
             <View
-              className={`${player.currentScreen ? 'border-green-500' : 'border-gray-300'}`}
+              className={`${player.finished ? 'border-gray-300' : 'border-green-500'}`}
               style={{
                 borderWidth: borderWidth,
                 borderRadius: avatarSize + borderWidth * 2,
                 padding: 2,
               }}>
               <Image
-                source={{ uri: `https://avatar.iran.liara.run/public/${player.id || index}` }}
+                source={{ uri: player.avatar_url }}
                 className="rounded-full"
                 style={{ width: avatarSize, height: avatarSize }}
               />
@@ -69,7 +69,7 @@ const PlayerAvatarRow = ({
                 className="mt-1 text-center text-xs"
                 numberOfLines={1}
                 style={{ maxWidth: avatarSize * 1.2 }}>
-                {player.id}
+                {player.name}
               </Text>
             )}
           </View>

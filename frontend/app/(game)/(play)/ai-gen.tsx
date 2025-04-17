@@ -13,14 +13,14 @@ const AIGen = () => {
   const { prompt, story: initialStory, round, lastRound } = useLocalSearchParams();
   const router = useRouter();
 
-  const [story, setStory] = useState<string>('');              // Displayed with typing effect
-  const [fullStory, setFullStory] = useState<string>('');      // Full text to type out
+  const [story, setStory] = useState<string>(''); // Displayed with typing effect
+  const [fullStory, setFullStory] = useState<string>(''); // Full text to type out
   const [continueCount, setContinueCount] = useState(0);
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [hasPressedContinue, setHasPressedContinue] = useState(false);
   const [isLoading, setIsLoading] = useState(story === 'Loading...');
 
-  const winnerAvatar = require('../../../assets/avatar1.png');
+  const [winnerAvatar, setWinnerAvatar] = useState('');
 
   const roundNumber = parseInt(round as string, 10);
   const lastRoundNumber = parseInt(lastRound as string, 10);
@@ -42,41 +42,46 @@ const AIGen = () => {
       router.replace('/(game)/(play)/summary');
     });
 
-    socket.on('story_ready', ({ prompt: finalPrompt, story: finalStory, winnerUsername, winnerAvatar }) => {
-      console.log('✅ AI story received');
-      setFullStory(finalStory);
-      setStory('');
-      setIsLoading(false);
-    
-      let index = 0;
-      const typingSpeed = 20; // Milliseconds between characters
-    
-      const typeInterval = setInterval(() => {
-        setStory((prev) => {
-          const nextChar = finalStory[index];
-          index++;
-    
-          if (index >= finalStory.length) {
-            clearInterval(typeInterval);
-          }
-    
-          return prev + nextChar;
+    socket.on(
+      'story_ready',
+      ({ prompt: finalPrompt, story: finalStory, winnerUsername, winnerAvatar }) => {
+        console.log('✅ AI story received');
+        setFullStory(finalStory);
+        setStory('');
+        setIsLoading(false);
+
+        let index = 0;
+        const typingSpeed = 20; // Milliseconds between characters
+
+        const typeInterval = setInterval(() => {
+          setStory((prev) => {
+            const nextChar = finalStory[index];
+            index++;
+
+            if (index >= finalStory.length) {
+              clearInterval(typeInterval);
+            }
+
+            return prev + nextChar;
+          });
+        }, typingSpeed);
+
+        setWinnerAvatar(winnerAvatar);
+
+        addPlotPoint({
+          winningPlotPoint: finalPrompt,
+          story: finalStory,
+          username: winnerUsername,
+          avatar_url: winnerAvatar,
         });
-      }, typingSpeed);
-    
-      addPlotPoint({
-        winningPlotPoint: finalPrompt,
-        story: finalStory,
-        username: winnerUsername,
-        avatar_url: winnerAvatar,
-      });
-      console.log("✅ Added Plot Point:", {
-        prompt: finalPrompt,
-        story: finalStory,
-        username: winnerUsername,
-        avatar_url: winnerAvatar,
-      });
-    });        
+        console.log('✅ Added Plot Point:', {
+          prompt: finalPrompt,
+          story: finalStory,
+          username: winnerUsername,
+          avatar_url: winnerAvatar,
+        });
+      }
+    );
 
     return () => {
       socket.off('update_continue_count');
@@ -100,7 +105,7 @@ const AIGen = () => {
         {/* Plot Point Winner */}
         <View className="flex w-full flex-row rounded-lg bg-backgroundAccent p-4">
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-            <Image source={winnerAvatar} className="h-full w-full" resizeMode="cover" />
+            <Image source={{ uri: winnerAvatar }} className="h-full w-full" resizeMode="cover" />
           </View>
           <View className="flex-1 px-3">
             <Text className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
@@ -127,6 +132,11 @@ const AIGen = () => {
 
         {/* ✅ Continue Button */}
         <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
+          <Image
+            source={require('assets/reading animation.gif')}
+            resizeMode="contain"
+            className="h-32 w-32"
+          />
           <View className="w-full flex-1">
             <Button
               title={`Continue (${continueCount}/${totalPlayers})`}
