@@ -387,11 +387,13 @@ const Lobby = () => {
       <ScrollView className="flex-1 px-5 py-10">
         {players.length > 0 ? (
           players.map((player, index) => (
-            <ProfileDisplay
-              key={index}
-              username={player.name || player.id.substring(0, 6)}
-              avatar={player.avatar}
-            />
+            <View key={index} className="mb-3">
+              <ProfileDisplay
+                key={index}
+                username={player.name || player.id.substring(0, 6)}
+                avatar={player.avatar}
+              />
+            </View>
           ))
         ) : (
           <Text

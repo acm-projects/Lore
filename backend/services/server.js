@@ -57,17 +57,17 @@ async function generateStory(
   if (isFinal) {
     instruction =
       `With this story:\n\n${currentStory}\n\n` +
-      `write a conclusion in three short, numbered paragraphs following this prompt: ${prompt}. ` +
+      `write a conclusion in two short, numbered paragraphs following this prompt: ${prompt}. ` +
       "End with a new line and ...";
   } else if (roundNumber === 1) {
     instruction =
-      `Provide only three short numbered paragraphs to start the story using this prompt:\n${prompt}\n` +
-      "After the three paragraphs, do not include any further explanation or comments. End with a new line and ...";
+      `Provide only two short numbered paragraphs to start the story using this prompt:\n${prompt}\n` +
+      "After the two paragraphs, do not include any further explanation or comments. End with a new line and ...";
   } else {
     instruction =
-      `Using the following prompt: ${prompt}, generate 3 short numbered paragraphs to continue the following story:\n\n` +
+      `Using the following prompt: ${prompt}, generate 2 short numbered paragraphs to continue the following story:\n\n` +
       `${currentStory}\n\n` +
-      "Only generate 3 short paragraphs. Do not include anything else after. End with a new line and ...";
+      "Only generate 2 short paragraphs. Do not include anything else after. End with a new line and ...";
   }
 
   // AI Generation Configuration
@@ -481,7 +481,7 @@ io.on("connection", (socket) => {
           .split("\n")
           .filter((line) => /^\d+\.\s/.test(line))
           .map((line) => line.replace(/^\d+\.\s/, ""))
-          .slice(0, 3)
+          .slice(0, 2)
           .join("\n\n");
 
         roomData.story = numberedParagraphs;
@@ -493,7 +493,7 @@ io.on("connection", (socket) => {
           lastRound: roomData.lastRound,
           creatorId: roomData.creator,
           playerWins: roomData.playerWins,
-          prompt: roomData.winningPrompts,
+          prompt: winningPrompt,
           winnerUsername: winnerName,
           winnerAvatar: winnerAvatar,
         });
@@ -562,37 +562,59 @@ io.on("connection", (socket) => {
 
   socket.on("request_story_summary", async ({ room }) => {
     if (!rooms[room]) return;
-
-    // ✅ Return cached image/summary if already generated
-    if (rooms[room].imageAlreadyGenerated && rooms[room].imgURL) {
+  
+    const roomData = rooms[room];
+  
+    // If image already exists, return immediately
+    if (roomData.imageAlreadyGenerated && roomData.imgURL) {
       console.log("🖼 Returning cached image for room", room);
       return io.to(room).emit("receive_story_image", {
-        summary: rooms[room].summary || "Previously generated summary",
-        image: rooms[room].imgURL,
+        summary: roomData.summary || "Previously generated summary",
+        image: roomData.imgURL,
       });
     }
-
-    rooms[room].imageAlreadyGenerated = true;
-
-    const full_story = rooms[room].storyHistory.join("\n\n");
-
+  
+    // If it's generating, wait for it to finish
+    if (roomData.imageAlreadyGenerating) {
+      console.log("⏳ Image is being generated, waiting...");
+      const waitForImage = () =>
+        new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (roomData.imgURL) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 500); // Check every 0.5 seconds
+        });
+  
+      await waitForImage();
+  
+      return io.to(room).emit("receive_story_image", {
+        summary: roomData.summary || "Previously generated summary",
+        image: roomData.imgURL,
+      });
+    }
+  
+    // Start generating
+    roomData.imageAlreadyGenerating = true;
+  
+    const full_story = roomData.storyHistory.join("\n\n");
+  
     try {
-      // Step 1: Get summary using our summarizeStory function
       const rawSummary = await summarizeStory(full_story);
       console.log("🧠 Raw AI Summary Response:", rawSummary);
-
+  
       const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
       const cleanSummary = summaryMatch
         ? summaryMatch[1].trim()
         : "No summary found.";
-      rooms[room].summary = cleanSummary; // ✅ Save summary for reuse
-      console.log("clean summary: ", cleanSummary);
-      // Step 2: Generate image using Stable Diffusion
+      roomData.summary = cleanSummary;
+  
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
       const form = new FormData();
       form.append("prompt", prompt);
       form.append("output_format", "webp");
-
+  
       const imageResponse = await axios.post(
         "https://api.stability.ai/v2beta/stable-image/generate/core",
         form,
@@ -605,14 +627,14 @@ io.on("connection", (socket) => {
           responseType: "arraybuffer",
         }
       );
-
+  
       if (imageResponse.status === 200) {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
-
-        // ✅ Store in global room data
-        rooms[room].imgURL = imageDataUri;
-
+  
+        roomData.imgURL = imageDataUri;
+        roomData.imageAlreadyGenerated = true;
+  
         io.to(room).emit("receive_story_image", {
           summary: cleanSummary,
           image: imageDataUri,
@@ -627,7 +649,7 @@ io.on("connection", (socket) => {
         image: null,
       });
     }
-  });
+  });  
 
   socket.on("request_full_story", (room) => {
     if (!rooms[room]) return;

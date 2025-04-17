@@ -73,20 +73,25 @@ const AIGen = () => {
         setIsLoading(false);
 
         let index = 0;
-        const typingSpeed = 20; // Milliseconds between characters
+        const typingSpeed = 15; // Milliseconds between characters
 
-        const typeInterval = setInterval(() => {
-          setStory((prev) => {
-            const nextChar = finalStory[index];
-            index++;
-
-            if (index >= finalStory.length) {
-              clearInterval(typeInterval);
-            }
-
-            return prev + nextChar;
-          });
-        }, typingSpeed);
+          const typeInterval = setInterval(() => {
+            setStory((prev) => {
+              const nextChar = finalStory[index];
+              index++;
+          
+              // Auto scroll after character is added
+              setTimeout(() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+              }, 0);
+          
+              if (index >= finalStory.length) {
+                clearInterval(typeInterval);
+              }
+          
+              return prev + nextChar;
+            });
+          }, typingSpeed);          
 
         setWinnerAvatar(winnerAvatar);
 
@@ -143,17 +148,28 @@ const AIGen = () => {
 
         {/* 📖 Story Box or Loading Spinner */}
         <ScrollView
+          ref={scrollRef}
           className="w-full flex-1 rounded-bl-lg rounded-br-lg bg-gray-600 p-4"
-          contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}>
+          contentContainerStyle={{ paddingBottom: 60 }}>
           {isLoading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#ffffff" />
               <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="mt-4 text-lg text-white">Loading story...</Text>
             </View>
           ) : (
-            <Text style={{fontFamily: 'JetBrainsMonoBold'}}
-                  className="whitespace-pre-line text-center text-2xl font-bold text-backgroundText">
-              {story}
+            <Text
+              style={{
+                fontFamily: 'JetBrainsMonoBold',
+                fontSize: 18,
+                lineHeight: 28,
+                color: 'white',
+                textAlign: 'left',
+              }}
+              className="whitespace-pre-line"
+            >
+              {story.split('\n').map((para, idx) => (
+                <Text key={idx}>{'     ' + para + '\n\n'}</Text>
+              ))}
             </Text>
           )}
         </ScrollView>
