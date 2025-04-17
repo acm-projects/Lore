@@ -1,26 +1,15 @@
 import { View, Text, ScrollView, TextInput, Alert } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
 import LeaderboardComponent, { Players } from '~/components/Leaderboard';
 import { useLobby } from '~/context/LobbyContext';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { socket } from '~/socket';
 import { getUserAttributes } from '../../(user_auth)/CognitoConfig';
+import { Audio } from 'expo-av';
+import { useAudio } from '~/context/AudioContext';
 
-const DebugWinners = () => {
-  const { plotPoints } = useLobby();
-
-  useEffect(() => {
-    const winners = plotPoints.map((p) => ({
-      username: p.username,
-      avatar: p.avatar_url,
-    }));
-    console.log('🧠 Winners array from context:', winners);
-  }, [plotPoints]);
-
-  return null; // Or render something if needed
-};
 const EndScreen = () => {
   const router = useRouter();
   const { toggleVisible, lobbyCode, plotPoints } = useLobby();
@@ -29,6 +18,28 @@ const EndScreen = () => {
   const [storyTitle, setStoryTitle] = useState('');
   const [storyHistory, setStoryHistory] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  //SFX
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        playSound(require('assets/end-screen-track.mp3'));
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
 
   // Fetch story history from the server
   useEffect(() => {
@@ -66,7 +77,7 @@ const EndScreen = () => {
       const formattedPlayers = rankings.map((player, index) => ({
         avatar: '',
         plotPoints: player.plotPoints,
-        username: `${player.id}`,
+        username: `Player ${index + 1}: ${player.id}`,
       }));
       setPlayers(formattedPlayers);
     });
@@ -92,10 +103,7 @@ const EndScreen = () => {
           title: storyTitle,
           winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
-          winners: plotPoints.map((p) => ({
-            username: p.username || 'Unknown',
-            avatar: p.avatar_url || '',
-          })),
+          imageUrl,
         }),
       });
 
@@ -119,44 +127,32 @@ const EndScreen = () => {
           And so the story comes to a close...
         </Text>
 
-        <Button title="View the Full Story" onPress={toggleVisible} className="mt-10 w-[80%]" />
+        <Button title="View the Full Story" onPress={() => {clickSFX(); toggleVisible()}} className="mt-10 w-[80%]" />
 
         <Text className="mt-10 text-2xl font-bold text-backgroundText">
           Most Plot Points Chosen
         </Text>
         <LeaderboardComponent players={players} />
+
+        {/* Show story title input when "Home" is pressed */}
+        {showInput && (
+          <View className="mt-6 w-[80%]">
+            <Text className="mb-2 text-xl font-semibold text-backgroundText">Name Your Story:</Text>
+            <TextInput
+              placeholder="Enter a title..."
+              placeholderTextColor="#999"
+              className="rounded-md bg-white p-3 text-lg"
+              value={storyTitle}
+              onChangeText={setStoryTitle}
+            />
+            <Button title="Submit Story" className="mt-4" onPress={() => {clickSFX(); handleSaveStory()}} />
+          </View>
+        )}
+
         {!showInput && (
           <Button title="Home" onPress={() => setShowInput(true)} className="mt-10 w-[80%]" />
         )}
       </ScrollView>
-      {showInput && (
-        <View
-          style={{
-            position: 'absolute',
-            top: '30%',
-            left: '10%',
-            width: '80%',
-            backgroundColor: '#2D2D2D',
-            padding: 20,
-            borderRadius: 12,
-            shadowColor: '#000',
-            shadowOpacity: 0.4,
-            shadowOffset: { width: 0, height: 4 },
-            shadowRadius: 10,
-            zIndex: 1000,
-          }}>
-          <Text className="mb-2 text-xl font-semibold text-white">Name Your Story:</Text>
-          <TextInput
-            placeholder="Enter a title..."
-            placeholderTextColor="#999"
-            className="rounded-md bg-white p-3 text-lg"
-            value={storyTitle}
-            onChangeText={setStoryTitle}
-          />
-          <Button title="Submit Story" className="mt-4" onPress={handleSaveStory} />
-        </View>
-      )}
-      <DebugWinners />
     </SafeAreaView>
   );
 };

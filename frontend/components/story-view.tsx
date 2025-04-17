@@ -48,7 +48,7 @@ const StoryView = (props: { code: String }) => {
             style={{ transform: [{ translateY: bounceValue }] }}
             className="flex flex-row pb-2 pl-10 pt-12">
             <ChevronDown color="white" />
-            <Text className="color-white"> Latest Plot Point </Text>
+            <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="color-white"> Latest Plot Point </Text>
           </Animated.View>
           <View className="mb-12 flex-col-reverse">
             {plotPoints.map((component, index) => (

@@ -1,14 +1,36 @@
-import { View, Text, Image, ScrollView, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
 import { useLocalSearchParams } from 'expo-router';
 import { socket } from '~/socket';
+import { Audio } from 'expo-av';
+import { useAudio } from '~/context/AudioContext';
 
 const AIGen = () => {
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        playSound(require('assets/ai-track.mp3'));
+      }
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
   const { lobbyCode, addPlotPoint } = useLobby();
   const { prompt, story: initialStory, round, lastRound } = useLocalSearchParams();
   const router = useRouter();
@@ -92,6 +114,7 @@ const AIGen = () => {
   }, [lobbyCode]);
 
   const handleContinue = () => {
+    clickSFX();
     if (!hasPressedContinue) {
       setHasPressedContinue(true);
       socket.emit('continue_pressed', lobbyCode);
@@ -100,6 +123,8 @@ const AIGen = () => {
 
   return (
     <SafeAreaView className="max-h-full flex-1 bg-background">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg4.gif")}/> 
+      
       <GameBar isAbsolute={false} headerText="The Plot Thickens!" />
       <View className="mt-4 flex h-full flex-1 items-center justify-around px-6">
         {/* Plot Point Winner */}
@@ -108,7 +133,9 @@ const AIGen = () => {
             <Image source={{ uri: winnerAvatar }} className="h-full w-full" resizeMode="cover" />
           </View>
           <View className="flex-1 px-3">
-            <Text className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
+            
+            <Text style={{fontFamily: 'JetBrainsMonoBold'}}
+                  className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
               {prompt}
             </Text>
           </View>
@@ -121,10 +148,11 @@ const AIGen = () => {
           {isLoading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#ffffff" />
-              <Text className="mt-4 text-lg text-white">Loading story...</Text>
+              <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="mt-4 text-lg text-white">Loading story...</Text>
             </View>
           ) : (
-            <Text className="whitespace-pre-line text-center text-2xl font-bold text-backgroundText">
+            <Text style={{fontFamily: 'JetBrainsMonoBold'}}
+                  className="whitespace-pre-line text-center text-2xl font-bold text-backgroundText">
               {story}
             </Text>
           )}

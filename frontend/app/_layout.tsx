@@ -8,6 +8,7 @@ export default function Layout() {
       <Stack.Screen name="(user_auth)" />
       <Stack.Screen name="(game)" />
       <Stack.Screen name="(main)" />
+      <Stack.Screen name="(profiles)" />
     </Stack>
   );
 }
