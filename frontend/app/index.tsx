@@ -21,7 +21,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!isLoadingImages) {
-      router.replace('/(user_auth)/sign-in');
+      router.replace('/onboarding');
     }
   }, [isLoadingImages]);
 
