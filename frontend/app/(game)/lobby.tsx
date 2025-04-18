@@ -19,6 +19,7 @@ import * as Haptics from 'expo-haptics'; // for haptic feedback
 import InputSpinner from 'react-native-input-spinner';
 import { TimerPickerModal } from 'react-native-timer-picker';
 import MuteButton from '~/components/MuteButton';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // only client-side
 
 const Lobby = () => {
   // ----------------------------------------- SETTINGS ------------------------------------------------------------- //
@@ -79,25 +80,37 @@ const Lobby = () => {
     setLobbyCode(lobbyCode as string);
 
     const joinAfterConnect = async () => {
-      try {
-        const user = await getUserAttributes();
-        console.log('🔐 Logged-in user:', user.displayName);
+      try{
+        const user = await getUserAttributes(); // from CognitoConfig
+        let playerId = null;
 
-        socket.emit(
-          'join_room',
-          { room: lobbyCode, username: user.displayName, cognitoSub: user.sub },
-          (response: any) => {
-            if (!response.success) {
-              console.error('❌ Failed to join room:', response.message);
-              router.replace('/');
-            } else {
-              setCreator(response.creatorId);
-              setIsCreator(response.creatorId === socket.id);
-            }
+        try {
+          playerId = await AsyncStorage.getItem('playerId');
+        } catch (err) {
+          console.warn('⚠️ Failed to fetch playerId from AsyncStorage:', err);
+        }
+
+        // Build payload
+        const joinPayload = {
+          room: lobbyCode,
+          cognitoSub: user.sub, // always include this
+        };
+
+        if (playerId) {
+          joinPayload.playerId = playerId; // only include if available
+        }
+
+        socket.emit('join_room', joinPayload, (response: any) => {
+          if (!response.success) {
+            console.error('❌ Failed to join room:', response.message);
+            router.replace('/');
+          } else {
+            setCreator(response.creatorId);
+            setIsCreator(response.creatorId === socket.id);
           }
-        );
+        });
       } catch (err) {
-        console.error('❌ Failed to get user attributes:', err);
+        console.error("❌ Failed to get user attributes:", err);
         router.replace('/');
       }
     };
@@ -364,22 +377,22 @@ const Lobby = () => {
         />
         <MuteButton />
       </View>
-
       <View className="mt-10 self-center">
         <Text
-          style={{ fontFamily: 'JetBrainsMonoBold' }}
-          className="text-3xl font-bold text-backgroundText">
+          style={{ fontFamily: 'JetBrainsMonoBold', fontSize: 36 }} // ⬅️ Increased from 30s
+          className="font-bold text-backgroundText">
           Join Code:
         </Text>
+
         <TouchableOpacity
-          className="mt-2 rounded-full bg-primary px-4 py-2"
+          className="mt-4 rounded-full bg-primary px-6 py-4"
           onPress={() => {
             clickSFX();
             onCodePress();
           }}>
           <Text
-            style={{ fontFamily: 'JetBrainsMonoBold' }}
-            className="text-center text-2xl font-bold text-primaryText">
+            style={{ fontFamily: 'JetBrainsMonoBold', fontSize: 32 }} // ⬅️ Increased from 24-ish
+            className="text-center font-bold text-primaryText">
             {lobbyCode}
           </Text>
         </TouchableOpacity>

@@ -16,7 +16,7 @@ import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 
-dotenv.config("./.env"); // load secret keys
+dotenv.config(); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
@@ -217,16 +217,16 @@ io.on("connection", (socket) => {
     if (!rooms[room]) {
       return callback({ success: false, message: "Lobby does not exist" });
     }
-
+  
     if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
       return callback({ success: false, message: "Max Players Reached" });
     }
-
+  
     socket.join(room);
-
+  
     let avatarUrl = null;
     let username = null;
-
+  
     try {
       // 1️⃣ Try CognitoSub first
       const scanCommand = new ScanCommand({
@@ -237,15 +237,15 @@ io.on("connection", (socket) => {
         },
         ProjectionExpression: "Username, ProfilePicURL",
       });
-
+  
       const result = await dynamoForStories.send(scanCommand);
       const player = result.Items?.[0];
-
+  
       if (player) {
         avatarUrl = player?.ProfilePicURL?.S || null;
         username = player?.Username?.S || null;
       }
-
+  
       // 2️⃣ If null, fallback to PlayerID (guest mode)
       if (!username || !avatarUrl) {
         const fallbackCommand = new GetCommand({
@@ -255,25 +255,23 @@ io.on("connection", (socket) => {
           },
           ProjectionExpression: "Username, ProfilePicURL",
         });
-
+  
         const fallbackResult = await dynamoForStories.send(fallbackCommand);
         const fallbackPlayer = fallbackResult.Item;
-
+  
         if (fallbackPlayer) {
           username = fallbackPlayer?.Username?.S || username;
           avatarUrl = fallbackPlayer?.ProfilePicURL?.S || avatarUrl;
         }
       }
-
+  
       console.log("✅ Final Username:", username);
       console.log("✅ Final Avatar:", avatarUrl);
     } catch (err) {
       console.error("❌ Error fetching player data:", err);
     }
-
-    const isAlreadyInRoom = rooms[room].users.some(
-      (user) => user.id === socket.id
-    );
+  
+    const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
     if (!isAlreadyInRoom) {
       rooms[room].users.push({
         id: socket.id,
@@ -282,7 +280,7 @@ io.on("connection", (socket) => {
         currentScreen: "lobby",
       });
     }
-
+  
     callback({ success: true, creatorId: rooms[room].creator });
     io.to(room).emit("update_users", rooms[room].users);
   });

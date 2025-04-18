@@ -127,8 +127,6 @@ const Voting = () => {
             <PlotPointButton
               key={index}
               plotPoint={item.prompt}
-              //username={item.name}
-              votes={1}
               isSelected={selectedId === index}
               onPress={() => {clickSFX(); setSelectedId(index)}}
             />
