@@ -80,40 +80,44 @@ const Lobby = () => {
     setLobbyCode(lobbyCode as string);
 
     const joinAfterConnect = async () => {
-      try{
+      let joinPayload = {
+        room: lobbyCode,
+        cognitoSub: null,
+        playerId: null,
+      };
+    
+      try {
+        // Try Cognito user
         const user = await getUserAttributes(); // from CognitoConfig
-        let playerId = null;
-
-        try {
-          playerId = await AsyncStorage.getItem('playerId');
-        } catch (err) {
-          console.warn('⚠️ Failed to fetch playerId from AsyncStorage:', err);
+    
+        if (user?.sub) {
+          joinPayload.cognitoSub = user.sub;
         }
-
-        // Build payload
-        const joinPayload = {
-          room: lobbyCode,
-          cognitoSub: user.sub, // always include this
-        };
-
-        if (playerId) {
-          joinPayload.playerId = playerId; // only include if available
-        }
-
-        socket.emit('join_room', joinPayload, (response: any) => {
-          if (!response.success) {
-            console.error('❌ Failed to join room:', response.message);
-            router.replace('/');
-          } else {
-            setCreator(response.creatorId);
-            setIsCreator(response.creatorId === socket.id);
-          }
-        });
       } catch (err) {
-        console.error("❌ Failed to get user attributes:", err);
-        router.replace('/');
+        console.warn("⚠️ No Cognito user found, falling back to guest mode");
       }
-    };
+    
+      try {
+        // Check for guest player ID (always attempt to get it)
+        const guestId = await AsyncStorage.getItem('playerId');
+        if (guestId !== null) {
+          joinPayload.playerId = parseInt(guestId);
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to fetch playerId from AsyncStorage:', err);
+      }
+    
+      // Emit join_room with available identifiers
+      socket.emit('join_room', joinPayload, (response: any) => {
+        if (!response.success) {
+          console.error('❌ Failed to join room:', response.message);
+          router.replace('/');
+        } else {
+          setCreator(response.creatorId);
+          setIsCreator(response.creatorId === socket.id);
+        }
+      });
+    };    
 
     if (socket.connected) {
       joinAfterConnect();
