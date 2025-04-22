@@ -19,7 +19,6 @@ const Voting = () => {
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if(!isMuted){
-        stopSound();
         playSound(require('assets/voting-track.mp3'));
       } 
       return() => {

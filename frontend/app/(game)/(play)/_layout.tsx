@@ -8,7 +8,7 @@ import Modal from 'react-native-modal';
 import { AudioProvider } from '~/context/AudioContext';
 
 const PlayLayout = () => {
-  const { isVisible, toggleVisible } = useLobby();
+  const { isVisible, toggleVisible, lobbyCode } = useLobby();
 
   return (
     <>
@@ -16,9 +16,11 @@ const PlayLayout = () => {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="write" />
         <Stack.Screen name="players-waiting" />
+        <Stack.Screen name="new-waiting" />
         <Stack.Screen name="voting" />
         <Stack.Screen name="ai-gen" />
         <Stack.Screen name="end-screen" />
+        <Stack.Screen name="score-page" />
       </Stack>
       <Modal
         style={{ margin: 0 }}
@@ -35,7 +37,7 @@ const PlayLayout = () => {
               />
           </View>
         </View>
-        <StoryView code="43255"></StoryView>
+        <StoryView code={lobbyCode}></StoryView>
       </Modal>
     </AudioProvider>
     </>

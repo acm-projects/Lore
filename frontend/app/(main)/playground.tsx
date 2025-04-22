@@ -252,7 +252,7 @@ const [isWidthSliderVisible, setWidthSliderVisible] = useState(false)
 
                     </View>
                 </Animated.View>
-                <TouchableOpacity className="h-[50px] w-[50px] bg-blue-500" onPress={() => router.push('/(game)/(play)/ai-gen')}>
+                <TouchableOpacity className="h-[50px] w-[50px] bg-blue-500" onPress={() => router.push('/(game)/(play)/voting')}>
 
                 </TouchableOpacity>
                 <TouchableOpacity className="h-[50px] w-[50px] bg-red-500" onPress={() => router.push('/(game)/(play)/score-page')}>
