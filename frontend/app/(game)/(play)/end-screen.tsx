@@ -27,7 +27,9 @@ const EndScreen = () => {
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if(!isMuted){
-        playSound(require('assets/end-screen-track.mp3'));
+        setTimeout(() => {
+          playSound(require('assets/end-screen-track.mp3'));
+        }, 500)
       } 
       return() => {
         stopSound();

@@ -19,7 +19,9 @@ const AIGen = () => {
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if(!isMuted){
-        playSound(require('assets/ai-track.mp3'));
+        setTimeout(() => {
+          playSound(require('assets/ai-track.mp3'));
+        }, 500)
       }
       return() => {
         stopSound();

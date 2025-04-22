@@ -30,7 +30,9 @@ const Summary = () => {
     // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if (!isMuted) {
-        playSound(require('assets/ai-track.mp3'));
+        setTimeout(() => {
+          playSound(require('assets/ai-track.mp3'));
+        }, 1000)
       }
       return () => {
         stopSound();
@@ -92,10 +94,10 @@ const Summary = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <GameBar isAbsolute={false} headerText="Book Cover & Story" />
       <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg7.gif")}/> 
+      <GameBar isAbsolute={false} headerText="Book Cover & Story" />
 
-      <ScrollView className="flex-1 px-6 py-4 space-y-6">
+      <ScrollView className="flex-1 px-6 py-4">
         {/* 📕 Book Cover (Tap to Expand) */}
         {bookCover && (
           <>
@@ -129,7 +131,7 @@ const Summary = () => {
         )}
 
         {/* 📖 Full Story Scrollbox */}
-        <View className="h-full bg-white/10 rounded-lg p-4">
+        <View className="h-[20%] bg-white/10 rounded-lg p-4">
           <ScrollView showsVerticalScrollIndicator={true}>
             <Text className="text-backgroundText whitespace-pre-line text-base" style={{fontFamily: 'JetBrainsMonoRegular'}}>
               {fullStory}

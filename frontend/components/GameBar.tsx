@@ -85,7 +85,7 @@ const GameBar = ({
       )}
       {headerText && (
         <View className="flex-1 px-2">
-          <Text style={{fontFamily: 'JetBrainsMonoRegular'}} className="text-center text-4xl font-bold text-white">{headerText}</Text>
+          <Text adjustsFontSizeToFit={true} numberOfLines={2} style={{fontFamily: 'JetBrainsMonoRegular'}} className="text-center text-4xl font-bold text-white">{headerText}</Text>
         </View>
       )}
       <TouchableOpacity

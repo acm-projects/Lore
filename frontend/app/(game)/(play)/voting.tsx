@@ -13,27 +13,6 @@ import MuteButton from '~/components/MuteButton';
 
 const Voting = () => {
 
-  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
-  const soundRef = useRef<Audio.Sound | null>(null);
-
-  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
-    useCallback(() => {
-      if(!isMuted){
-        playSound(require('assets/voting-track.mp3'));
-      } 
-      return() => {
-        stopSound();
-      }
-    }, [isMuted]
-  ))
-  const clickSFX = async () => {
-    const { sound } = await Audio. Sound.createAsync(
-      require('assets/click.mp3'),
-    );
-    soundRef.current = sound;
-    await sound.playAsync()
-  }
-
   const { votingDuration } = useLobby();
   const [timeRemaining, setTimeRemaining] = useState(
     votingDuration.minutes * 60 + votingDuration.seconds
@@ -93,6 +72,30 @@ const Voting = () => {
     socket.emit('submit_vote', { room: lobbyCode, votedPrompt: selectedPrompt.prompt });
   }, [selectedId]);
 
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        setTimeout(() => {
+          playSound(require('assets/voting-track.mp3'));
+        }, 500)
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
+
   const onUpdate = (remainingTime: number) => {
     setTimeRemaining(remainingTime);
   };
@@ -133,10 +136,10 @@ const Voting = () => {
             />
           ))}
         </View>
+      </ScrollView>
         <View className="w-full h-full justify-end items-end" style={{position: 'absolute'}}>
             <MuteButton/>
         </View>
-      </ScrollView>
     </SafeAreaView>
   );
 };

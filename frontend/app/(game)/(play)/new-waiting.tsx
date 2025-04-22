@@ -1,5 +1,5 @@
 import { View, Text, Image, ScrollView, Dimensions } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
@@ -8,6 +8,7 @@ import PlayerAvatarRow from '~/components/PlayerAvatarRow';
 import GameBar from '~/components/GameBar';
 import { useAudio } from '~/context/AudioContext';
 import MuteButton from '~/components/MuteButton';
+import { Audio } from 'expo-av';
 
 export type PlayersWaiting = {
   id: number | string;
@@ -84,13 +85,18 @@ const NewWaiting = () => {
 
   //SFX
   const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const isMounted = useRef(true);
   
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if(!isMuted){
-        //playSound(require('assets/waiting-track.mp3'));
+        setTimeout(() => {
+          //playSound(require('assets/waiting-track.mp3'));
+        }, 500)
       } 
       return() => {
+        isMounted.current = false;
         stopSound();
       }
     }, [isMuted]

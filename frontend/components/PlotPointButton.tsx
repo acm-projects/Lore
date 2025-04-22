@@ -76,7 +76,8 @@ const PlotPointButton: React.FC<PlotPointButtonProps> = ({
         <Text
           style={{ fontFamily: 'JetBrainsMonoBold' }}
           className={`text-lg text-primaryText`}
-          numberOfLines={0}>
+          numberOfLines={2}
+          adjustsFontSizeToFit={true}>
           {plotPoint}
         </Text>
       </View>

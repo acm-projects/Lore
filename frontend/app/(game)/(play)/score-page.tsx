@@ -52,6 +52,21 @@ const ScorePage = () => {
 
   const { playSound, stopSound, isMuted, toggleMute } = useAudio();
   const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        setTimeout(() => {
+          playSound(require('assets/score-track.mp3'));
+        }, 500)
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+
+
   const scoreSFX = async () => {
     const { sound } = await Audio. Sound.createAsync(
       require('assets/score-sfx.mp3'),
@@ -60,16 +75,6 @@ const ScorePage = () => {
     await sound.playAsync()
   }
 
-  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
-    useCallback(() => {
-      if(!isMuted){
-        playSound(require('assets/score-track.mp3'));
-      } 
-      return() => {
-        stopSound();
-      }
-    }, [isMuted]
-  ))
 
   if (loading) {
     return (
