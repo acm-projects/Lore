@@ -9,10 +9,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { socket } from '~/socket';
 import { Audio } from 'expo-av';
 import { useAudio } from '~/context/AudioContext';
+import MuteButton from '~/components/MuteButton';
 
 const AIGen = () => {
   const { playSound, stopSound, isMuted, toggleMute } = useAudio();
   const soundRef = useRef<Audio.Sound | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
 
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
@@ -137,12 +139,13 @@ const AIGen = () => {
           <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
             <Image source={{ uri: winnerAvatar }} className="h-full w-full" resizeMode="cover" />
           </View>
-          <View className="flex-1 px-3">
+          <View className="flex-1 px-3 justify-between flex-row">
             
             <Text style={{fontFamily: 'JetBrainsMonoBold'}}
                   className="text-lg font-bold text-backgroundAccentText" numberOfLines={0}>
               {prompt}
             </Text>
+            <MuteButton/>
           </View>
         </View>
 

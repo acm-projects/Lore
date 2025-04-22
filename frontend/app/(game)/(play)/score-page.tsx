@@ -49,10 +49,31 @@ const ScorePage = () => {
     };
   }, [lobbyCode]);
 
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const scoreSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/score-sfx.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        playSound(require('assets/score-track.mp3'));
+        scoreSFX()
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#fff" />
+        <Image source={require('assets/reading animation.gif')} className="h-32 w-32" />
       </SafeAreaView>
     );
   }

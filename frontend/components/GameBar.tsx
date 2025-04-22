@@ -46,14 +46,14 @@ const GameBar = ({
     'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
   });
 
-    const soundRef = useRef<Audio.Sound | null>(null);
-    const clickSFX = async () => {
-      const { sound } = await Audio. Sound.createAsync(
-        require('assets/click.mp3'),
-      );
-      soundRef.current = sound;
-      await sound.playAsync()
-    }
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
 
   return (
     <ContentWrapper

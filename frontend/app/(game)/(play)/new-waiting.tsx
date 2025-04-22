@@ -1,7 +1,7 @@
-import { View, Text, Image, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { View, Text, Image, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 import PlayerAvatarRow from '~/components/PlayerAvatarRow';
@@ -82,20 +82,36 @@ const NewWaiting = () => {
     };
   }, [lobbyCode, phase]);
 
+  //SFX
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        //playSound(require('assets/waiting-track.mp3'));
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg8.gif")}/> 
       <GameBar
         onComplete={() => router.replace('/(game)/(play)/voting')}
         duration={30}
         initialRemainingTime={timeRemaining}
         isAbsolute={false}
-      />
-      <View className="flex flex-1 items-center justify-center">
+      />     
+      <View className="w-full h-1/2" style={{ marginTop: Dimensions.get("screen").height-100, position: 'absolute', backgroundColor: '#d9d9d9'}}/>
+      <View className="flex flex-1 items-center justify-end">
         <Image
-          source={require('assets/waiting_animation.gif')}
+          source={require('assets/waiting-animation.gif')}
           className="h-auto w-full"
           resizeMode="contain"
-        />
+          />
       </View>
       <View className="absolute left-1/2 top-2/3 flex -translate-x-1/2 -translate-y-1/2">
         <PlayerAvatarRow players={players} maxAvatarSize={50} minAvatarSize={30} />

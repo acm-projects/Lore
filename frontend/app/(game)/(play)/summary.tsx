@@ -85,9 +85,15 @@ const Summary = () => {
     }
   };
 
+  useFonts({
+    'JetBrainsMonoRegular': require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <GameBar isAbsolute={false} headerText="Book Cover & Story" />
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg7.gif")}/> 
 
       <ScrollView className="flex-1 px-6 py-4 space-y-6">
         {/* 📕 Book Cover (Tap to Expand) */}
@@ -115,7 +121,7 @@ const Summary = () => {
                     style={{ width: '100%', height: '100%' }}
                     resizeMode="contain"
                   />
-                  <Text className="mt-4 text-white text-base">Tap anywhere to close</Text>
+                  <Text style={{fontFamily: 'JetBrainsMonoBold'}} className="mt-4 text-white text-base">Tap anywhere to close</Text>
                 </View>
               </TouchableWithoutFeedback>
             </Modal>

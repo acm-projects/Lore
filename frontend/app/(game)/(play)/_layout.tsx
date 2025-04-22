@@ -5,12 +5,14 @@ import GameBar from '~/components/GameBar';
 import StoryView from '~/components/story-view';
 import { LobbyProvider, useLobby } from '~/context/LobbyContext';
 import Modal from 'react-native-modal';
+import { AudioProvider } from '~/context/AudioContext';
 
 const PlayLayout = () => {
   const { isVisible, toggleVisible } = useLobby();
 
   return (
     <>
+    <AudioProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="write" />
         <Stack.Screen name="players-waiting" />
@@ -30,11 +32,12 @@ const PlayLayout = () => {
               onPress={() => {
                 toggleVisible();
               }}
-            />
+              />
           </View>
         </View>
         <StoryView code="43255"></StoryView>
       </Modal>
+    </AudioProvider>
     </>
   );
 };

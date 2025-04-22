@@ -96,7 +96,7 @@ const EndScreen = () => {
 
     try {
       const user = await getUserAttributes();
-      const response = await fetch('http://localhost:3001/save-story', {
+      const response = await fetch('https://lore-8hal.onrender.com/save-story', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,14 +104,17 @@ const EndScreen = () => {
           title: storyTitle,
           winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
-          imageUrl,
+          winners: plotPoints.map((p) => ({
+            username: p.username || "Unknown", 
+            avatar: p.avatar_url ||  "", 
+          })),
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
         Alert.alert('✅ Story Saved!', 'Your story was saved to your library.');
-        router.replace('/(main)/home');
+        router.replace('/(main)/profile');
       } else {
         Alert.alert('❌ Error', data.error || 'Failed to save story.');
       }

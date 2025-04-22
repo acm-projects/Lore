@@ -1,11 +1,12 @@
 import { View, Text, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import ProfileDisplay from '~/components/ProfileDisplay';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
+import { useAudio } from '~/context/AudioContext';
 
 const PlayersWaiting = () => {
   const router = useRouter();
@@ -83,6 +84,20 @@ const PlayersWaiting = () => {
       socket.off('go_to_ai_gen');
     };
   }, [lobbyCode, phase]);
+
+  //SFX
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        //playSound(require('assets/waiting-track.mp3'));
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
 
   return (
     <SafeAreaView className="flex-1 bg-background">

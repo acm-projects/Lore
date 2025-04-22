@@ -385,7 +385,7 @@ const Lobby = () => {
         </Text>
 
         <TouchableOpacity
-          className="mt-4 rounded-full bg-primary px-6 py-4"
+          className="mt-4 rounded-lg bg-primary px-6 py-4"
           onPress={() => {
             clickSFX();
             onCodePress();
