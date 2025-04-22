@@ -6,6 +6,8 @@ import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
 import PlayerAvatarRow from '~/components/PlayerAvatarRow';
 import GameBar from '~/components/GameBar';
+import { useAudio } from '~/context/AudioContext';
+import MuteButton from '~/components/MuteButton';
 
 export type PlayersWaiting = {
   id: number | string;
@@ -97,6 +99,9 @@ const NewWaiting = () => {
       </View>
       <View className="absolute left-1/2 top-2/3 flex -translate-x-1/2 -translate-y-1/2">
         <PlayerAvatarRow players={players} maxAvatarSize={50} minAvatarSize={30} />
+      </View>
+      <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
+          <MuteButton/>
       </View>
     </SafeAreaView>
   );

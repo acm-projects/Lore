@@ -64,7 +64,6 @@ const Write = () => {
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away, use Audio context to keep track of mute state
     useCallback(() => {
       if(!isMuted) {
-        console.log(isMuted)
         playSound(require('assets/write-track.mp3'))
       } 
       return() => {

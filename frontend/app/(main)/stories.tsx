@@ -1,4 +1,4 @@
-import { View, Text, Alert, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, Dimensions, Image, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
@@ -55,6 +55,7 @@ const Stories = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <StatusBar/>
       <View className="flex flex-1 pt-10">
         <Image
           className="h-full w-full"

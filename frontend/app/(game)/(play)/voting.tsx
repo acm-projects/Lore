@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -19,6 +19,7 @@ const Voting = () => {
   useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
     useCallback(() => {
       if(!isMuted){
+        stopSound();
         playSound(require('assets/voting-track.mp3'));
       } 
       return() => {
@@ -40,7 +41,7 @@ const Voting = () => {
   );
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string; avatar?: string }[]>([]);
 
   useEffect(() => {
     // Request prompts when screen loads
@@ -52,6 +53,7 @@ const Voting = () => {
       if (Array.isArray(receivedPrompts)) {
         setPrompts(
           receivedPrompts.map((p) => ({
+            avatar: p.avatar,
             prompt: p.prompt,
             playerId: p.playerId,
             name: p.name || p.playerId?.substring(0, 6) || 'Unknown',

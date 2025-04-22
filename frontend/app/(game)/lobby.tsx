@@ -177,8 +177,8 @@ const Lobby = () => {
         style={{ marginHorizontal: 0, marginBottom: 0 }}
         isVisible={isSettingsVisible}>
         <SafeAreaView className="flex-1 bg-backgroundSecondary">
-          <View className="h-[60px] flex-row items-start justify-start bg-backgroundSecondary p-4">
-            <View className="flex-row items-start justify-start">
+          <View className="h-[76px] flex-row items-start justify-start bg-backgroundSecondary p-4">
+            <View className="flex-row items-start justify-start mt-4">
               <ChevronLeft
                 size={25}
                 color={'white'}
@@ -188,11 +188,7 @@ const Lobby = () => {
                 }}
               />
             </View>
-            <Text style={{ fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white' }}>
-              Edit Lobby Settings
-            </Text>
           </View>
-
           <View className="h-full w-full items-center bg-background pt-20">
             {/* Writing Duration */}
             <View className="w-full px-3">

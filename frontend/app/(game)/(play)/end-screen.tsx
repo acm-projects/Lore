@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, Alert, Image, Dimensions, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '~/components/Button';
@@ -9,6 +9,7 @@ import { socket } from '~/socket';
 import { getUserAttributes } from '../../(user_auth)/CognitoConfig';
 import { Audio } from 'expo-av';
 import { useAudio } from '~/context/AudioContext';
+import MuteButton from '~/components/MuteButton';
 
 const EndScreen = () => {
   const router = useRouter();
@@ -122,37 +123,64 @@ const EndScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView className="mt-10" contentContainerStyle={{ flex: 1, alignItems: 'center' }}>
-        <Text className="text-2xl font-bold text-backgroundText">
-          And so the story comes to a close...
-        </Text>
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg6.gif")}/> 
+      
+      <ScrollView className="flex-1 py-10" automaticallyAdjustKeyboardInsets={true}>
+        <View className="flex-1 items-center">
+          <Text className="text-backgroundText text-center"
+                style={{fontFamily: 'JetBrainsMonoBold', fontSize: 30, textAlign: 'center'}} >
+            And So The Story Comes To A Close...
+          </Text>
 
-        <Button title="View the Full Story" onPress={() => {clickSFX(); toggleVisible()}} className="mt-10 w-[80%]" />
+          <TouchableOpacity className="bg-primary w-[80%] h-[8%] justify-center items-center rounded-xl my-6"  
+                            onPress={() => {clickSFX(); toggleVisible()}}>
+                  <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
+                    View The Full Story
+                  </Text>
+          </TouchableOpacity>
 
-        <Text className="mt-10 text-2xl font-bold text-backgroundText">
-          Most Plot Points Chosen
-        </Text>
-        <LeaderboardComponent players={players} />
+          <Text className="text-2xl font-bold text-backgroundText"
+                style={{fontFamily: 'JetBrainsMonoBold', fontSize: 20, textAlign: 'center'}}>
+            Most Plot Points Chosen
+          </Text>
+          <LeaderboardComponent players={players} />
 
-        {/* Show story title input when "Home" is pressed */}
-        {showInput && (
-          <View className="mt-6 w-[80%]">
-            <Text className="mb-2 text-xl font-semibold text-backgroundText">Name Your Story:</Text>
-            <TextInput
-              placeholder="Enter a title..."
-              placeholderTextColor="#999"
-              className="rounded-md bg-white p-3 text-lg"
-              value={storyTitle}
-              onChangeText={setStoryTitle}
-            />
-            <Button title="Submit Story" className="mt-4" onPress={() => {clickSFX(); handleSaveStory()}} />
-          </View>
-        )}
+          {/* Show story title input when "Home" is pressed */}
+          {showInput && (
+            <View className="mb-20 mt-10 w-[80%]">
+              <Text className="mb-2 text-backgroundText"
+                    style={{fontFamily: 'JetBrainsMonoBold', fontSize: 20, textAlign: 'center'}}>
+                Name Your Story!
+              </Text>
+              <TextInput
+                placeholder="Enter a title..."
+                placeholderTextColor="#999"
+                className="h-[40px] w-full rounded-xl bg-black px-2 color-white items-center justify-center pb-2"
+                value={storyTitle}
+                onChangeText={setStoryTitle}
+              />
+              <TouchableOpacity className="bg-primary w-full h-[20%] justify-center items-center rounded-xl mb-10 mt-4"  
+                                onPress={() => {clickSFX(); handleSaveStory()}}>
+                  <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
+                    Submit Story
+                  </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
-        {!showInput && (
-          <Button title="Home" onPress={() => setShowInput(true)} className="mt-10 w-[80%]" />
-        )}
+          {!showInput && (
+            <TouchableOpacity className="bg-primary w-[80%] h-[8%] justify-center items-center rounded-xl mb-10 mt-4"  
+              onPress={() => {clickSFX(); setShowInput(true)}}>
+              <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
+                Save Story
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
+        <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
+            <MuteButton/>
+        </View>
     </SafeAreaView>
   );
 };

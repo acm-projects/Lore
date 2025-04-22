@@ -1,16 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, ScrollView, Modal, Pressable, TouchableWithoutFeedback } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, Image, ScrollView, Modal, Pressable, TouchableWithoutFeedback, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
 import Button from '~/components/Button';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
+import { useFonts } from 'expo-font';
+import { useAudio } from '~/context/AudioContext';
+import MuteButton from '~/components/MuteButton';
 
 const Summary = () => {
   const { lobbyCode } = useLobby();
   const router = useRouter();
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
 
   const [bookCover, setBookCover] = useState('');
   const [fullStory, setFullStory] = useState('');
@@ -21,6 +25,18 @@ const Summary = () => {
 
   //SFX
   const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect(
+    // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if (!isMuted) {
+        playSound(require('assets/ai-track.mp3'));
+      }
+      return () => {
+        stopSound();
+      };
+    }, [isMuted])
+  );
 
   const clickSFX = async () => {
     const { sound } = await Audio. Sound.createAsync(
@@ -96,7 +112,7 @@ const Summary = () => {
                 <View className="flex-1 items-center justify-center bg-black/90">
                   <Image
                     source={{ uri: bookCover }}
-                    style={{ width: '80%', height: '80%' }}
+                    style={{ width: '100%', height: '100%' }}
                     resizeMode="contain"
                   />
                   <Text className="mt-4 text-white text-base">Tap anywhere to close</Text>
@@ -107,9 +123,9 @@ const Summary = () => {
         )}
 
         {/* 📖 Full Story Scrollbox */}
-        <View className="h-64 bg-white/10 rounded-lg p-4">
+        <View className="h-full bg-white/10 rounded-lg p-4">
           <ScrollView showsVerticalScrollIndicator={true}>
-            <Text className="text-backgroundText whitespace-pre-line text-base">
+            <Text className="text-backgroundText whitespace-pre-line text-base" style={{fontFamily: 'JetBrainsMonoRegular'}}>
               {fullStory}
             </Text>
           </ScrollView>
@@ -117,14 +133,19 @@ const Summary = () => {
 
         {/* 👉 Continue Button */}
         <View className="mt-10">
-          <Button
-            title={`Continue (${continueCount}/${totalPlayers})`}
-            bgVariant={hasPressedContinue ? 'secondary' : 'primary'}
-            textVariant={hasPressedContinue ? 'secondary' : 'primary'}
-            onPress={handleContinue}
-          />
+          <TouchableOpacity className=" w-full h-14 justify-center items-center rounded-xl mb-10 mt-4"   
+                            style={hasPressedContinue ? {backgroundColor: '#B3B3B3'} : {backgroundColor: '#06D6A1'}} 
+            onPress={() => {clickSFX(); handleContinue()}}>
+            <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
+              Continue ({continueCount}/{totalPlayers})
+            </Text>
+          </TouchableOpacity>
+
         </View>
       </ScrollView>
+      <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
+          <MuteButton/>
+      </View>
     </SafeAreaView>
   );
 };

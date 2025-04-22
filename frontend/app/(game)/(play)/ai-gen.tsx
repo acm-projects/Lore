@@ -173,7 +173,6 @@ const AIGen = () => {
             </Text>
           )}
         </ScrollView>
-
         {/* ✅ Continue Button */}
         <View className="mt-4 flex-[0.2] flex-row items-center justify-center">
           <Image

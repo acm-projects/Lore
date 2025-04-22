@@ -34,15 +34,16 @@ function PlotPoint(props: {
     }
 
     useEffect(() => {
+      console.log(props.count + " " + plotPoints.length)
       fetchData()
     }, [])
 
     return (
-      <ScrollView className="flex-1 flex-col-reverse">
+      <ScrollView className="flex-1 flex-col-reverse py-4">
         <SafeAreaView>
           <View className="items-center justify-center w-full">
 
-            {isArrayAtEnd && <View className="bg-primaryAccent w-[25px] h-[40px]" />}
+            {/* isArrayAtEnd && <View className="bg-primaryAccent w-[25px] h-[40px]" /> */}
 
             <TouchableOpacity className="w-10/12 h-1/12 p-4 bg-background flex flex-row rounded-t-lg"               
                                         /*style={isArrayAtEnd ? 

@@ -20,7 +20,7 @@ import {
   Easing,
   useAnimatedValue,
 } from 'react-native'
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 const Playground = () => {
 
@@ -252,6 +252,12 @@ const [isWidthSliderVisible, setWidthSliderVisible] = useState(false)
 
                     </View>
                 </Animated.View>
+                <TouchableOpacity className="h-[50px] w-[50px] bg-blue-500" onPress={() => router.push('/(game)/(play)/ai-gen')}>
+
+                </TouchableOpacity>
+                <TouchableOpacity className="h-[50px] w-[50px] bg-red-500" onPress={() => router.push('/(game)/(play)/score-page')}>
+
+</TouchableOpacity>
             </View>
         </SafeAreaView>
     )

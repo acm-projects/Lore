@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { SafeAreaView, Text, ActivityIndicator, Image, Dimensions, View } from 'react-native';
 import AnimatedScoreboard from '~/components/AnimatedScoreboard';
 import { useLobby } from '~/context/LobbyContext';
 import { socket } from '~/socket';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useAudio } from '~/context/AudioContext';
+import { Audio } from 'expo-av';
+import MuteButton from '~/components/MuteButton';
+import { useFonts } from 'expo-font';
 
 type ScoreData = {
   id: string;
@@ -53,12 +57,22 @@ const ScorePage = () => {
     );
   }
 
+  useFonts({
+    JetBrainsMonoRegular: require('assets/fonts/JetBrainsMonoRegular.ttf'),
+    JetBrainsMonoBold: require('assets/fonts/JetBrainsMonoBold.ttf'),
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Text className="mt-5 text-center text-3xl font-bold text-backgroundText">
+      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg9.gif")}/> 
+      <Text className="mt-5 text-center text-3xl font-bold text-backgroundText"
+            style={{fontFamily: 'JetBrainsMonoBold'}}>
         Leaderboard
       </Text>
       <AnimatedScoreboard data={sampleData} />
+      <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
+          <MuteButton/>
+      </View>
     </SafeAreaView>
   );
 };
