@@ -12,15 +12,15 @@ import PaginationElement from '~/components/PaginationElement';
 
 const pages = [
   {
-    text: 'Trusted by millions of people, part of one part',
+    text: 'Write something...',
     image: require('../assets/avatar1.png'),
   },
   {
-    text: 'Spend money abroad, and track your expense',
+    text: 'Vote',
     image: require('../assets/avatar1.png'),
   },
   {
-    text: 'Receive Money From Anywhere In The World',
+    text: 'Let AI Suprise you',
     image: require('../assets/avatar1.png'),
   },
 ];
@@ -79,6 +79,7 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#313338',
   },
   bottomContainer: {
     flexDirection: 'row',

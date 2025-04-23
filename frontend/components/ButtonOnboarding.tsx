@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { router } from 'expo-router';
 
 type Props = {
   currentIndex: SharedValue<number>;
@@ -47,6 +48,7 @@ const Button = ({ currentIndex, length, flatListRef }: Props) => {
   const onPress = useCallback(() => {
     if (currentIndex.value === length - 1) {
       console.log('Get Started');
+      router.replace('/(user_auth)/sign-in');
       return;
     } else {
       flatListRef?.current?.scrollToIndex({
@@ -58,7 +60,7 @@ const Button = ({ currentIndex, length, flatListRef }: Props) => {
     <AnimatedPressable style={[styles.container, rnBtnStyle]} onPress={onPress}>
       <Animated.Text style={[styles.textStyle, rnTextStyle]}>Get Started</Animated.Text>
       <Animated.Image
-        source={require('./assets/arrow.jpg')}
+        source={require('../assets/arrow.png')}
         style={[styles.imageStyle, imageAnimatedStyle]}
       />
     </AnimatedPressable>
@@ -73,13 +75,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 100,
-    backgroundColor: '#304FFE',
+    backgroundColor: '#06D6A1',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   textStyle: {
-    color: 'white',
     position: 'absolute',
     fontWeight: '600',
     fontSize: 16,

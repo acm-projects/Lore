@@ -28,7 +28,7 @@ const PaginationElement = ({ length, x }: Props) => {
       const bgColor = interpolateColor(
         x.value,
         [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
-        ['#D0D0D0', '#304FFE', '#D0D0D0']
+        ['#D0D0D0', '#06D6A1', '#D0D0D0']
       );
 
       return {

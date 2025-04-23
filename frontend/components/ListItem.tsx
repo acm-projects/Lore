@@ -57,7 +57,9 @@ const ListItem = ({ item, index, x }: Props) => {
   return (
     <View style={[styles.itemContainer, { width: SCREEN_WIDTH }]}>
       <Animated.Image source={item.image} style={rnImageStyle} resizeMode="contain" />
-      <Animated.Text style={[styles.textItem, rnTextStyle]}>{item.text}</Animated.Text>
+      <Animated.Text style={[styles.textItem, rnTextStyle]} className={'text-white'}>
+        {item.text}
+      </Animated.Text>
     </View>
   );
 };
