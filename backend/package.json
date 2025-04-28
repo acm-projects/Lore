@@ -1,0 +1,42 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-bedrock": "^3.777.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.779.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.782.0",
+    "@aws-sdk/client-dynamodb": "^3.782.0",
+    "@aws-sdk/client-s3": "^3.779.0",
+    "@aws-sdk/lib-dynamodb": "^3.782.0",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "amazon-cognito-identity-js": "^6.3.15",
+    "axios": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "FormData": "^0.10.1",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "name": "lore",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r <img src='https://media4.giphy.com/media/l1Et9S6qY578FIJ3y/giphy.gif?cid=6c09b9521wzu6ur5dmne16p3xjuwkj7k7ooaccohkyue8nue&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g' width='700'>\r </p>",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node .",
+    "dev": "nodemon ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acm-projects/Lore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/acm-projects/Lore/issues"
+  },
+  "homepage": "https://github.com/acm-projects/Lore#readme"
+}
