@@ -65,9 +65,9 @@ async function generateStory(
       "After the three paragraphs, do not include any further explanation or comments. End with a new line and ...";
   } else {
     instruction =
-      `Using the following prompt: ${prompt}, generate 3 short numbered paragraphs to continue the following story:\n\n` +
+      `Using the following prompt: ${prompt}, generate 2 short numbered paragraphs to continue the following story:\n\n` +
       `${currentStory}\n\n` +
-      "Only generate 3 short paragraphs. Do not include anything else after. End with a new line and ...";
+      "Only generate 2 short paragraphs. Do not include anything else after. End with a new line and ...";
   }
 
   // AI Generation Configuration
@@ -198,7 +198,7 @@ io.on("connection", (socket) => {
       winningPrompts: [],
       storyHistory: [],
       round: 0,
-      lastRound: 3,
+      lastRound: 2,
       maxPlayers: 4,
       continueCount: 0,
       continuePressedBy: new Set(),
@@ -481,7 +481,7 @@ io.on("connection", (socket) => {
           .split("\n")
           .filter((line) => /^\d+\.\s/.test(line))
           .map((line) => line.replace(/^\d+\.\s/, ""))
-          .slice(0, 3)
+          .slice(0, 2)
           .join("\n\n");
 
         roomData.story = numberedParagraphs;
