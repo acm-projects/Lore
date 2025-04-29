@@ -74,11 +74,20 @@ const EndScreen = () => {
   useEffect(() => {
     socket.emit('request_rankings', lobbyCode);
     socket.on('receive_rankings', (rankings) => {
-      const formattedPlayers = rankings.map((player, index) => ({
-        avatar: '',
-        plotPoints: player.plotPoints,
-        username: `Player ${index + 1}: ${player.id}`,
-      }));
+      const formattedPlayers = rankings.map((player) => {
+        // Convert player.id to string for safe comparison
+        const playerIdStr = String(player.id);
+
+        // Match the player ID from rankings with the name field in lobbyPlayers
+        const lobbyPlayer = lobbyPlayers.find((lp) => String(lp.name) === playerIdStr);
+
+        return {
+          avatar: lobbyPlayer?.avatar || '', // Use the avatar from lobbyPlayers or empty string as fallback
+          plotPoints: player.plotPoints,
+          username: `${playerIdStr}`,
+        };
+      });
+
       setPlayers(formattedPlayers);
     });
 
