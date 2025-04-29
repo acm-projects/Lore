@@ -66,7 +66,7 @@ const PlayerAvatarRow = ({
             </View>
             {avatarSize >= 40 && (
               <Text
-                className="mt-1 text-center text-xs"
+                className="mt-1 text-center text-xs text-white"
                 numberOfLines={1}
                 style={{ maxWidth: avatarSize * 1.2 }}>
                 {player.name}
