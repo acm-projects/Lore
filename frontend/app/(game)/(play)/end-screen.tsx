@@ -99,6 +99,7 @@ const EndScreen = () => {
     };
   }, [lobbyCode]);
 
+  
   const handleSaveStory = async () => {
     if (!storyTitle.trim()) {
       Alert.alert('Missing Title', 'Please enter a title for your story.');
