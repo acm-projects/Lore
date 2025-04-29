@@ -8,14 +8,14 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
+import { useLobby } from '~/context/LobbyContext';
+import Avatar from './Avatar';
 
 // Type definitions for the component props
 type PlotPointButtonProps = {
   /**
    * User avatar image source (URI or require)
    */
-  avatar?: ImageSourcePropType;
-
   /**
    * The plot point text content
    */
@@ -24,7 +24,6 @@ type PlotPointButtonProps = {
   /**
    * Number of votes
    */
-  votes: number;
 
   /**
    * Whether the button is selected
@@ -53,51 +52,33 @@ type PlotPointButtonProps = {
 };
 
 const PlotPointButton: React.FC<PlotPointButtonProps> = ({
-  avatar,
   plotPoint,
-  votes,
   isSelected = false,
   onPress,
   style,
 }) => {
-  const avatarImage = require('~/assets/avatar1.png');
-
+  const { setLobbyCode, players, setPlayers, setCreator } = useLobby();
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center rounded-full p-2 ${isSelected ? 'bg-secondary' : 'bg-primary'} ${style}`}
+      className={`w-full h-16 flex-row items-center rounded-lg p-2 ${isSelected ? 'bg-secondary' : 'bg-primary'} ${style}`}
       activeOpacity={0.7}>
-      {/* Avatar */}
-      <View className="h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-        <Image
-          //source={typeof avatar === 'string' ? { uri: avatar } : avatar}
-          source={avatarImage}
-          className="h-full w-full"
-          resizeMode="cover"
-        />
-      </View>
 
       {/* Plot Point */}
-      <View className="flex-1 px-3">
+      <View className="flex-1 flex-row px-3 items-center">
+          {/* players.map((player, index) => (
+            <Image source={{ uri: player.avatar }} 
+            className="w-10 h-10 rounded-full mr-2">
+            </Image>
+          )) */
+          }
+
         <Text
           style={{ fontFamily: 'JetBrainsMonoBold' }}
           className={`text-lg text-primaryText`}
-          numberOfLines={0}>
+          numberOfLines={2}
+          adjustsFontSizeToFit={true}>
           {plotPoint}
-        </Text>
-      </View>
-
-      {/* Votes */}
-      <View className="mr-2 items-center justify-center">
-        <Text
-          style={{ fontFamily: 'JetBrainsMonoBold' }}
-          className={`text-sm font-bold ${isSelected ? 'text-primaryText' : 'text-secondaryText'}`}>
-          Votes
-        </Text>
-        <Text
-          style={{ fontFamily: 'JetBrainsMonoBold' }}
-          className={`${isSelected ? 'text-primaryText' : 'text-secondaryText'} text-lg font-bold`}>
-          {votes}
         </Text>
       </View>
     </TouchableOpacity>

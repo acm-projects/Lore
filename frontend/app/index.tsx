@@ -14,6 +14,10 @@ const Index = () => {
       await Asset.loadAsync(require('assets/bg3.gif'));
       await Asset.loadAsync(require('assets/bg4.gif'));
       await Asset.loadAsync(require('assets/bg5.gif'));
+      await Asset.loadAsync(require('assets/bg6.gif'));
+      await Asset.loadAsync(require('assets/bg7.gif'));
+      await Asset.loadAsync(require('assets/bg8.gif'));
+      await Asset.loadAsync(require('assets/bg9.gif'));
       setIsLoadingImages(false);
     }
     loadGifs();

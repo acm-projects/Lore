@@ -46,11 +46,11 @@ const Login = () => {
           console.log('User attributes:', attributes);
 
           // Navigate to home screen after successful login
-          router.replace('/home');
+          router.replace('/(main)/stories');
         } catch (attrErr) {
           console.error('Error getting user attributes:', attrErr);
           // Still navigate to home since login was successful
-          router.replace('/home');
+          router.replace('/(main)/stories');
         }
       }, 500);
     } catch (err) {

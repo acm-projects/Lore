@@ -43,6 +43,7 @@ import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
+  Touchable,
 } from 'react-native';
 
 const Profile = () => {
@@ -59,8 +60,6 @@ const Profile = () => {
   });
 
   AWS.config.update({
-    accessKeyId: process.env.EXPO_PUBLIC_ACCESS_KEY,
-    secretAccessKey: process.env.EXPO_PUBLIC_SECRET_KEY,
     region: 'us-east-2',
   });
 
@@ -97,7 +96,6 @@ const Profile = () => {
         console.log('' + err);
       } else {
         data.Items?.forEach((item) => {
-          console.log(item);
           setUsername(item.Username);
           setAvatar(item.ProfilePicURL);
           setPrimaryKey(item.PlayerID);
@@ -110,7 +108,6 @@ const Profile = () => {
   const [username, setUsername] = useState('');
   const [cognitoSub, setCognitoSub] = useState('');
   const [avatar, setAvatar] = useState('');
-  const [stories, setStories] = useState([]);
   //const [friends, setFriends] = useState([])
   //const [bio, setBio] = useState("")
 
@@ -119,23 +116,6 @@ const Profile = () => {
     setCognitoSub(await getUserCognitoSub());
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      // Run these functions whenever profile page is loaded
-      getCognitoSub();
-    }, [])
-  );
-
-  useEffect(() => {
-    if (cognitoSub.length === 0) {
-      setGuest(true);
-      fetchGuestId();
-      getGuestItems();
-    } else {
-      setGuest(false);
-      getItems();
-    }
-  }, [cognitoSub || primaryKey]);
 
   const queryParams = {
     TableName: 'Players',
@@ -221,9 +201,8 @@ const Profile = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-    }
-    console.log('Ran');
-    uploadImageToS3(image, '' + primaryKey);
+      uploadImageToS3(image, '' + primaryKey);
+    } 
   };
 
   // ------------------------------------------- Uploading to S3 Bucket + Updating Profile Picture --------------------------------------------------------
@@ -237,9 +216,10 @@ const Profile = () => {
     };
 
     try {
-      console.log('Uploading...');
+      console.log(imageName)
       const uploadResult = await s3.upload(params).promise();
       setAvatar(imageUri);
+
       const dbParams = {
         TableName: 'Players',
         Key: { PlayerID: primaryKey },
@@ -248,12 +228,13 @@ const Profile = () => {
           ':url': uploadResult.Location,
         },
       };
-      console.log('Uploaded!');
 
       await dynamodb.update(dbParams).promise();
       console.log('Profile picture updated successfully!');
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
+      console.log(uploadResult.Location);
+
+    } catch (err) {
+      console.error('Error uploading profile picture:', err);
     }
   };
   // ------------------------------------------------------------Updating Username --------------------------------------------------------------- */
@@ -278,30 +259,6 @@ const Profile = () => {
       console.error('Error updating username:', error);
     }
   };
-
-  // ------------------------------------------------------------Updating Bio --------------------------------------------------------------- */
-  /*     const [newBiography, setNewBiography] = useState("")
-
-    const updateBio = async (newBio: string) => {
-
-      try {
-        setBio(newBio)
-        setNewName("")
-        const dbParams = {
-          TableName: 'Players',
-          Key: {PlayerID: primaryKey},
-          UpdateExpression: 'SET Biography = :bio',
-          ExpressionAttributeValues: {
-            ':bio': newBio
-          }
-        }
-        await dynamodb.update(dbParams).promise();
-        console.log('Bio updated successfully!');
-
-      } catch (error) {
-        console.error('Error updating Bio:', error);
-      }
-    }  */
 
   /* ----------------------------------------- Animation ----------------------------------------------------------------- */
   const slideValue = useRef(useAnimatedValue(Dimensions.get('window').width)).current;
@@ -337,14 +294,49 @@ const Profile = () => {
       slideOutAnimation();
     }
   };
-  // ------------------------------------------------------------------------------------------------------------------------
+
+  /* ------------------------------------------------- STORIES ----------------------------------------------------------------- */
+  const [stories, setStories] = useState<SavedStory[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  type WinnerInfo = {
+    username: string;
+    avatar: string;
+  };
+  type PlotPoint = {
+    winningPlotPoint: string;
+    story: string;
+    winner?: WinnerInfo | null;
+  };
+  type SavedStory = {
+    title: string;
+    plotPoints: PlotPoint[];
+  };
+
+  const fetchStories = async () => {
+    try {
+      const user = await getUserAttributes();
+      const res = await fetch(
+        `https://lore-8hal.onrender.com/get-stories?userId=${user.username}`
+      );
+      const json = await res.json();
+      setStories(json.stories || []);
+    } catch (err) {
+      console.error('Failed to fetch stories:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  /* ------------------------------------------------- SEARCH ----------------------------------------------------------------- */
 
   let [isStoryVisible, setStoryVisible] = useState(true);
   let [isEditVisible, setEditVisible] = useState(false);
   let [isLogoutVisible, setLogoutVisible] = useState(false);
   let [isInfoVisible, setInfoVisible] = useState(false);
   let [searchQuery, setSearchQuery] = useState('');
-  let [filteredStories, setFilteredStories] = useState();
+  let [filteredStories, setFilteredStories] = useState<SavedStory[]>([]);
 
   // Scrapped State Variables for Friends Feature
   let [isFollowingVisible, setFollowingVisible] = useState(false);
@@ -353,11 +345,30 @@ const Profile = () => {
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
-    const filteredData = otherUsers.filter((name) =>
-      name.Username.toLowerCase().includes(text.toLowerCase())
+    const filteredData = stories.filter((name) =>
+      name.title.toLowerCase().includes(text.toLowerCase())
     );
-    setFilteredUsers(filteredData);
+    setFilteredStories(filteredData);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      // Run these functions whenever profile page is loaded
+      getCognitoSub();
+    }, [])
+  );
+
+  useEffect(() => {
+    if (cognitoSub.length === 0) {
+      setGuest(true);
+      fetchGuestId();
+      getGuestItems();
+    } else {
+      setGuest(false);
+      getItems();
+      fetchStories();
+    }
+  }, [cognitoSub || primaryKey]);
 
   return (
     <SafeAreaView className="flex-1 bg-backgroundSecondary">
@@ -583,8 +594,8 @@ const Profile = () => {
             <Text
               style={{ fontFamily: 'JetBrainsMonoRegular', color: 'white', textAlign: 'center' }}>
               Music by Eric Matyas{'\n'}
-              "Quirky-Rhythm-2", "Puzzle-dreams", "Video-Game-brain-drain", "do-it", "Light Puzzles
-              3" {'\n'}
+              "Sweet-Dreaming", "Puzzle-dreams", "Video-Game-Brain-Drain", "Do-It", "Light Puzzles
+              3", "Peaceful-Puzzles", "Strange World" {'\n'}
               www.soundimage.org
             </Text>
           </View>
@@ -596,8 +607,8 @@ const Profile = () => {
           className="bg-backgroundSecondary"
           data={searchQuery === '' ? stories : filteredStories}
           renderItem={({ item, index }) => (
-            <View className="flex-1 bg-background">
-              <StoryCard key={index} count={index} text={item.text} story={item.aiPrompt} />
+            <View className="flex-1 bg-background py-3">
+              <StoryCard key={index} title={item.title} story={item} count={index} />
             </View>
           )}
           ListEmptyComponent={() => (

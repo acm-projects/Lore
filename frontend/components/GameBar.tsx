@@ -46,14 +46,14 @@ const GameBar = ({
     'JetBrainsMonoBold': require('assets/fonts/JetBrainsMonoBold.ttf'),
   });
 
-    const soundRef = useRef<Audio.Sound | null>(null);
-    const clickSFX = async () => {
-      const { sound } = await Audio. Sound.createAsync(
-        require('assets/click.mp3'),
-      );
-      soundRef.current = sound;
-      await sound.playAsync()
-    }
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
 
   return (
     <ContentWrapper
@@ -85,7 +85,7 @@ const GameBar = ({
       )}
       {headerText && (
         <View className="flex-1 px-2">
-          <Text style={{fontFamily: 'JetBrainsMonoRegular'}} className="text-center text-4xl font-bold text-white">{headerText}</Text>
+          <Text adjustsFontSizeToFit={true} numberOfLines={2} style={{fontFamily: 'JetBrainsMonoRegular'}} className="text-center text-4xl font-bold text-white">{headerText}</Text>
         </View>
       )}
       <TouchableOpacity

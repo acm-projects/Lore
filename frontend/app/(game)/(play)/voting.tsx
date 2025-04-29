@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GameBar from '~/components/GameBar';
@@ -13,34 +13,13 @@ import MuteButton from '~/components/MuteButton';
 
 const Voting = () => {
 
-  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
-  const soundRef = useRef<Audio.Sound | null>(null);
-
-  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
-    useCallback(() => {
-      if(!isMuted){
-        playSound(require('assets/voting-track.mp3'));
-      } 
-      return() => {
-        stopSound();
-      }
-    }, [isMuted]
-  ))
-  const clickSFX = async () => {
-    const { sound } = await Audio. Sound.createAsync(
-      require('assets/click.mp3'),
-    );
-    soundRef.current = sound;
-    await sound.playAsync()
-  }
-
   const { votingDuration } = useLobby();
   const [timeRemaining, setTimeRemaining] = useState(
     votingDuration.minutes * 60 + votingDuration.seconds
   );
   const [selectedId, setSelectedId] = useState(-1);
   const { lobbyCode } = useLobby();
-  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string }[]>([]);
+  const [prompts, setPrompts] = useState<{ prompt: string; playerId: string; name?: string; avatar?: string }[]>([]);
 
   useEffect(() => {
     // Request prompts when screen loads
@@ -52,6 +31,7 @@ const Voting = () => {
       if (Array.isArray(receivedPrompts)) {
         setPrompts(
           receivedPrompts.map((p) => ({
+            avatar: p.avatar,
             prompt: p.prompt,
             playerId: p.playerId,
             name: p.name || p.playerId?.substring(0, 6) || 'Unknown',
@@ -92,6 +72,30 @@ const Voting = () => {
     socket.emit('submit_vote', { room: lobbyCode, votedPrompt: selectedPrompt.prompt });
   }, [selectedId]);
 
+  const { playSound, stopSound, isMuted, toggleMute } = useAudio();
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useFocusEffect( // For music, starts playing when writing screen is active, stops when navigated away
+    useCallback(() => {
+      if(!isMuted){
+        setTimeout(() => {
+          playSound(require('assets/voting-track.mp3'));
+        }, 500)
+      } 
+      return() => {
+        stopSound();
+      }
+    }, [isMuted]
+  ))
+  
+  const clickSFX = async () => {
+    const { sound } = await Audio. Sound.createAsync(
+      require('assets/click.mp3'),
+    );
+    soundRef.current = sound;
+    await sound.playAsync()
+  }
+
   const onUpdate = (remainingTime: number) => {
     setTimeRemaining(remainingTime);
   };
@@ -127,17 +131,15 @@ const Voting = () => {
             <PlotPointButton
               key={index}
               plotPoint={item.prompt}
-              //username={item.name}
-              votes={1}
               isSelected={selectedId === index}
               onPress={() => {clickSFX(); setSelectedId(index)}}
             />
           ))}
         </View>
+      </ScrollView>
         <View className="w-full h-full justify-end items-end" style={{position: 'absolute'}}>
             <MuteButton/>
         </View>
-      </ScrollView>
     </SafeAreaView>
   );
 };

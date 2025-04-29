@@ -115,7 +115,7 @@ const guestDetails = () => {
             },
           }
           await dynamodb.put(dbParams).promise();
-          router.push('/(main)/home')
+          router.push('/(main)/stories')
   
         } catch (error) {
           console.error('Error creating Guest:', error);

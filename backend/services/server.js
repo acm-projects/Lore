@@ -16,7 +16,7 @@ import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 
-dotenv.config("./.env"); // load secret keys
+dotenv.config(); // load secret keys
 
 // Replace this with your actual Stability API key
 const STABILITY_API_KEY = process.env.STABILITY_API_KEY;
@@ -57,12 +57,12 @@ async function generateStory(
   if (isFinal) {
     instruction =
       `With this story:\n\n${currentStory}\n\n` +
-      `write a conclusion in three short, numbered paragraphs following this prompt: ${prompt}. ` +
+      `write a conclusion in two short, numbered paragraphs following this prompt: ${prompt}. ` +
       "End with a new line and ...";
   } else if (roundNumber === 1) {
     instruction =
-      `Provide only three short numbered paragraphs to start the story using this prompt:\n${prompt}\n` +
-      "After the three paragraphs, do not include any further explanation or comments. End with a new line and ...";
+      `Provide only two short numbered paragraphs to start the story using this prompt:\n${prompt}\n` +
+      "After the two paragraphs, do not include any further explanation or comments. End with a new line and ...";
   } else {
     instruction =
       `Using the following prompt: ${prompt}, generate 2 short numbered paragraphs to continue the following story:\n\n` +
@@ -198,7 +198,7 @@ io.on("connection", (socket) => {
       winningPrompts: [],
       storyHistory: [],
       round: 0,
-      lastRound: 2,
+      lastRound: 1,
       maxPlayers: 4,
       continueCount: 0,
       continuePressedBy: new Set(),
@@ -217,16 +217,16 @@ io.on("connection", (socket) => {
     if (!rooms[room]) {
       return callback({ success: false, message: "Lobby does not exist" });
     }
-
+  
     if (rooms[room].users.length >= (rooms[room].maxPlayers || 10)) {
       return callback({ success: false, message: "Max Players Reached" });
     }
-
+  
     socket.join(room);
-
+  
     let avatarUrl = null;
     let username = null;
-
+  
     try {
       // 1️⃣ Try CognitoSub first
       const scanCommand = new ScanCommand({
@@ -237,15 +237,15 @@ io.on("connection", (socket) => {
         },
         ProjectionExpression: "Username, ProfilePicURL",
       });
-
+  
       const result = await dynamoForStories.send(scanCommand);
       const player = result.Items?.[0];
-
+  
       if (player) {
         avatarUrl = player?.ProfilePicURL?.S || null;
         username = player?.Username?.S || null;
       }
-
+  
       // 2️⃣ If null, fallback to PlayerID (guest mode)
       if (!username || !avatarUrl) {
         const fallbackCommand = new GetCommand({
@@ -255,25 +255,23 @@ io.on("connection", (socket) => {
           },
           ProjectionExpression: "Username, ProfilePicURL",
         });
-
+  
         const fallbackResult = await dynamoForStories.send(fallbackCommand);
         const fallbackPlayer = fallbackResult.Item;
-
+  
         if (fallbackPlayer) {
           username = fallbackPlayer?.Username?.S || username;
           avatarUrl = fallbackPlayer?.ProfilePicURL?.S || avatarUrl;
         }
       }
-
+  
       console.log("✅ Final Username:", username);
       console.log("✅ Final Avatar:", avatarUrl);
     } catch (err) {
       console.error("❌ Error fetching player data:", err);
     }
-
-    const isAlreadyInRoom = rooms[room].users.some(
-      (user) => user.id === socket.id
-    );
+  
+    const isAlreadyInRoom = rooms[room].users.some((user) => user.id === socket.id);
     if (!isAlreadyInRoom) {
       rooms[room].users.push({
         id: socket.id,
@@ -282,7 +280,7 @@ io.on("connection", (socket) => {
         currentScreen: "lobby",
       });
     }
-
+  
     callback({ success: true, creatorId: rooms[room].creator });
     io.to(room).emit("update_users", rooms[room].users);
   });
@@ -493,7 +491,7 @@ io.on("connection", (socket) => {
           lastRound: roomData.lastRound,
           creatorId: roomData.creator,
           playerWins: roomData.playerWins,
-          prompt: roomData.winningPrompts,
+          prompt: winningPrompt,
           winnerUsername: winnerName,
           winnerAvatar: winnerAvatar,
         });
@@ -562,37 +560,59 @@ io.on("connection", (socket) => {
 
   socket.on("request_story_summary", async ({ room }) => {
     if (!rooms[room]) return;
-
-    // ✅ Return cached image/summary if already generated
-    if (rooms[room].imageAlreadyGenerated && rooms[room].imgURL) {
+  
+    const roomData = rooms[room];
+  
+    // If image already exists, return immediately
+    if (roomData.imageAlreadyGenerated && roomData.imgURL) {
       console.log("🖼 Returning cached image for room", room);
       return io.to(room).emit("receive_story_image", {
-        summary: rooms[room].summary || "Previously generated summary",
-        image: rooms[room].imgURL,
+        summary: roomData.summary || "Previously generated summary",
+        image: roomData.imgURL,
       });
     }
-
-    rooms[room].imageAlreadyGenerated = true;
-
-    const full_story = rooms[room].storyHistory.join("\n\n");
-
+  
+    // If it's generating, wait for it to finish
+    if (roomData.imageAlreadyGenerating) {
+      console.log("⏳ Image is being generated, waiting...");
+      const waitForImage = () =>
+        new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (roomData.imgURL) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 500); // Check every 0.5 seconds
+        });
+  
+      await waitForImage();
+  
+      return io.to(room).emit("receive_story_image", {
+        summary: roomData.summary || "Previously generated summary",
+        image: roomData.imgURL,
+      });
+    }
+  
+    // Start generating
+    roomData.imageAlreadyGenerating = true;
+  
+    const full_story = roomData.storyHistory.join("\n\n");
+  
     try {
-      // Step 1: Get summary using our summarizeStory function
       const rawSummary = await summarizeStory(full_story);
       console.log("🧠 Raw AI Summary Response:", rawSummary);
-
+  
       const summaryMatch = rawSummary.match(/Summary:\s*(.*)/is);
       const cleanSummary = summaryMatch
         ? summaryMatch[1].trim()
         : "No summary found.";
-      rooms[room].summary = cleanSummary; // ✅ Save summary for reuse
-      console.log("clean summary: ", cleanSummary);
-      // Step 2: Generate image using Stable Diffusion
+      roomData.summary = cleanSummary;
+  
       const prompt = `Create a cartoon book cover for this story: ${cleanSummary}`;
       const form = new FormData();
       form.append("prompt", prompt);
       form.append("output_format", "webp");
-
+  
       const imageResponse = await axios.post(
         "https://api.stability.ai/v2beta/stable-image/generate/core",
         form,
@@ -605,14 +625,14 @@ io.on("connection", (socket) => {
           responseType: "arraybuffer",
         }
       );
-
+  
       if (imageResponse.status === 200) {
         const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
         const imageDataUri = `data:image/webp;base64,${imageBase64}`;
-
-        // ✅ Store in global room data
-        rooms[room].imgURL = imageDataUri;
-
+  
+        roomData.imgURL = imageDataUri;
+        roomData.imageAlreadyGenerated = true;
+  
         io.to(room).emit("receive_story_image", {
           summary: cleanSummary,
           image: imageDataUri,
@@ -627,7 +647,7 @@ io.on("connection", (socket) => {
         image: null,
       });
     }
-  });
+  });  
 
   socket.on("request_full_story", (room) => {
     if (!rooms[room]) return;

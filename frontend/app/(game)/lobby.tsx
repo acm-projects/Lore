@@ -19,6 +19,7 @@ import * as Haptics from 'expo-haptics'; // for haptic feedback
 import InputSpinner from 'react-native-input-spinner';
 import { TimerPickerModal } from 'react-native-timer-picker';
 import MuteButton from '~/components/MuteButton';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // only client-side
 
 const Lobby = () => {
   // ----------------------------------------- SETTINGS ------------------------------------------------------------- //
@@ -79,28 +80,44 @@ const Lobby = () => {
     setLobbyCode(lobbyCode as string);
 
     const joinAfterConnect = async () => {
+      let joinPayload = {
+        room: lobbyCode,
+        cognitoSub: null,
+        playerId: null,
+      };
+    
       try {
-        const user = await getUserAttributes();
-        console.log('🔐 Logged-in user:', user.displayName);
-
-        socket.emit(
-          'join_room',
-          { room: lobbyCode, username: user.displayName, cognitoSub: user.sub },
-          (response: any) => {
-            if (!response.success) {
-              console.error('❌ Failed to join room:', response.message);
-              router.replace('/');
-            } else {
-              setCreator(response.creatorId);
-              setIsCreator(response.creatorId === socket.id);
-            }
-          }
-        );
+        // Try Cognito user
+        const user = await getUserAttributes(); // from CognitoConfig
+    
+        if (user?.sub) {
+          joinPayload.cognitoSub = user.sub;
+        }
       } catch (err) {
-        console.error('❌ Failed to get user attributes:', err);
-        router.replace('/');
+        console.warn("⚠️ No Cognito user found, falling back to guest mode");
       }
-    };
+    
+      try {
+        // Check for guest player ID (always attempt to get it)
+        const guestId = await AsyncStorage.getItem('playerId');
+        if (guestId !== null) {
+          joinPayload.playerId = parseInt(guestId);
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to fetch playerId from AsyncStorage:', err);
+      }
+    
+      // Emit join_room with available identifiers
+      socket.emit('join_room', joinPayload, (response: any) => {
+        if (!response.success) {
+          console.error('❌ Failed to join room:', response.message);
+          router.replace('/');
+        } else {
+          setCreator(response.creatorId);
+          setIsCreator(response.creatorId === socket.id);
+        }
+      });
+    };    
 
     if (socket.connected) {
       joinAfterConnect();
@@ -160,8 +177,8 @@ const Lobby = () => {
         style={{ marginHorizontal: 0, marginBottom: 0 }}
         isVisible={isSettingsVisible}>
         <SafeAreaView className="flex-1 bg-backgroundSecondary">
-          <View className="h-[60px] flex-row items-start justify-start bg-backgroundSecondary p-4">
-            <View className="flex-row items-start justify-start">
+          <View className="h-[76px] flex-row items-start justify-start bg-backgroundSecondary p-4">
+            <View className="flex-row items-start justify-start mt-4">
               <ChevronLeft
                 size={25}
                 color={'white'}
@@ -171,11 +188,7 @@ const Lobby = () => {
                 }}
               />
             </View>
-            <Text style={{ fontFamily: 'JetBrainsMonoRegular', fontSize: 20, color: 'white' }}>
-              Edit Lobby Settings
-            </Text>
           </View>
-
           <View className="h-full w-full items-center bg-background pt-20">
             {/* Writing Duration */}
             <View className="w-full px-3">
@@ -364,22 +377,22 @@ const Lobby = () => {
         />
         <MuteButton />
       </View>
-
       <View className="mt-10 self-center">
         <Text
-          style={{ fontFamily: 'JetBrainsMonoBold' }}
-          className="text-3xl font-bold text-backgroundText">
+          style={{ fontFamily: 'JetBrainsMonoBold', fontSize: 36 }} // ⬅️ Increased from 30s
+          className="font-bold text-backgroundText">
           Join Code:
         </Text>
+
         <TouchableOpacity
-          className="mt-2 rounded-full bg-primary px-4 py-2"
+          className="mt-4 rounded-lg bg-primary px-6 py-4"
           onPress={() => {
             clickSFX();
             onCodePress();
           }}>
           <Text
-            style={{ fontFamily: 'JetBrainsMonoBold' }}
-            className="text-center text-2xl font-bold text-primaryText">
+            style={{ fontFamily: 'JetBrainsMonoBold', fontSize: 32 }} // ⬅️ Increased from 24-ish
+            className="text-center font-bold text-primaryText">
             {lobbyCode}
           </Text>
         </TouchableOpacity>
@@ -387,11 +400,13 @@ const Lobby = () => {
       <ScrollView className="flex-1 px-5 py-10">
         {players.length > 0 ? (
           players.map((player, index) => (
-            <ProfileDisplay
-              key={index}
-              username={player.name || player.id.substring(0, 6)}
-              avatar={player.avatar}
-            />
+            <View key={index} className="mb-3">
+              <ProfileDisplay
+                key={index}
+                username={player.name || player.id.substring(0, 6)}
+                avatar={player.avatar}
+              />
+            </View>
           ))
         ) : (
           <Text

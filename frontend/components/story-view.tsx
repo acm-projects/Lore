@@ -5,6 +5,7 @@ import PlotPoint from '~/components/PlotPoint';
 import components from '~/data/data.json';
 import { BookOpen, Undo2, ChevronDown } from 'lucide-react-native';
 import { useLobby } from '~/context/LobbyContext';
+import MuteButton from './MuteButton';
 
 
 const StoryView = (props: { code: String }) => {
@@ -64,6 +65,9 @@ const StoryView = (props: { code: String }) => {
           </View>
         </SafeAreaView>
       </ScrollView>
+      <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
+        <MuteButton/>
+      </View>
     </View>
     </SafeAreaView>
   );

@@ -9,6 +9,7 @@ import { socket } from '~/socket';
 import { getUserAttributes } from '../(user_auth)/CognitoConfig';
 import { Audio } from 'expo-av';
 import { useFonts } from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const JoinGame = () => {
   const [code, setCode] = useState('');
@@ -30,29 +31,50 @@ const JoinGame = () => {
 
   const joinGameWithCode = async () => {
     setErrorMessage(null); // Clear previous error
-  
+
+    let joinPayload: {
+      room: string;
+      username?: string;
+      cognitoSub?: string | null;
+      playerId?: number | null;
+    } = {
+      room: code,
+      username: "Guest", // default fallback
+      cognitoSub: null,
+      playerId: null,
+    };
+
     try {
       const user = await getUserAttributes();
-      console.log("🔐 Username:", user.displayName);
-  
-      socket.emit('join_room', { room: code, username: user.displayName, cognitoSub: user.sub }, (response: any) => {
-        if (!response.success) {
-          setErrorMessage(response.message); // Set error message from backend
-        } else {
-          router.replace({
-            pathname: '/(game)/lobby',
-            params: {
-              lobbyCode: code,
-            },
-          });
-        }
-      });
-    } catch (err) {
-      console.error("❌ Failed to get user attributes:", err);
-      setErrorMessage("Authentication error.");
-    }
-  };
 
+      if (user?.displayName && user?.sub) {
+        joinPayload.username = user.displayName;
+        joinPayload.cognitoSub = user.sub;
+      }
+    } catch (err) {
+      console.warn("⚠️ Not logged in, using guest ID if available");
+    }
+
+    try {
+      const guestId = await AsyncStorage.getItem('playerId');
+      if (guestId !== null) {
+        joinPayload.playerId = parseInt(guestId);
+      }
+    } catch (err) {
+      console.warn("⚠️ Failed to get playerId from AsyncStorage:", err);
+    }
+
+    socket.emit('join_room', joinPayload, (response: any) => {
+      if (!response.success) {
+        setErrorMessage(response.message); // Set error from backend
+      } else {
+        router.replace({
+          pathname: '/(game)/lobby',
+          params: { lobbyCode: code },
+        });
+      }
+    });
+  };
 
   const goBack = () => {
     router.back();

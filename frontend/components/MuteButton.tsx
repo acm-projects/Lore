@@ -10,11 +10,11 @@ function MuteButton() {
         <View>
             {isMuted ? 
                 <VolumeOff color={'white'}
-                    onPress={() => {toggleMute(); console.log(isMuted)}}>
+                    onPress={() => {toggleMute(); }}>
                 </VolumeOff> 
                 : 
                 <Volume2 color={'white'}
-                    onPress={() => {toggleMute(); console.log(isMuted)}}>
+                    onPress={() => {toggleMute(); }}>
                 </Volume2>}
         </View>
     )
