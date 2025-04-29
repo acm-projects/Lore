@@ -198,7 +198,7 @@ io.on("connection", (socket) => {
       winningPrompts: [],
       storyHistory: [],
       round: 0,
-      lastRound: 2,
+      lastRound: 1,
       maxPlayers: 4,
       continueCount: 0,
       continuePressedBy: new Set(),
