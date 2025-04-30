@@ -44,7 +44,6 @@ const EndScreen = () => {
     await sound.playAsync()
   }
 
-  // Fetch story history from the server
   useEffect(() => {
     socket.emit('request_full_story', lobbyCode);
     socket.emit('request_story_summary', { room: lobbyCode });
@@ -77,20 +76,11 @@ const EndScreen = () => {
   useEffect(() => {
     socket.emit('request_rankings', lobbyCode);
     socket.on('receive_rankings', (rankings) => {
-      const formattedPlayers = rankings.map((player) => {
-        // Convert player.id to string for safe comparison
-        const playerIdStr = String(player.id);
-
-        // Match the player ID from rankings with the name field in lobbyPlayers
-        const lobbyPlayer = lobbyPlayers.find((lp) => String(lp.name) === playerIdStr);
-
-        return {
-          avatar: lobbyPlayer?.avatar || '', // Use the avatar from lobbyPlayers or empty string as fallback
-          plotPoints: player.plotPoints,
-          username: `${playerIdStr}`,
-        };
-      });
-
+      const formattedPlayers = rankings.map((player, index) => ({
+        avatar: '',
+        plotPoints: player.plotPoints,
+        username: `Player ${index + 1}: ${player.id}`,
+      }));
       setPlayers(formattedPlayers);
     });
 
@@ -99,7 +89,6 @@ const EndScreen = () => {
     };
   }, [lobbyCode]);
 
-  
   const handleSaveStory = async () => {
     if (!storyTitle.trim()) {
       Alert.alert('Missing Title', 'Please enter a title for your story.');
@@ -108,7 +97,7 @@ const EndScreen = () => {
 
     try {
       const user = await getUserAttributes();
-      const response = await fetch('https://lore-8hal.onrender.com/save-story', {
+      const response = await fetch('http://localhost:3001/save-story', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,17 +105,14 @@ const EndScreen = () => {
           title: storyTitle,
           winningPrompts: plotPoints.map((p) => p.winningPlotPoint),
           storyHistory,
-          winners: plotPoints.map((p) => ({
-            username: p.username || "Unknown", 
-            avatar: p.avatar_url ||  "", 
-          })),
+          imageUrl,
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
         Alert.alert('✅ Story Saved!', 'Your story was saved to your library.');
-        router.replace('/(main)/profile');
+        router.replace('/(main)/home');
       } else {
         Alert.alert('❌ Error', data.error || 'Failed to save story.');
       }
@@ -138,64 +124,37 @@ const EndScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Image className="w-full" style={{ resizeMode: 'cover', position: 'absolute', height: Dimensions.get("window").height}} source={require("assets/bg6.gif")}/> 
-      
-      <ScrollView className="flex-1 py-10" automaticallyAdjustKeyboardInsets={true}>
-        <View className="flex-1 items-center">
-          <Text className="text-backgroundText text-center"
-                style={{fontFamily: 'JetBrainsMonoBold', fontSize: 30, textAlign: 'center'}} >
-            And So The Story Comes To A Close...
-          </Text>
+      <ScrollView className="mt-10" contentContainerStyle={{ flex: 1, alignItems: 'center' }}>
+        <Text className="text-2xl font-bold text-backgroundText">
+          And so the story comes to a close...
+        </Text>
 
-          <TouchableOpacity className="bg-primary w-[80%] h-[8%] justify-center items-center rounded-xl my-6"  
-                            onPress={() => {clickSFX(); toggleVisible()}}>
-                  <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
-                    View The Full Story
-                  </Text>
-          </TouchableOpacity>
+        <Button title="View the Full Story" onPress={() => {clickSFX(); toggleVisible()}} className="mt-10 w-[80%]" />
 
-          <Text className="text-2xl font-bold text-backgroundText"
-                style={{fontFamily: 'JetBrainsMonoBold', fontSize: 20, textAlign: 'center'}}>
-            Most Plot Points Chosen
-          </Text>
-          <LeaderboardComponent players={players} />
+        <Text className="mt-10 text-2xl font-bold text-backgroundText">
+          Most Plot Points Chosen
+        </Text>
+        <LeaderboardComponent players={players} />
 
-          {/* Show story title input when "Home" is pressed */}
-          {showInput && (
-            <View className="mb-20 mt-10 w-[80%]">
-              <Text className="mb-2 text-backgroundText"
-                    style={{fontFamily: 'JetBrainsMonoBold', fontSize: 20, textAlign: 'center'}}>
-                Name Your Story!
-              </Text>
-              <TextInput
-                placeholder="Enter a title..."
-                placeholderTextColor="#999"
-                className="h-[40px] w-full rounded-xl bg-black px-2 color-white items-center justify-center pb-2"
-                value={storyTitle}
-                onChangeText={setStoryTitle}
-              />
-              <TouchableOpacity className="bg-primary w-full h-[20%] justify-center items-center rounded-xl mb-10 mt-4"  
-                                onPress={() => {clickSFX(); handleSaveStory()}}>
-                  <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
-                    Submit Story
-                  </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+        {/* Show story title input when "Home" is pressed */}
+        {showInput && (
+          <View className="mt-6 w-[80%]">
+            <Text className="mb-2 text-xl font-semibold text-backgroundText">Name Your Story:</Text>
+            <TextInput
+              placeholder="Enter a title..."
+              placeholderTextColor="#999"
+              className="rounded-md bg-white p-3 text-lg"
+              value={storyTitle}
+              onChangeText={setStoryTitle}
+            />
+            <Button title="Submit Story" className="mt-4" onPress={() => {clickSFX(); handleSaveStory()}} />
+          </View>
+        )}
 
-          {!showInput && (
-            <TouchableOpacity className="bg-primary w-[80%] h-[8%] justify-center items-center rounded-xl mb-10 mt-4"  
-              onPress={() => {clickSFX(); setShowInput(true)}}>
-              <Text className="" style={{fontFamily: 'JetBrainsMonoBold', fontSize: 15, textAlign: 'center'}}>
-                Save Story
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        {!showInput && (
+          <Button title="Home" onPress={() => setShowInput(true)} className="mt-10 w-[80%]" />
+        )}
       </ScrollView>
-        <View className="w-full h-full justify-end items-end right-4 bottom-4" style={{position: 'absolute'}}>
-            <MuteButton/>
-        </View>
     </SafeAreaView>
   );
 };

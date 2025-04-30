@@ -21,7 +21,7 @@ const LeaderboardComponent = ({ players }: { players: Players[] }) => {
     <View className="mt-14 flex justify-end p-5">
       <View className="h-72 flex-row items-end justify-evenly">
         {sortedPlayers.map((player, index) => {
-          const barHeight = Math.floor((player.plotPoints / maxPoints) * 200);
+          const barHeight = Math.floor((player.plotPoints / maxPoints));
 
           let barColorClass = 'bg-emerald-200';
           if (index === 0) barColorClass = 'bg-emerald-400';

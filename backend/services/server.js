@@ -500,7 +500,7 @@ io.on("connection", (socket) => {
         roomData.story = "Error generating story.";
         io.to(room).emit("story_ready", { story: "Error generating story." });
       }
-    }, 6000);
+    }, 8000);
   }
 
   // Send current continue count when a player enters the story screen
